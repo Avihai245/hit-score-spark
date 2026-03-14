@@ -1,9 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
-import { Music } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 
 const Navbar = () => {
   const { pathname } = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
     { to: "/analyze", label: "Analyze" },
@@ -14,24 +17,67 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-          <Music className="h-5 w-5 text-primary" />
           <span>HitCheck</span>
+          <span className="text-xl">🎵</span>
         </Link>
-        <div className="flex items-center gap-6">
+
+        {/* Desktop */}
+        <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
-                pathname === l.to ? "text-primary" : "text-muted-foreground"
+                "text-sm font-medium transition-colors hover:text-foreground",
+                pathname === l.to ? "text-foreground" : "text-muted-foreground"
               )}
             >
               {l.label}
             </Link>
           ))}
+          <Button
+            asChild
+            size="sm"
+            className="bg-accent text-accent-foreground font-semibold hover:bg-accent/90 glow-gold"
+          >
+            <Link to="/pricing">Get Pro</Link>
+          </Button>
         </div>
+
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 py-4 space-y-3">
+          {links.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "block text-sm font-medium py-2 transition-colors",
+                pathname === l.to ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Button
+            asChild
+            size="sm"
+            className="w-full bg-accent text-accent-foreground font-semibold hover:bg-accent/90"
+          >
+            <Link to="/pricing" onClick={() => setMobileOpen(false)}>Get Pro</Link>
+          </Button>
+        </div>
+      )}
     </nav>
   );
 };
