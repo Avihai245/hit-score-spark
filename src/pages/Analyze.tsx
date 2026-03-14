@@ -64,18 +64,36 @@ const Analyze = () => {
 
     setLoading(true);
     try {
-      const res = await fetch("https://hitcheck.vercel.app/api/upload", {
+      // Step 1 – Get presigned upload URL
+      const urlRes = await fetch("https://hitcheck.vercel.app/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
+      });
+      if (!urlRes.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, s3Key } = await urlRes.json();
+
+      // Step 2 – Upload file directly to S3
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type || "audio/mpeg" },
+      });
+      if (!uploadRes.ok) throw new Error("File upload failed");
+
+      // Step 3 – Analyze
+      const analysisRes = await fetch("https://hitcheck.vercel.app/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fileName: file.name,
-          fileSize: file.size,
+          action: "analyze",
+          s3Key,
           title: title.trim() || undefined,
           genre: genre || undefined,
         }),
       });
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
+      if (!analysisRes.ok) throw new Error("Analysis failed");
+      const data = await analysisRes.json();
       navigate("/results", { state: { results: data, title: title || file.name } });
     } catch {
       toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
