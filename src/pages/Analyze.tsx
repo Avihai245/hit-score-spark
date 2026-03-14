@@ -8,14 +8,20 @@ import { Lock, Upload, Music, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-const genres = ["Melodic House", "Indie Pop", "R&B", "Pop", "Hip Hop", "Other"];
+const genres = ["Pop", "Hip Hop", "R&B", "Indie Pop", "Melodic House", "EDM", "Rock", "Latin", "Afrobeats", "Other"];
+const goals = [
+  { value: "playlists", label: "Get on Spotify playlists" },
+  { value: "tiktok", label: "Go viral on TikTok" },
+  { value: "label", label: "Impress a label" },
+  { value: "streams", label: "Maximize streams" },
+];
 
 const LoadingBars = () => (
-  <div className="flex items-end justify-center gap-1 h-12">
+  <div className="flex items-end justify-center gap-1.5 h-16">
     {[0, 1, 2, 3, 4].map((i) => (
       <div
         key={i}
-        className="w-2 rounded-full gradient-purple"
+        className="w-2.5 rounded-full gradient-purple"
         style={{
           animation: `bar-bounce 0.8s ease-in-out ${i * 0.15}s infinite`,
           height: "100%",
@@ -26,13 +32,24 @@ const LoadingBars = () => (
   </div>
 );
 
+const loadingMessages = [
+  "Getting upload URL...",
+  "Uploading your song...",
+  "Analyzing BPM & energy...",
+  "Checking hook timing...",
+  "Comparing to viral hits...",
+  "Generating your roadmap...",
+];
+
 const Analyze = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
+  const [goal, setGoal] = useState("");
   const [dragOver, setDragOver] = useState(false);
 
   const acceptFile = useCallback((f: File) => {
@@ -63,8 +80,11 @@ const Analyze = () => {
     }
 
     setLoading(true);
+    setLoadingStep(0);
+
     try {
       // Step 1 – Get presigned upload URL
+      setLoadingStep(0);
       const urlRes = await fetch("https://hitcheck.vercel.app/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,6 +94,7 @@ const Analyze = () => {
       const { uploadUrl, s3Key } = await urlRes.json();
 
       // Step 2 – Upload file directly to S3
+      setLoadingStep(1);
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
@@ -82,6 +103,11 @@ const Analyze = () => {
       if (!uploadRes.ok) throw new Error("File upload failed");
 
       // Step 3 – Analyze
+      setLoadingStep(2);
+      const stepInterval = setInterval(() => {
+        setLoadingStep((prev) => Math.min(prev + 1, loadingMessages.length - 1));
+      }, 3000);
+
       const analysisRes = await fetch("https://hitcheck.vercel.app/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,11 +116,13 @@ const Analyze = () => {
           s3Key,
           title: title.trim() || undefined,
           genre: genre || undefined,
+          goal: goal || undefined,
         }),
       });
+      clearInterval(stepInterval);
       if (!analysisRes.ok) throw new Error("Analysis failed");
       const data = await analysisRes.json();
-      navigate("/results", { state: { results: data, title: title || file.name } });
+      navigate("/results", { state: { results: data, title: title || file.name, goal } });
     } catch {
       toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
@@ -107,23 +135,56 @@ const Analyze = () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center px-4 pt-20 pb-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card w-full max-w-lg p-8"
-      >
-        {loading ? (
-          <div className="flex flex-col items-center gap-6 py-12">
-            <LoadingBars />
-            <p className="text-muted-foreground font-medium">Analyzing your song...</p>
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-8"
+        >
+          <LoadingBars />
+          <div className="text-center">
+            <p className="text-lg font-semibold">{loadingMessages[loadingStep]}</p>
+            <p className="mt-2 text-sm text-muted-foreground">This may take up to 30 seconds</p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <h1 className="text-2xl font-bold">Analyze Your Song</h1>
+          <div className="flex gap-1.5">
+            {loadingMessages.map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "h-1.5 w-8 rounded-full transition-colors duration-300",
+                  i <= loadingStep ? "gradient-purple" : "bg-secondary"
+                )}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
-            {/* Drop zone */}
+  return (
+    <div className="min-h-screen px-4 pt-24 pb-12">
+      <div className="container max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-3xl md:text-4xl font-black text-center mb-2">Analyze Your Song</h1>
+          <p className="text-center text-muted-foreground mb-10">
+            Upload your track and get your hit score in 30 seconds
+          </p>
+        </motion.div>
+
+        <form onSubmit={handleSubmit}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid md:grid-cols-2 gap-8"
+          >
+            {/* LEFT – Upload zone */}
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
@@ -136,53 +197,66 @@ const Analyze = () => {
                 inp.click();
               }}
               className={cn(
-                "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 transition-colors",
+                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed min-h-[320px] transition-all",
                 dragOver
-                  ? "border-primary bg-primary/10"
+                  ? "border-primary bg-primary/10 scale-[1.02]"
                   : file
                     ? "border-accent/40 bg-accent/5"
-                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5"
+                    : "border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5 bg-card/30"
               )}
             >
               {file ? (
-                <div className="flex items-center gap-3">
-                  <Music className="h-8 w-8 text-accent" />
-                  <div>
-                    <p className="font-medium text-sm">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatSize(file.size)}</p>
+                <div className="flex flex-col items-center gap-3 p-6">
+                  <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Music className="h-8 w-8 text-accent" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold">{file.name}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{formatSize(file.size)}</p>
                   </div>
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                    className="ml-2 rounded-full p-1 hover:bg-secondary"
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 rounded-full border border-border px-3 py-1.5 transition-colors"
                   >
-                    <X className="h-4 w-4 text-muted-foreground" />
+                    <X className="h-3 w-3" /> Remove
                   </button>
                 </div>
               ) : (
                 <>
-                  <Upload className="h-10 w-10 text-muted-foreground" />
-                  <p className="text-sm font-medium">Drop your song here (MP3 or WAV)</p>
-                  <p className="text-xs text-muted-foreground">or click to browse · max 50 MB</p>
+                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Upload className="h-10 w-10 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-semibold text-lg">Drop your song here</p>
+                    <p className="text-sm text-muted-foreground mt-1">MP3 or WAV · max 50 MB</p>
+                    <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
+                  </div>
                 </>
               )}
             </div>
 
-            {/* Optional fields */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* RIGHT – Fields */}
+            <div className="space-y-5">
               <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  Song Title <span className="text-muted-foreground">(optional)</span>
+                <label className="mb-2 block text-sm font-semibold">
+                  Song Title <span className="text-muted-foreground font-normal">(optional)</span>
                 </label>
-                <Input placeholder="My Song" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Input
+                  placeholder="Enter your song title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="h-12"
+                />
               </div>
+
               <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  Genre <span className="text-muted-foreground">(optional)</span>
+                <label className="mb-2 block text-sm font-semibold">
+                  Genre <span className="text-muted-foreground font-normal">(optional)</span>
                 </label>
                 <Select value={genre} onValueChange={setGenre}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Select genre" />
                   </SelectTrigger>
                   <SelectContent>
                     {genres.map((g) => (
@@ -191,21 +265,38 @@ const Analyze = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold">
+                  What's your goal? <span className="text-muted-foreground font-normal">(optional)</span>
+                </label>
+                <Select value={goal} onValueChange={setGoal}>
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Select your goal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {goals.map((g) => (
+                      <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={!file}
+                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40"
+              >
+                Analyze Now →
+              </Button>
+
+              <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <Lock className="h-3 w-3" /> Your song is never stored or shared
+              </p>
             </div>
-
-            <Button
-              type="submit"
-              className="w-full gradient-purple text-primary-foreground font-semibold glow-purple hover:opacity-90 transition-opacity"
-            >
-              Analyze Now →
-            </Button>
-
-            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <Lock className="h-3 w-3" /> Your data is never stored or shared
-            </p>
-          </form>
-        )}
-      </motion.div>
+          </motion.div>
+        </form>
+      </div>
     </div>
   );
 };
