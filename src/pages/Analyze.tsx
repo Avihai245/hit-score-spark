@@ -1,17 +1,14 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Link as LinkIcon, FileText } from "lucide-react";
+import { Lock, Upload, Music, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const genres = ["Melodic House", "Indie Pop", "R&B", "Pop", "Hip Hop", "Other"];
-
-type Mode = "suno" | "lyrics";
 
 const LoadingBars = () => (
   <div className="flex items-end justify-center gap-1 h-12">
@@ -33,56 +30,75 @@ const Analyze = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<Mode>("suno");
-  const [sunoUrl, setSunoUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
-  const [bpm, setBpm] = useState("");
-  const [lyrics, setLyrics] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+
+  const acceptFile = useCallback((f: File) => {
+    const valid = ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/wave"];
+    if (!valid.includes(f.type) && !f.name.match(/\.(mp3|wav)$/i)) {
+      toast({ title: "Invalid file", description: "Please upload an MP3 or WAV file.", variant: "destructive" });
+      return;
+    }
+    if (f.size > 50 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max 50 MB.", variant: "destructive" });
+      return;
+    }
+    setFile(f);
+  }, [toast]);
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const f = e.dataTransfer.files[0];
+    if (f) acceptFile(f);
+  }, [acceptFile]);
+
+  const fileToBase64 = (f: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(",")[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(f);
+    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (mode === "suno" && !sunoUrl.trim()) {
-      toast({ title: "Missing URL", description: "Please paste a Suno link.", variant: "destructive" });
-      return;
-    }
-    if (mode === "lyrics" && !lyrics.trim()) {
-      toast({ title: "Missing lyrics", description: "Please paste your lyrics.", variant: "destructive" });
+    if (!file) {
+      toast({ title: "No file", description: "Please upload an audio file.", variant: "destructive" });
       return;
     }
 
     setLoading(true);
     try {
-      let url: string;
-      let body: Record<string, unknown>;
-
-      if (mode === "suno") {
-        url = "https://hitcheck.vercel.app/api/analyze-audio";
-        body = { sunoUrl: sunoUrl.trim(), title: title.trim() || undefined, genre: genre || undefined };
-      } else {
-        url = "https://hitcheck.vercel.app/api/analyze";
-        body = {
-          title: title.trim() || undefined,
-          genre: genre || undefined,
-          bpm: bpm ? Number(bpm) : undefined,
-          lyrics: lyrics.trim(),
-        };
-      }
-
-      const res = await fetch(url, {
+      const audioBase64 = await fileToBase64(file);
+      const res = await fetch("https://hitcheck.vercel.app/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          audioBase64,
+          fileName: file.name,
+          title: title.trim() || undefined,
+          genre: genre || undefined,
+        }),
       });
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
-      navigate("/results", { state: { results: data, title: title || "Your Song" } });
+      navigate("/results", { state: { results: data, title: title || file.name } });
     } catch {
       toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
+  };
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -101,69 +117,52 @@ const Analyze = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <h1 className="text-2xl font-bold">Analyze Your Song</h1>
 
-            {/* Mode toggle */}
-            <div className="flex gap-2 rounded-lg bg-secondary p-1">
-              <button
-                type="button"
-                onClick={() => setMode("suno")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  mode === "suno" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <LinkIcon className="h-4 w-4" /> Suno URL
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("lyrics")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  mode === "lyrics" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <FileText className="h-4 w-4" /> Lyrics
-              </button>
+            {/* Drop zone */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={onDrop}
+              onClick={() => {
+                const inp = document.createElement("input");
+                inp.type = "file";
+                inp.accept = ".mp3,.wav,audio/mpeg,audio/wav";
+                inp.onchange = () => { if (inp.files?.[0]) acceptFile(inp.files[0]); };
+                inp.click();
+              }}
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 transition-colors",
+                dragOver
+                  ? "border-primary bg-primary/10"
+                  : file
+                    ? "border-accent/40 bg-accent/5"
+                    : "border-muted-foreground/25 hover:border-primary/50 hover:bg-primary/5"
+              )}
+            >
+              {file ? (
+                <div className="flex items-center gap-3">
+                  <Music className="h-8 w-8 text-accent" />
+                  <div>
+                    <p className="font-medium text-sm">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatSize(file.size)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                    className="ml-2 rounded-full p-1 hover:bg-secondary"
+                  >
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Upload className="h-10 w-10 text-muted-foreground" />
+                  <p className="text-sm font-medium">Drop your song here (MP3 or WAV)</p>
+                  <p className="text-xs text-muted-foreground">or click to browse · max 50 MB</p>
+                </>
+              )}
             </div>
 
-            {/* Suno URL input */}
-            {mode === "suno" && (
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">Suno Link</label>
-                <Input
-                  placeholder="https://suno.com/song/..."
-                  value={sunoUrl}
-                  onChange={(e) => setSunoUrl(e.target.value)}
-                />
-              </div>
-            )}
-
-            {/* Lyrics input */}
-            {mode === "lyrics" && (
-              <>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">Lyrics</label>
-                  <Textarea
-                    placeholder="Paste your full lyrics here..."
-                    className="min-h-[160px]"
-                    value={lyrics}
-                    onChange={(e) => setLyrics(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium">
-                    BPM <span className="text-muted-foreground">(optional)</span>
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="e.g. 120"
-                    value={bpm}
-                    onChange={(e) => setBpm(e.target.value)}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Shared optional fields */}
+            {/* Optional fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium">
