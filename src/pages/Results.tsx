@@ -1,7 +1,7 @@
 import { useLocation, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, X, Target, Music2, Copy } from "lucide-react";
+import { Check, X, Target, Music2, Copy, ListMusic, Lightbulb } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const scoreColor = (s: number) => {
@@ -56,7 +56,12 @@ const Results = () => {
   if (!state?.results) return <Navigate to="/analyze" replace />;
 
   const { results, title } = state;
-  const { score, verdict, strengths, improvements, oneChange, similarHits, sunoPrompt } = results;
+  const {
+    score, verdict, strengths, improvements, oneChange,
+    similarHits, sunoPrompt,
+    bpm, key, energy, hookTimestamp,
+    matchedPlaylists, playlistStrategy,
+  } = results;
 
   const copyPrompt = () => {
     navigator.clipboard.writeText(sunoPrompt || "");
@@ -66,6 +71,13 @@ const Results = () => {
   const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     `My song "${title}" scored ${score}/100 on HitCheck! 🎵🔥 Check yours at hitcheck.app`
   )}`;
+
+  const audioFeatures = [
+    { label: "BPM", value: bpm },
+    { label: "Key", value: key },
+    { label: "Energy", value: energy },
+    { label: "Hook at", value: hookTimestamp ? `${hookTimestamp}s` : undefined },
+  ].filter((f) => f.value != null);
 
   return (
     <div className="min-h-screen px-4 pt-24 pb-16">
@@ -80,6 +92,23 @@ const Results = () => {
           <h1 className="mt-6 text-2xl font-bold">{verdict}</h1>
           <p className="mt-1 text-muted-foreground">"{title}"</p>
         </motion.div>
+
+        {/* Audio Features */}
+        {audioFeatures.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="mt-8 flex flex-wrap items-center justify-center gap-4"
+          >
+            {audioFeatures.map((f) => (
+              <div key={f.label} className="glass-card px-5 py-3 text-center">
+                <div className="text-xs text-muted-foreground font-medium">{f.label}</div>
+                <div className="text-lg font-bold">{f.value}</div>
+              </div>
+            ))}
+          </motion.div>
+        )}
 
         {/* Strengths / Improvements */}
         <motion.div
@@ -125,12 +154,51 @@ const Results = () => {
           </motion.div>
         )}
 
+        {/* Matched Playlists */}
+        {matchedPlaylists?.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-8"
+          >
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+              <ListMusic className="h-5 w-5 text-primary" /> Matched Spotify Playlists
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {matchedPlaylists.map((pl: any, i: number) => (
+                <div key={i} className="glass-card p-4">
+                  <div className="font-medium">{pl.name}</div>
+                  {pl.followers && (
+                    <div className="mt-1 text-xs text-muted-foreground">{pl.followers} followers</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Playlist Strategy */}
+        {playlistStrategy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.65 }}
+            className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-5"
+          >
+            <h2 className="flex items-center gap-2 text-sm font-semibold">
+              <Lightbulb className="h-4 w-4 text-primary" /> Playlist Strategy
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">{playlistStrategy}</p>
+          </motion.div>
+        )}
+
         {/* Similar Hits */}
         {similarHits?.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.7 }}
             className="mt-8"
           >
             <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
@@ -155,7 +223,7 @@ const Results = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 0.75 }}
             className="mt-8"
           >
             <h2 className="mb-3 text-lg font-semibold">🤖 Your Suno Prompt</h2>
