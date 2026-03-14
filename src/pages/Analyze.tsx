@@ -55,17 +55,6 @@ const Analyze = () => {
     if (f) acceptFile(f);
   }, [acceptFile]);
 
-  const fileToBase64 = (f: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1]);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(f);
-    });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
@@ -75,13 +64,12 @@ const Analyze = () => {
 
     setLoading(true);
     try {
-      const audioBase64 = await fileToBase64(file);
       const res = await fetch("https://hitcheck.vercel.app/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          audioBase64,
           fileName: file.name,
+          fileSize: file.size,
           title: title.trim() || undefined,
           genre: genre || undefined,
         }),
