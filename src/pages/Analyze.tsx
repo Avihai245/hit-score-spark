@@ -40,7 +40,7 @@ const Analyze = () => {
     }
     setLoading(true);
     try {
-      const res = await fetch("https://hitcheck-api.vercel.app/api/analyze", {
+      const res = await fetch("https://hitcheck.vercel.app/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
