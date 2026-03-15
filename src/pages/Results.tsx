@@ -316,7 +316,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   return (
     <div className="space-y-6">
       {/* Lyrics card with waveform bg */}
-      <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+      <div className="relative rounded-2xl border border-border bg-card/50 overflow-hidden">
         <WaveformBg bars={60} />
         <div className="relative p-6 space-y-4">
           <div className="flex items-center justify-between">
