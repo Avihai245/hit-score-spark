@@ -25,15 +25,15 @@ interface Remix {
 }
 
 const PLAN_COLORS: Record<Plan, string> = {
-  free: 'bg-white/10 text-white/60',
+  free: 'bg-secondary text-muted-foreground',
   payg: 'bg-blue-500/20 text-blue-300',
-  pro: 'bg-[#8B5CF6]/20 text-[#8B5CF6]',
-  studio: 'bg-[#F59E0B]/20 text-[#F59E0B]',
+  pro: 'bg-primary/20 text-primary',
+  studio: 'bg-accent/20 text-accent',
 };
 
 const scoreColor = (s: number) => {
   if (s >= 80) return 'bg-emerald-500/20 text-emerald-400';
-  if (s >= 60) return 'bg-[#F59E0B]/20 text-[#F59E0B]';
+  if (s >= 60) return 'bg-accent/20 text-accent';
   return 'bg-red-500/20 text-red-400';
 };
 
@@ -86,7 +86,7 @@ export default function Dashboard() {
   const formatLimit = (val: number, limit: number) => limit === 999 ? `${val} / ∞` : `${val} / ${limit}`;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-20 pb-16">
+    <div className="min-h-screen bg-background text-foreground pt-20 pb-16">
       <div className="container max-w-6xl mx-auto px-4">
 
         {/* Header */}
@@ -94,18 +94,18 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold font-heading">
               Welcome back{' '}
-              <span className="bg-gradient-to-r from-[#8B5CF6] to-[#F59E0B] bg-clip-text text-transparent">
+              <span className="brand-gradient-text">
                 {profile?.display_name || user.email?.split('@')[0]} 🎵
               </span>
             </h1>
-            <p className="text-white/50 mt-1 text-sm">{user.email}</p>
+            <p className="text-muted-foreground mt-1 text-sm">{user.email}</p>
           </div>
           <div className="flex items-center gap-3">
             <Badge className={`${PLAN_COLORS[plan]} border-0 px-3 py-1 text-xs font-semibold uppercase tracking-wide`}>
               {limits.label}
             </Badge>
             {plan !== 'studio' && (
-              <Button asChild size="sm" className="rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#F59E0B] text-white border-0 hover:opacity-90 h-8 px-4 text-xs font-semibold">
+              <Button asChild size="sm" className="rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 hover:opacity-90 h-8 px-4 text-xs font-semibold">
                 <Link to="/settings?tab=billing">Upgrade ✨</Link>
               </Button>
             )}
@@ -115,15 +115,15 @@ export default function Dashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           {[
-            { icon: <BarChart2 className="h-5 w-5 text-[#8B5CF6]" />, label: 'Analyses', value: formatLimit(analysesUsed, limits.analyses) },
-            { icon: <RefreshCw className="h-5 w-5 text-[#F59E0B]" />, label: 'Remixes', value: formatLimit(remixesUsed, limits.remixes) },
+            { icon: <BarChart2 className="h-5 w-5 text-primary" />, label: 'Analyses', value: formatLimit(analysesUsed, limits.analyses) },
+            { icon: <RefreshCw className="h-5 w-5 text-accent" />, label: 'Remixes', value: formatLimit(remixesUsed, limits.remixes) },
             { icon: <TrendingUp className="h-5 w-5 text-emerald-400" />, label: 'Avg Score', value: avgScore > 0 ? `${avgScore}/100` : '—' },
             { icon: <Zap className="h-5 w-5 text-blue-400" />, label: 'Credits', value: plan === 'payg' ? credits.toString() : plan === 'free' ? '—' : '∞' },
           ].map((stat) => (
-            <div key={stat.label} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-5 backdrop-blur-sm hover:bg-white/[0.06] transition-colors">
+            <div key={stat.label} className="glass-card p-5 hover:bg-card/90 transition-colors">
               <div className="flex items-center gap-2 mb-3">
                 {stat.icon}
-                <span className="text-xs text-white/50 uppercase tracking-widest">{stat.label}</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-widest">{stat.label}</span>
               </div>
               <p className="text-2xl font-bold font-heading">{stat.value}</p>
             </div>
@@ -132,28 +132,28 @@ export default function Dashboard() {
 
         {/* Usage Progress */}
         {plan !== 'studio' && (
-          <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 mb-8">
-            <h2 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Usage This Month</h2>
+          <div className="glass-card p-6 mb-8">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-4">Usage This Month</h2>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-white/70">Analyses</span>
-                  <span className="text-white/50">{formatLimit(analysesUsed, limits.analyses)}</span>
+                  <span className="text-foreground/70">Analyses</span>
+                  <span className="text-muted-foreground">{formatLimit(analysesUsed, limits.analyses)}</span>
                 </div>
                 <Progress
                   value={limits.analyses === 999 ? 10 : (analysesUsed / limits.analyses) * 100}
-                  className="h-2 bg-white/10 [&>div]:bg-gradient-to-r [&>div]:from-[#8B5CF6] [&>div]:to-[#7C3AED]"
+                  className="h-2 bg-secondary [&>div]:bg-gradient-to-r [&>div]:from-primary [&>div]:to-primary/80"
                 />
               </div>
               {limits.remixes > 0 && (
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-white/70">Remixes</span>
-                    <span className="text-white/50">{formatLimit(remixesUsed, limits.remixes)}</span>
+                    <span className="text-foreground/70">Remixes</span>
+                    <span className="text-muted-foreground">{formatLimit(remixesUsed, limits.remixes)}</span>
                   </div>
                   <Progress
                     value={limits.remixes === 999 ? 10 : (remixesUsed / limits.remixes) * 100}
-                    className="h-2 bg-white/10 [&>div]:bg-gradient-to-r [&>div]:from-[#F59E0B] [&>div]:to-[#D97706]"
+                    className="h-2 bg-secondary [&>div]:bg-gradient-to-r [&>div]:from-accent [&>div]:to-accent/80"
                   />
                 </div>
               )}
@@ -162,24 +162,24 @@ export default function Dashboard() {
         )}
 
         {/* Recent Analyses */}
-        <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl overflow-hidden mb-8">
-          <div className="px-6 py-5 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="glass-card overflow-hidden mb-8">
+          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
-              <Music2 className="h-4 w-4 text-[#8B5CF6]" />
+              <Music2 className="h-4 w-4 text-primary" />
               Recent Analyses
             </h2>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-white/40 hover:text-white">
+            <Button asChild variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground">
               <Link to="/analyze">+ New Analysis</Link>
             </Button>
           </div>
 
           {dataLoading ? (
-            <div className="p-8 text-center text-white/30 text-sm">Loading...</div>
+            <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
           ) : analyses.length === 0 ? (
             <div className="p-12 text-center">
-              <Star className="h-10 w-10 text-white/10 mx-auto mb-4" />
-              <p className="text-white/40 mb-4">No analyses yet</p>
-              <Button asChild size="sm" className="rounded-full bg-[#8B5CF6] hover:bg-[#7C3AED] text-white border-0">
+              <Star className="h-10 w-10 text-muted mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">No analyses yet</p>
+              <Button asChild size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
                 <Link to="/analyze">Analyze your first song <ArrowRight className="ml-1 h-3 w-3" /></Link>
               </Button>
             </div>
@@ -187,25 +187,25 @@ export default function Dashboard() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/[0.04]">
+                  <tr className="border-b border-border/50">
                     {['Song', 'Genre', 'Score', 'Date', ''].map((h) => (
-                      <th key={h} className="px-6 py-3 text-left text-xs text-white/30 font-medium uppercase tracking-widest">{h}</th>
+                      <th key={h} className="px-6 py-3 text-left text-xs text-muted-foreground font-medium uppercase tracking-widest">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {analyses.map((a) => (
-                    <tr key={a.id} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
+                    <tr key={a.id} className="border-b border-border/30 hover:bg-secondary/50 transition-colors">
                       <td className="px-6 py-4 font-medium text-sm">{a.song_title}</td>
-                      <td className="px-6 py-4 text-sm text-white/50">{a.genre}</td>
+                      <td className="px-6 py-4 text-sm text-muted-foreground">{a.genre}</td>
                       <td className="px-6 py-4">
                         <Badge className={`${scoreColor(a.score)} border-0 text-xs font-semibold`}>{a.score}/100</Badge>
                       </td>
-                      <td className="px-6 py-4 text-sm text-white/40">
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
                         {new Date(a.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-[#8B5CF6] hover:text-white hover:bg-[#8B5CF6]/20">
+                        <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-primary hover:text-primary-foreground hover:bg-primary/20">
                           <Link to={`/results?id=${a.id}`}>View</Link>
                         </Button>
                       </td>
@@ -218,22 +218,22 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Remixes */}
-        <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl overflow-hidden">
-          <div className="px-6 py-5 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="glass-card overflow-hidden">
+          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
-              <RefreshCw className="h-4 w-4 text-[#F59E0B]" />
+              <RefreshCw className="h-4 w-4 text-accent" />
               Recent Remixes
             </h2>
           </div>
 
           {remixes.length === 0 ? (
             <div className="p-12 text-center">
-              <RefreshCw className="h-10 w-10 text-white/10 mx-auto mb-4" />
-              <p className="text-white/40 mb-4">No remixes yet</p>
+              <RefreshCw className="h-10 w-10 text-muted mx-auto mb-4" />
+              <p className="text-muted-foreground mb-4">No remixes yet</p>
               {plan === 'free' ? (
-                <p className="text-xs text-white/30">Upgrade to Pro or Studio to unlock remixes</p>
+                <p className="text-xs text-muted-foreground">Upgrade to Pro or Studio to unlock remixes</p>
               ) : (
-                <Button asChild size="sm" className="rounded-full bg-[#F59E0B] hover:bg-[#D97706] text-black border-0 font-semibold">
+                <Button asChild size="sm" className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground border-0 font-semibold">
                   <Link to="/analyze">Create your first remix <ArrowRight className="ml-1 h-3 w-3" /></Link>
                 </Button>
               )}
@@ -241,10 +241,10 @@ export default function Dashboard() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
               {remixes.map((r) => (
-                <div key={r.id} className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
+                <div key={r.id} className="bg-secondary/50 rounded-xl p-4 border border-border">
                   <p className="font-medium text-sm mb-3 truncate">{r.title}</p>
-                  <audio controls src={r.audio_url} className="w-full h-8 mb-3" style={{ filter: 'invert(1) hue-rotate(260deg)' }} />
-                  <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-white/50 hover:text-white border border-white/10 rounded-lg gap-1">
+                  <audio controls src={r.audio_url} className="w-full h-8 mb-3" />
+                  <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg gap-1">
                     <Download className="h-3 w-3" /> Download
                   </Button>
                 </div>
