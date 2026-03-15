@@ -808,6 +808,134 @@ const Results = () => {
           </div>
         </Section>
 
+        {/* ═══ SHARE SCORE CARD ═══ */}
+        <Section delay={0.05} className="flex justify-center">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                size="lg"
+                className="rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold gap-2 px-8 h-12 hover:opacity-90 transition-all"
+              >
+                <Share2 className="h-5 w-5" />
+                Share Score Card
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md bg-card border-border text-foreground p-0 overflow-hidden rounded-2xl">
+              <DialogHeader className="p-6 pb-0">
+                <DialogTitle className="text-lg font-bold">Share Your Score</DialogTitle>
+              </DialogHeader>
+              <div className="p-6 space-y-5">
+                {/* Score Card Preview */}
+                <div
+                  id="share-score-card"
+                  className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0a0a0a] via-[#1a1025] to-[#0a0a0a] p-6 border border-primary/20"
+                >
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                  <div className="absolute top-4 right-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest">viralize.app</div>
+
+                  <div className="flex items-center gap-5">
+                    {/* Score circle */}
+                    <div className="relative flex-shrink-0">
+                      <svg width="90" height="90" className="-rotate-90">
+                        <circle cx="45" cy="45" r="36" fill="none" stroke="hsl(0 0% 15%)" strokeWidth="6" />
+                        <circle
+                          cx="45" cy="45" r="36" fill="none"
+                          stroke={scoreColor(score)}
+                          strokeWidth="6"
+                          strokeLinecap="round"
+                          strokeDasharray={2 * Math.PI * 36}
+                          strokeDashoffset={2 * Math.PI * 36 - (score / 100) * 2 * Math.PI * 36}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-black text-white">{score}</span>
+                      </div>
+                    </div>
+                    {/* Song info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold text-lg truncate">{title}</p>
+                      <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-[10px] font-black border ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-3 mt-5">
+                    {bpmEstimate && (
+                      <div className="text-center rounded-lg bg-white/5 py-2">
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">BPM</p>
+                        <p className="text-sm font-bold text-white">{bpmEstimate}</p>
+                      </div>
+                    )}
+                    {hookTiming && (
+                      <div className="text-center rounded-lg bg-white/5 py-2">
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Hook</p>
+                        <p className="text-sm font-bold text-white">{hookTiming}</p>
+                      </div>
+                    )}
+                    <div className="text-center rounded-lg bg-white/5 py-2">
+                      <p className="text-[10px] text-white/40 uppercase tracking-wider">Viral</p>
+                      <p className="text-sm font-bold text-accent">
+                        {Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)))}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-secondary gap-1.5 text-xs h-10"
+                    onClick={() => {
+                      const url = `${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copied!");
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy Link
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-secondary gap-1.5 text-xs h-10"
+                    onClick={() => {
+                      const text = `My song scored ${score}/100 🎵 Check yours at viralize.ai`;
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                    }}
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Share on X
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-secondary gap-1.5 text-xs h-10"
+                    onClick={async () => {
+                      try {
+                        const el = document.getElementById('share-score-card');
+                        if (!el) return;
+                        const { default: html2canvas } = await import('html2canvas');
+                        const canvas = await html2canvas(el, { backgroundColor: '#0a0a0a', scale: 2 });
+                        const link = document.createElement('a');
+                        link.download = `viralize-score-${score}.png`;
+                        link.href = canvas.toDataURL();
+                        link.click();
+                      } catch {
+                        toast.error("Download failed. Try again.");
+                      }
+                    }}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </Section>
+
         {/* ═══ 1.5 VIRAL POTENTIAL METER ═══ */}
         <Section delay={0.1}>
           <ViralMeter score={score} danceability={danceability} valence={valence} />
