@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef } from "react";
+import { Headphones, BarChart3, Target, Users, FileText, CalendarDays } from "lucide-react";
 
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number; to: number; duration?: number; suffix?: string }) => {
   const ref = useRef<HTMLSpanElement>(null);
@@ -31,13 +32,13 @@ const steps = [
   { emoji: "🚀", title: "Get your Hit Score + roadmap", desc: "Exact score, playlist targets, and the one change that matters." },
 ];
 
-const features = [
-  { emoji: "🎯", title: "Hit Score 0–100", desc: "Know exactly where your song stands against viral benchmarks." },
-  { emoji: "🎤", title: "Competitor Match", desc: 'Your song sounds like oskar med k at 73% — discover your lane.' },
-  { emoji: "📋", title: "Spotify Playlist Targets", desc: "Know which playlists to submit to, with follower counts and fit scores." },
-  { emoji: "📅", title: "30-Day Release Roadmap", desc: "Week-by-week plan tailored to your score and goal." },
-  { emoji: "🎵", title: "Hook Analysis", desc: "Is your hook strong enough? We tell you exactly." },
-  { emoji: "💡", title: "The One Change", desc: "The single improvement that could 10x your streams." },
+const viralFeatures = [
+  { icon: Headphones, color: "text-primary", title: "Real Audio Listening", desc: "GPT-4o actually listens to your song and hears BPM, hook timing, and emotional energy." },
+  { icon: BarChart3, color: "text-accent", title: "Spotify Algorithm Score", desc: "We predict your save rate, skip risk, valence and danceability against Spotify's exact signals." },
+  { icon: Target, color: "text-primary", title: "Competitor DNA Match", desc: "See which viral hits your song sounds like and exactly what they have that you're missing." },
+  { icon: Users, color: "text-accent", title: "Target Audience Profile", desc: "Know who will listen, when, and what TikTok content matches your sound." },
+  { icon: FileText, color: "text-primary", title: "Lyric Analysis & Fix", desc: "Get your weakest lyric identified with a specific suggested replacement." },
+  { icon: CalendarDays, color: "text-accent", title: "30-Day Release Roadmap", desc: "A week-by-week action plan based on your score, goal, and genre — ready to execute." },
 ];
 
 const testimonials = [
@@ -217,25 +218,25 @@ const Index = () => {
         </div>
       </section>
 
-      {/* What You Get */}
+      {/* Everything You Need to Go Viral */}
       <section className="py-24 px-4 bg-[#0a0a0a]">
         <div className="container max-w-5xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-4 text-white">
-            What You Get
+            Everything You Need to Go Viral
           </motion.h2>
           <motion.p {...fade(0.05)} className="text-center text-muted-foreground mb-16 max-w-lg mx-auto">
-            Everything you need to know before you hit release.
+            Six powerful analysis tools working together to maximize your streams.
           </motion.p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
+          <div className="grid gap-6 sm:grid-cols-2">
+            {viralFeatures.map((f, i) => (
               <motion.div
                 key={f.title}
                 {...fade(i * 0.08)}
-                className="glass-card p-6 hover:border-primary/20 transition-colors"
+                className="glass-card p-6 hover:border-primary/20 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 group"
               >
-                <div className="text-2xl mb-3">{f.emoji}</div>
-                <h3 className="font-bold font-heading mb-1 text-white">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <f.icon className={`h-8 w-8 ${f.color} mb-4 transition-transform group-hover:scale-110`} />
+                <h3 className="font-bold font-heading mb-2 text-white text-lg">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </div>
