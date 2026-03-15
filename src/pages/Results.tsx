@@ -133,13 +133,233 @@ const generateRoadmap = (score: number) => {
 };
 
 /* ═══════════════════════════════════════ */
+/* ─── Remix styles ─── */
+const remixStyles = [
+  { value: "same", label: "Same vibe (enhanced)" },
+  { value: "energetic", label: "More energetic" },
+  { value: "emotional", label: "More emotional" },
+  { value: "danceable", label: "More danceable" },
+  { value: "radio", label: "Radio pop crossover" },
+];
+
+/* ─── AI Remix Section ─── */
+const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: File | null; songTitle: string; songGenre?: string }) => {
+  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
+  const [style, setStyle] = useState("same");
+  const [elapsed, setElapsed] = useState(0);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState<any>(null);
+  const [file, setFile] = useState<File | null>(uploadedFile);
+  const [playing, setPlaying] = useState<number | null>(null);
+  const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval>>();
+
+  const togglePlay = useCallback((idx: number) => {
+    const audio = audioRefs.current[idx];
+    if (!audio) return;
+    if (playing === idx) { audio.pause(); setPlaying(null); }
+    else {
+      audioRefs.current.forEach((a, i) => { if (a && i !== idx) a.pause(); });
+      audio.play(); setPlaying(idx);
+    }
+  }, [playing]);
+
+  const startRemix = async () => {
+    if (!file) return;
+    setStatus("uploading");
+    setError("");
+    setElapsed(0);
+
+    try {
+      // Re-upload
+      const urlRes = await fetch("https://hitcheck.vercel.app/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
+      });
+      if (!urlRes.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, s3Key } = await urlRes.json();
+      await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type || "audio/mpeg" } });
+
+      // Start cover
+      setStatus("processing");
+      timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
+
+      const coverRes = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ s3Key, title: songTitle, genre: songGenre, style }),
+      });
+      if (!coverRes.ok) throw new Error("Failed to start remix");
+      const { taskId } = await coverRes.json();
+
+      // Poll
+      const poll = async () => {
+        try {
+          const res = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ taskId }),
+          });
+          const data = await res.json();
+          if (data.status === "complete") {
+            clearInterval(timerRef.current);
+            setResult(data);
+            setStatus("complete");
+          } else if (data.status === "failed") {
+            clearInterval(timerRef.current);
+            setError(data.message || "Remix failed. Try again.");
+            setStatus("error");
+          } else {
+            setTimeout(poll, 5000);
+          }
+        } catch {
+          clearInterval(timerRef.current);
+          setError("Connection lost. Try again.");
+          setStatus("error");
+        }
+      };
+      setTimeout(poll, 5000);
+    } catch (err: any) {
+      clearInterval(timerRef.current);
+      setError(err?.message || "Something went wrong.");
+      setStatus("error");
+    }
+  };
+
+  useEffect(() => () => { clearInterval(timerRef.current); }, []);
+
+  const tracks = result?.tracks || (result?.audioUrl ? [{ url: result.audioUrl, title: "AI Remix" }] : []);
+
+  return (
+    <div className="rounded-2xl border-2 border-accent/40 bg-accent/5 p-8 md:p-10 space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-black font-heading text-white">🎧 AI Remix — Make It Go Viral</h2>
+        <p className="text-sm text-muted-foreground">AI covers your song with the same vibe but stronger hook and viral energy</p>
+      </div>
+
+      {status === "idle" && (
+        <div className="flex flex-col items-center gap-4">
+          {!file && (
+            <div className="w-full max-w-sm">
+              <label className="text-sm font-medium text-muted-foreground mb-2 block">Upload your song file</label>
+              <input
+                type="file"
+                accept=".mp3,.wav,audio/mpeg,audio/wav"
+                onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
+                className="w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/30 cursor-pointer"
+              />
+            </div>
+          )}
+          <div className="w-full max-w-xs">
+            <Select value={style} onValueChange={setStyle}>
+              <SelectTrigger className="h-11 border-accent/30">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {remixStyles.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
+            onClick={startRemix}
+            disabled={!file}
+            className="gradient-purple text-primary-foreground font-bold glow-purple hover:opacity-90 px-10 h-14 text-lg disabled:opacity-40"
+          >
+            Create AI Remix
+          </Button>
+          <p className="text-xs text-muted-foreground">Takes 30–90 seconds</p>
+        </div>
+      )}
+
+      {(status === "uploading" || status === "processing") && (
+        <div className="flex flex-col items-center gap-4 py-6">
+          <Loader2 className="h-10 w-10 text-primary animate-spin" />
+          <p className="text-lg font-semibold text-white">
+            {status === "uploading" ? "Uploading your song..." : "Creating your remix..."}
+          </p>
+          {status === "processing" && (
+            <p className="text-sm text-muted-foreground tabular-nums">{elapsed}s elapsed</p>
+          )}
+          <div className="flex gap-1.5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <motion.div
+                key={i}
+                className="w-2 h-8 rounded-full bg-primary/60"
+                animate={{ scaleY: [0.3, 1, 0.3] }}
+                transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
+                style={{ transformOrigin: "bottom" }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div className="flex flex-col items-center gap-4 py-4">
+          <p className="text-red-400 font-medium">{error}</p>
+          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {status === "complete" && tracks.length > 0 && (
+        <div className="space-y-4">
+          {result?.coverArt && (
+            <div className="flex justify-center">
+              <img src={result.coverArt} alt="Remix cover" className="w-40 h-40 rounded-xl object-cover border-2 border-accent/30" />
+            </div>
+          )}
+          {tracks.map((track: any, idx: number) => (
+            <div key={idx} className="rounded-xl bg-white/5 border border-white/10 p-4 flex items-center gap-4">
+              <button
+                onClick={() => togglePlay(idx)}
+                className="flex-shrink-0 h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center hover:bg-primary/30 transition-colors"
+              >
+                {playing === idx ? <Pause className="h-5 w-5 text-primary" /> : <Play className="h-5 w-5 text-primary ml-0.5" />}
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white truncate">
+                  {tracks.length > 1 ? `Version ${idx + 1}` : "AI Remix"}
+                </p>
+                {track.title && <p className="text-xs text-muted-foreground truncate">{track.title}</p>}
+              </div>
+              <a
+                href={track.url}
+                download
+                className="flex-shrink-0 h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors"
+              >
+                <Download className="h-4 w-4 text-accent" />
+              </a>
+              <audio
+                ref={(el) => { audioRefs.current[idx] = el; }}
+                src={track.url}
+                onEnded={() => setPlaying(null)}
+              />
+            </div>
+          ))}
+          <div className="flex justify-center gap-3 pt-2">
+            <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-white/20 hover:bg-white/5">
+              Remix Again
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════════ */
 const Results = () => {
   const location = useLocation();
-  const state = location.state as { results: any; title: string; goal?: string } | null;
+  const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string } | null;
 
   if (!state?.results) return <Navigate to="/analyze" replace />;
 
-  const { results, title, goal } = state;
+  const { results, title, goal, uploadedFile, songGenre } = state;
   const {
     score, verdict, strengths, improvements, oneChange,
     hookTiming, bpmEstimate, energyLevel, dataSource, openingLyrics,
@@ -202,7 +422,6 @@ const Results = () => {
           <Section delay={0.15}>
             <SectionTitle emoji="🎵" title="SONG PROFILE" />
             <div className="glass-card p-6">
-              {/* Theme + Emotional Core */}
               {themeFields.length > 0 && (
                 <div className="grid gap-4 sm:grid-cols-2 mb-6">
                   {themeFields.map((f) => (
@@ -213,7 +432,6 @@ const Results = () => {
                   ))}
                 </div>
               )}
-              {/* Stat grid */}
               {profileStats.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   {profileStats.map((stat) => (
@@ -470,7 +688,6 @@ const Results = () => {
         <Section delay={0.75}>
           <SectionTitle emoji="🗓" title="30-DAY ROADMAP" />
           <div className="relative pl-8">
-            {/* Timeline line */}
             <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-gradient-to-b from-primary via-accent to-green-500 rounded-full" />
             <div className="space-y-4">
               {roadmap.map((item, i) => (
@@ -481,7 +698,6 @@ const Results = () => {
                   transition={{ delay: 0.8 + i * 0.08 }}
                   className="relative glass-card p-5"
                 >
-                  {/* Dot */}
                   <div className="absolute -left-[26px] top-5 w-4 h-4 rounded-full bg-background border-2 border-primary flex items-center justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   </div>
@@ -498,7 +714,12 @@ const Results = () => {
           </div>
         </Section>
 
-        {/* ═══ 12. BOTTOM CTA ═══ */}
+        {/* ═══ 12. AI REMIX ═══ */}
+        <Section delay={0.85}>
+          <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} />
+        </Section>
+
+        {/* ═══ 13. BOTTOM CTA ═══ */}
         <Section delay={0.9} className="pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
