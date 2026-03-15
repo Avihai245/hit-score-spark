@@ -289,7 +289,7 @@ const Analyze = () => {
                   </div>
                   <span className={cn(
                     "text-sm font-medium",
-                    isCompleted ? "text-green-400" : isCurrent ? "text-white" : "text-muted-foreground"
+                    isCompleted ? "text-green-500 dark:text-green-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {step.label}
                     {isCompleted && " ✓"}
