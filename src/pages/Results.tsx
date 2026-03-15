@@ -340,7 +340,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
                       : "border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  <div className={`w-8 h-4 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-white/20"}`}>
+                  <div className={`w-8 h-4 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-muted"}`}>
                     <motion.div
                       className="absolute top-0.5 w-3 h-3 rounded-full bg-white"
                       animate={{ left: applyImproved ? 16 : 2 }}
