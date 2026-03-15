@@ -133,7 +133,7 @@ const Analyze = () => {
       if (data.score == null) {
         throw new Error("No score received from analysis");
       }
-      navigate("/results", { state: { results: data, title: title || file.name, goal } });
+      navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
     } catch (err: any) {
       const msg = err?.message || "Something went wrong.";
       toast({ 

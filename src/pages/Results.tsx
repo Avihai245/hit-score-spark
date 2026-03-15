@@ -1,12 +1,13 @@
 import { useLocation, Link, Navigate } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Check, X, Target, ListMusic, Lightbulb, Clock, Activity, Zap,
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin, Smartphone,
-  ArrowRight, ChevronRight
+  ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 /* ─── Score color helper ─── */
 const scoreColor = (s: number) => {
