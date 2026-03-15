@@ -271,7 +271,7 @@ const Analyze = () => {
                       ? "bg-green-500"
                       : isCurrent
                         ? "bg-primary/30 border-2 border-primary"
-                        : "bg-white/10"
+                        : "bg-muted"
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
