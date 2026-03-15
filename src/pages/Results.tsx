@@ -405,7 +405,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               </div>
-              <p className="text-sm text-white/80 flex-1">{rec.text}</p>
+              <p className="text-sm text-foreground/80 flex-1">{rec.text}</p>
             </motion.div>
           ))}
         </div>
