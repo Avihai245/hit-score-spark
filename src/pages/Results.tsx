@@ -283,7 +283,16 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             {status === "uploading" ? "Uploading your song..." : "Creating your remix..."}
           </p>
           {status === "processing" && (
-            <p className="text-sm text-muted-foreground tabular-nums">{elapsed}s elapsed</p>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground tabular-nums">{elapsed}s</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                {elapsed < 30 ? "Uploading your song to Suno AI..." :
+                 elapsed < 60 ? "Suno is analyzing your style..." :
+                 elapsed < 90 ? "Generating your AI remix..." :
+                 elapsed < 150 ? "Finalizing the production..." :
+                 "Almost ready... Suno is perfecting the mix"}
+              </p>
+            </div>
           )}
           <div className="flex gap-1.5">
             {[0, 1, 2, 3, 4].map((i) => (
