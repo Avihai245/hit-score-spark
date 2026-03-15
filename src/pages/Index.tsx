@@ -126,7 +126,7 @@ const Index = () => {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
             <span>🎯</span>
-            <span>Powered by GPT-4o Audio — Real Song Analysis</span>
+            <span>Powered by Real Hit Data — AI Song Analysis</span>
           </span>
         </motion.div>
 
