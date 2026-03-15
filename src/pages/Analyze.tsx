@@ -17,16 +17,19 @@ const goals = [
 ];
 
 const LoadingBars = () => (
-  <div className="flex items-end justify-center gap-1.5 h-16">
-    {[0, 1, 2, 3, 4].map((i) => (
-      <div
+  <div className="flex items-end justify-center gap-2 h-20">
+    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+      <motion.div
         key={i}
-        className="w-2.5 rounded-full gradient-purple"
-        style={{
-          animation: `bar-bounce 0.8s ease-in-out ${i * 0.15}s infinite`,
-          height: "100%",
-          transformOrigin: "bottom",
+        className="w-3 rounded-full gradient-purple"
+        animate={{ scaleY: [0.3, 1, 0.3] }}
+        transition={{
+          repeat: Infinity,
+          duration: 0.7,
+          delay: i * 0.1,
+          ease: "easeInOut",
         }}
+        style={{ height: "100%", transformOrigin: "bottom" }}
       />
     ))}
   </div>
