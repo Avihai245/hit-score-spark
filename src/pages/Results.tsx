@@ -991,7 +991,7 @@ const Results = () => {
             <div className="grid gap-6 md:grid-cols-2">
               {strengths?.length > 0 && (
                 <div>
-                  <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-white">
+                   <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-foreground">
                     <span className="text-green-400">✅</span> What's Working
                   </h2>
                   <div className="glass-card p-6 space-y-3">
