@@ -49,11 +49,23 @@ const Analyze = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
   const [goal, setGoal] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (loading) {
+      setElapsedSeconds(0);
+      elapsedRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    } else {
+      if (elapsedRef.current) clearInterval(elapsedRef.current);
+    }
+    return () => { if (elapsedRef.current) clearInterval(elapsedRef.current); };
+  }, [loading]);
 
   const acceptFile = useCallback((f: File) => {
     const valid = ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/wave"];
