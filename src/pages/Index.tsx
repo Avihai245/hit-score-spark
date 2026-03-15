@@ -70,7 +70,7 @@ const viralFeatures = [
 
 const testimonials = [
   {
-    quote: "I was about to release a 58/100 song. HitCheck showed me one fix. Rereleased at 84. Now at 2M streams.",
+    quote: "I was about to release a 58/100 song. Viralize showed me one fix. Rereleased at 84. Now at 2M streams.",
     handle: "@axelbeats",
   },
   {
@@ -293,7 +293,7 @@ const Index = () => {
       <section className="border-t border-white/5 py-24 px-4 bg-background">
         <div className="container max-w-5xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-16 text-foreground">
-            Artists Love HitCheck
+            Artists Love Viralize
           </motion.h2>
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t, i) => (
