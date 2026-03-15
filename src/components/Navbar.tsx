@@ -3,14 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-
-const WaveformLogo = () => (
-  <svg width="36" height="36" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 14C4 14 6 8 8 14C10 20 12 14 12 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 14C12 14 14 4 16 14C18 24 20 14 20 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M20 14C20 14 22 10 24 14" stroke="hsl(38 92% 50%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+import { ViralizeLogo } from "@/components/ViralizeLogo";
 
 const Navbar = () => {
   const { pathname } = useLocation();
