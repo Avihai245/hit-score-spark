@@ -17,16 +17,19 @@ const goals = [
 ];
 
 const LoadingBars = () => (
-  <div className="flex items-end justify-center gap-1.5 h-16">
-    {[0, 1, 2, 3, 4].map((i) => (
-      <div
+  <div className="flex items-end justify-center gap-2 h-20">
+    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+      <motion.div
         key={i}
-        className="w-2.5 rounded-full gradient-purple"
-        style={{
-          animation: `bar-bounce 0.8s ease-in-out ${i * 0.15}s infinite`,
-          height: "100%",
-          transformOrigin: "bottom",
+        className="w-3 rounded-full gradient-purple"
+        animate={{ scaleY: [0.3, 1, 0.3] }}
+        transition={{
+          repeat: Infinity,
+          duration: 0.7,
+          delay: i * 0.1,
+          ease: "easeInOut",
         }}
+        style={{ height: "100%", transformOrigin: "bottom" }}
       />
     ))}
   </div>
@@ -137,24 +140,34 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex min-h-screen items-center justify-center px-4 bg-[#0a0a0a]">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center gap-8"
         >
-          <LoadingBars />
+          <div className="relative">
+            <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
+            <LoadingBars />
+          </div>
           <div className="text-center">
-            <p className="text-lg font-semibold">{loadingMessages[loadingStep]}</p>
-            <p className="mt-2 text-sm text-muted-foreground">This may take up to 30 seconds</p>
+            <motion.p
+              key={loadingStep}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-lg font-semibold font-heading text-white"
+            >
+              {loadingMessages[loadingStep]}
+            </motion.p>
+            <p className="mt-2 text-sm text-muted-foreground">This may take up to 60 seconds</p>
           </div>
           <div className="flex gap-1.5">
             {loadingMessages.map((_, i) => (
               <div
                 key={i}
                 className={cn(
-                  "h-1.5 w-8 rounded-full transition-colors duration-300",
-                  i <= loadingStep ? "gradient-purple" : "bg-secondary"
+                  "h-1.5 w-8 rounded-full transition-all duration-500",
+                  i <= loadingStep ? "gradient-purple glow-purple" : "bg-white/10"
                 )}
               />
             ))}
@@ -165,15 +178,15 @@ const Analyze = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-12">
+    <div className="min-h-screen px-4 pt-24 pb-12 bg-[#0a0a0a]">
       <div className="container max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-black text-center mb-2">Analyze Your Song</h1>
+          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-white">Analyze Your Song</h1>
           <p className="text-center text-muted-foreground mb-10">
-            Upload your track and get your hit score in 30 seconds
+            Upload your track and get your hit score in 60 seconds
           </p>
         </motion.div>
 

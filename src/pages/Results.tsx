@@ -89,9 +89,10 @@ const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; va
 /* ─── Section ─── */
 const Section = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => (
   <motion.section
-    initial={{ opacity: 0, y: 24 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay, duration: 0.5 }}
+    initial={{ opacity: 0, y: 30 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true, margin: "-50px" }}
+    transition={{ delay: delay * 0.3, duration: 0.6 }}
     className={className}
   >
     {children}
