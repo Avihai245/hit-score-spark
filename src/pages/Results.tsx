@@ -966,7 +966,7 @@ const Results = () => {
                       <Music className="h-5 w-5 text-accent" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white truncate">{song.title}</p>
+                      <p className="font-bold text-foreground truncate">{song.title}</p>
                       <p className="text-xs text-muted-foreground">{song.artist}</p>
                     </div>
                   </div>
