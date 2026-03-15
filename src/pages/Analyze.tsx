@@ -355,7 +355,7 @@ const Analyze = () => {
                     <Music className="h-10 w-10 text-accent" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-lg text-white">{file.name}</p>
+                    <p className="font-bold text-lg text-foreground">{file.name}</p>
                     <p className="text-sm text-muted-foreground mt-1">{formatSize(file.size)}</p>
                   </div>
                   {/* Waveform preview */}
