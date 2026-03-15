@@ -337,7 +337,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
                   className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
                     applyImproved
                       ? "bg-primary/20 border-primary/40 text-primary"
-                      : "border-white/20 text-muted-foreground hover:border-primary/30"
+                      : "border-border text-muted-foreground hover:border-primary/30"
                   }`}
                 >
                   <div className={`w-8 h-4 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-white/20"}`}>
