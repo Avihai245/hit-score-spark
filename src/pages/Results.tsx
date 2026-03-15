@@ -78,7 +78,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
         </motion.div>
       )}
       <svg width="280" height="280" className="-rotate-90">
-        <circle cx="140" cy="140" r={r} fill="none" stroke="hsl(0 0% 8%)" strokeWidth="16" />
+        <circle cx="140" cy="140" r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="16" />
         <motion.circle
           cx="140" cy="140" r={r} fill="none"
           stroke="url(#scoreGrad)"
