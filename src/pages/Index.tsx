@@ -218,25 +218,25 @@ const Index = () => {
         </div>
       </section>
 
-      {/* What You Get */}
+      {/* Everything You Need to Go Viral */}
       <section className="py-24 px-4 bg-[#0a0a0a]">
         <div className="container max-w-5xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-4 text-white">
-            What You Get
+            Everything You Need to Go Viral
           </motion.h2>
           <motion.p {...fade(0.05)} className="text-center text-muted-foreground mb-16 max-w-lg mx-auto">
-            Everything you need to know before you hit release.
+            Six powerful analysis tools working together to maximize your streams.
           </motion.p>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
+          <div className="grid gap-6 sm:grid-cols-2">
+            {viralFeatures.map((f, i) => (
               <motion.div
                 key={f.title}
                 {...fade(i * 0.08)}
-                className="glass-card p-6 hover:border-primary/20 transition-colors"
+                className="glass-card p-6 hover:border-primary/20 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 group"
               >
-                <div className="text-2xl mb-3">{f.emoji}</div>
-                <h3 className="font-bold font-heading mb-1 text-white">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <f.icon className={`h-8 w-8 ${f.color} mb-4 transition-transform group-hover:scale-110`} />
+                <h3 className="font-bold font-heading mb-2 text-white text-lg">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
           </div>

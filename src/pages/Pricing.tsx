@@ -24,7 +24,10 @@ const plans = [
     period: "/month",
     features: [
       "Unlimited analyses",
-      "Competitor Match",
+      "Competitor DNA Match",
+      "Spotify Algorithm Score",
+      "Target Audience Profile",
+      "Lyric Analysis & Fix",
       "30-Day Release Roadmap",
       "Playlist Targeting",
       "Priority analysis",
