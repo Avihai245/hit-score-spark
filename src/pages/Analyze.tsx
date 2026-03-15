@@ -275,7 +275,7 @@ const Analyze = () => {
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
-                        <Check className="h-4 w-4 text-white" />
+                        <Check className="h-4 w-4 text-primary-foreground" />
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
