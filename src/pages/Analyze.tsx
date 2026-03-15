@@ -262,7 +262,7 @@ const Analyze = () => {
                       ? "border-green-500/30 bg-green-500/10"
                       : isCurrent
                         ? "border-primary/30 bg-primary/10"
-                        : "border-white/5 bg-white/[0.02] opacity-50"
+                        : "border-border bg-secondary/30 opacity-50"
                   )}
                 >
                   <div className={cn(
