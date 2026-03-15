@@ -143,7 +143,7 @@ const remixStyles = [
 ];
 
 /* ─── AI Remix Section ─── */
-const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: File | null; songTitle: string; songGenre?: string }) => {
+const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any }) => {
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
   const [elapsed, setElapsed] = useState(0);
@@ -188,7 +188,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       const coverRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style }),
+        body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style, analysisData }),
       });
       if (!coverRes.ok) throw new Error("Failed to start remix");
       const coverData = await coverRes.json();
@@ -718,7 +718,7 @@ const Results = () => {
 
         {/* ═══ 12. AI REMIX ═══ */}
         <Section delay={0.85}>
-          <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} />
+          <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} />
         </Section>
 
         {/* ═══ 13. BOTTOM CTA ═══ */}
