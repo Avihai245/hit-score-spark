@@ -29,7 +29,7 @@ const Navbar = () => {
             <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
             <WaveformLogo />
           </div>
-          <span className="text-xl font-black font-heading brand-gradient-text tracking-tight">HitCheck</span>
+          <span className="text-xl font-black font-heading brand-gradient-text tracking-tight">Viralize</span>
         </Link>
 
         {/* Desktop */}
