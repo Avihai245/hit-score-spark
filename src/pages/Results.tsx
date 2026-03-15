@@ -1045,7 +1045,7 @@ const Results = () => {
             <div className="rounded-2xl border-2 border-accent/40 bg-accent/10 p-8 md:p-10 text-center glow-gold">
               <Target className="h-8 w-8 text-accent mx-auto mb-4" />
               <p className="text-xs text-accent font-bold uppercase tracking-widest mb-4">If You Change ONE Thing Before Releasing:</p>
-              <p className="text-xl md:text-2xl font-black text-white leading-snug max-w-2xl mx-auto">{oneChange}</p>
+              <p className="text-xl md:text-2xl font-black text-foreground leading-snug max-w-2xl mx-auto">{oneChange}</p>
               <p className="text-sm text-muted-foreground mt-4 italic">This single change could be the difference between 1,000 and 1,000,000 streams.</p>
             </div>
           </Section>
