@@ -121,7 +121,7 @@ const ViralMeter = ({ score, danceability, valence }: { score: number; danceabil
         </div>
         <span className="text-2xl font-black text-accent">{viral}%</span>
       </div>
-      <div className="relative h-4 rounded-full bg-white/5 overflow-hidden">
+      <div className="relative h-4 rounded-full bg-secondary overflow-hidden">
         <motion.div
           className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300"
           initial={{ width: 0 }}
