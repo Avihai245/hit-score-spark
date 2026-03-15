@@ -140,24 +140,34 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
+      <div className="flex min-h-screen items-center justify-center px-4 bg-[#0a0a0a]">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center gap-8"
         >
-          <LoadingBars />
+          <div className="relative">
+            <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
+            <LoadingBars />
+          </div>
           <div className="text-center">
-            <p className="text-lg font-semibold">{loadingMessages[loadingStep]}</p>
-            <p className="mt-2 text-sm text-muted-foreground">This may take up to 30 seconds</p>
+            <motion.p
+              key={loadingStep}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-lg font-semibold font-heading text-white"
+            >
+              {loadingMessages[loadingStep]}
+            </motion.p>
+            <p className="mt-2 text-sm text-muted-foreground">This may take up to 60 seconds</p>
           </div>
           <div className="flex gap-1.5">
             {loadingMessages.map((_, i) => (
               <div
                 key={i}
                 className={cn(
-                  "h-1.5 w-8 rounded-full transition-colors duration-300",
-                  i <= loadingStep ? "gradient-purple" : "bg-secondary"
+                  "h-1.5 w-8 rounded-full transition-all duration-500",
+                  i <= loadingStep ? "gradient-purple glow-purple" : "bg-white/10"
                 )}
               />
             ))}
