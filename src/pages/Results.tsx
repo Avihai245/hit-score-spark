@@ -525,7 +525,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
     <div className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 md:p-10 space-y-6 relative overflow-hidden">
       <WaveformBg bars={80} className="opacity-[0.04]" />
       <div className="relative text-center space-y-2">
-        <h2 className="text-2xl md:text-3xl font-black font-heading text-white">🎧 AI Remix — Make It Go Viral</h2>
+        <h2 className="text-2xl md:text-3xl font-black font-heading text-foreground">🎧 AI Remix — Make It Go Viral</h2>
         <p className="text-sm text-muted-foreground">AI covers your song with the same vibe but stronger hook and viral energy</p>
       </div>
 
