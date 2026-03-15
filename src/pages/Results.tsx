@@ -179,27 +179,29 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       });
       if (!urlRes.ok) throw new Error("Failed to get upload URL");
       const { uploadUrl, s3Key } = await urlRes.json();
-      await fetch(uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type || "audio/mpeg" } });
+      await fetch(uploadUrl, { method: "PUT", body: file });
 
       // Start cover
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
 
-      const coverRes = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
+      const coverRes = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "suno-cover", s3Key, title: songTitle, genre: songGenre, style }),
+        body: JSON.stringify({ s3Key, title: songTitle, genre: songGenre, style }),
       });
       if (!coverRes.ok) throw new Error("Failed to start remix");
-      const { taskId } = await coverRes.json();
+      const coverData = await coverRes.json();
+      if (!coverData.taskId) throw new Error(coverData.error || "Failed to start remix");
+      const { taskId } = coverData;
 
       // Poll
       const poll = async () => {
         try {
-          const res = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
+          const res = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "suno-cover", taskId }),
+            body: JSON.stringify({ taskId }),
           });
           const data = await res.json();
           if (data.status === "complete") {
