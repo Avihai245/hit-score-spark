@@ -328,7 +328,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => { setShowDiff(!showDiff); if (!showDiff) setApplyImproved(false); }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-muted-foreground hover:border-primary/40 hover:text-primary transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-all"
                 >
                   {showDiff ? "Hide comparison" : "Compare versions"}
                 </button>
