@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -49,11 +49,23 @@ const Analyze = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [genre, setGenre] = useState("");
   const [goal, setGoal] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (loading) {
+      setElapsedSeconds(0);
+      elapsedRef.current = setInterval(() => setElapsedSeconds((s) => s + 1), 1000);
+    } else {
+      if (elapsedRef.current) clearInterval(elapsedRef.current);
+    }
+    return () => { if (elapsedRef.current) clearInterval(elapsedRef.current); };
+  }, [loading]);
 
   const acceptFile = useCallback((f: File) => {
     const valid = ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/wave"];
@@ -85,6 +97,9 @@ const Analyze = () => {
     setLoading(true);
     setLoadingStep(0);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     try {
       // Step 1 – Get presigned upload URL
       setLoadingStep(0);
@@ -92,6 +107,7 @@ const Analyze = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
+        signal: controller.signal,
       });
       if (!urlRes.ok) throw new Error("Failed to get upload URL");
       const { uploadUrl, s3Key } = await urlRes.json();
@@ -102,6 +118,7 @@ const Analyze = () => {
         method: "PUT",
         body: file,
         headers: { "Content-Type": file.type || "audio/mpeg" },
+        signal: controller.signal,
       });
       if (!uploadRes.ok) throw new Error("File upload failed");
 
@@ -121,12 +138,13 @@ const Analyze = () => {
           genre: genre || undefined,
           goal: goal || undefined,
         }),
+        signal: controller.signal,
       });
       clearInterval(stepInterval);
+      clearTimeout(timeoutId);
       if (!analysisRes.ok) throw new Error("Analysis failed");
       const data = await analysisRes.json();
       
-      // API sometimes returns 200 with an error message and no score
       if (!data.score && data.message) {
         throw new Error(data.message);
       }
@@ -135,14 +153,23 @@ const Analyze = () => {
       }
       navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
     } catch (err: any) {
-      const msg = err?.message || "Something went wrong.";
-      toast({ 
-        title: "Analysis failed", 
-        description: msg.includes("Internal server error") 
-          ? "The server is temporarily overloaded. Please wait a moment and try again." 
-          : `${msg} Please try again.`, 
-        variant: "destructive" 
-      });
+      clearTimeout(timeoutId);
+      if (err?.name === "AbortError") {
+        toast({
+          title: "Timeout",
+          description: "Analysis taking longer than expected. Please try again with a shorter MP3 file (under 5 minutes).",
+          variant: "destructive",
+        });
+      } else {
+        const msg = err?.message || "Something went wrong.";
+        toast({ 
+          title: "Analysis failed", 
+          description: msg.includes("Internal server error") 
+            ? "The server is temporarily overloaded. Please wait a moment and try again." 
+            : `${msg} Please try again.`, 
+          variant: "destructive" 
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -174,7 +201,7 @@ const Analyze = () => {
             >
               {loadingMessages[loadingStep]}
             </motion.p>
-            <p className="mt-2 text-sm text-muted-foreground">This may take up to 60 seconds</p>
+            <p className="mt-2 text-sm text-muted-foreground">Analyzing... ({elapsedSeconds}s)</p>
           </div>
           <div className="flex gap-1.5">
             {loadingMessages.map((_, i) => (
