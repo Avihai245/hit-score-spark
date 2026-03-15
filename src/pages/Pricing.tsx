@@ -89,10 +89,10 @@ const Pricing = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-16">
+    <div className="min-h-screen px-4 pt-24 pb-16 bg-[#0a0a0a]">
       <div className="container max-w-4xl">
         <motion.div {...fade(0)} className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-black">Simple Pricing</h1>
+          <h1 className="text-4xl md:text-5xl font-black font-heading text-white">Simple Pricing</h1>
           <p className="mt-4 text-lg text-muted-foreground">Start free. Upgrade when you're ready to go pro.</p>
         </motion.div>
 
