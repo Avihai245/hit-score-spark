@@ -46,8 +46,15 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Right — CTA (desktop) */}
-        <div className="hidden md:flex items-center justify-end gap-4 flex-1">
+        {/* Right — theme toggle + CTA (desktop) */}
+        <div className="hidden md:flex items-center justify-end gap-3 flex-1">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-200"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <Button
             asChild
             size="sm"
