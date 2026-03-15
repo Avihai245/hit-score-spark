@@ -705,7 +705,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             ))}
             <Button
               variant="outline"
-              className="border-white/20 hover:bg-white/5 gap-2"
+              className="border-border hover:bg-secondary gap-2"
               onClick={() => {
                 const url = tracks[0]?.url;
                 if (url) {
