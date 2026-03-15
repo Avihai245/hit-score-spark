@@ -320,7 +320,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
         <WaveformBg bars={60} />
         <div className="relative p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-bold text-white flex items-center gap-2">
+            <label className="text-sm font-bold text-foreground flex items-center gap-2">
               <Music className="h-4 w-4 text-primary" />
               Song Lyrics
             </label>
