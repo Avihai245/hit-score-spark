@@ -162,7 +162,7 @@ const Analyze = () => {
         setLoadingStep((prev) => Math.min(prev + 1, loadingMessages.length - 1));
 
         try {
-          const res = await fetch("https://hitcheck.vercel.app/api/upload", {
+          const res = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "poll", jobId }),

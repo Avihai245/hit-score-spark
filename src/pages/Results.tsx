@@ -196,10 +196,10 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       // Poll
       const poll = async () => {
         try {
-          const res = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
+          const res = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ taskId }),
+            body: JSON.stringify({ action: "suno-cover", taskId }),
           });
           const data = await res.json();
           if (data.status === "complete") {
