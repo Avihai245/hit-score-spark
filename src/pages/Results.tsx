@@ -383,7 +383,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
       {/* Recommendations as toggles */}
       {recommendations.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-bold text-white flex items-center gap-2">
+          <p className="text-sm font-bold text-foreground flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-accent" />
             AI Recommendations
           </p>
