@@ -113,9 +113,9 @@ const Analyze = () => {
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
-        headers: { "Content-Type": file.type || "audio/mpeg" },
+        headers: { "Content-Type": "audio/mpeg" },
       });
-      if (!uploadRes.ok) throw new Error("File upload failed");
+      if (!uploadRes.ok) { const errText = await uploadRes.text().catch(() => ""); throw new Error("S3 upload failed: " + uploadRes.status + " " + errText.slice(0,100)); }
 
       // Step 3 – Start async analysis (returns immediately with jobId)
       setLoadingStep(2);
