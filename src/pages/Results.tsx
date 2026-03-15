@@ -394,7 +394,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                 rec.applied
                   ? "bg-primary/10 border-primary/30 shadow-lg shadow-primary/5"
-                  : "bg-white/[0.02] border-white/10 hover:border-white/20"
+                  : "bg-card border-border hover:border-foreground/20"
               }`}
               onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}
             >
