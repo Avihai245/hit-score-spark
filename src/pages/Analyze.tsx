@@ -184,9 +184,9 @@ const Analyze = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-black text-center mb-2">Analyze Your Song</h1>
+          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-white">Analyze Your Song</h1>
           <p className="text-center text-muted-foreground mb-10">
-            Upload your track and get your hit score in 30 seconds
+            Upload your track and get your hit score in 60 seconds
           </p>
         </motion.div>
 
