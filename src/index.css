@@ -103,7 +103,7 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-[#0f0f0f]/80 backdrop-blur-xl border border-white/5 rounded-xl;
+    @apply bg-card/80 backdrop-blur-xl border border-border/30 rounded-xl;
   }
 
   .gradient-purple {
