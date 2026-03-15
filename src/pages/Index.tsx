@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { Headphones, BarChart3, Target, Users, FileText, CalendarDays, Flame } from "lucide-react";
+import { Headphones, BarChart3, Target, Users, FileText, CalendarDays } from "lucide-react";
 
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number; to: number; duration?: number; suffix?: string }) => {
   const ref = useRef<HTMLSpanElement>(null);
@@ -31,15 +31,15 @@ const LiveCounter = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+      transition={{ delay: 0.3 }}
+      className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/[0.04] border border-white/10"
     >
       <motion.div
         className="w-2 h-2 rounded-full bg-green-400"
         animate={{ opacity: [1, 0.4, 1] }}
         transition={{ repeat: Infinity, duration: 1.5 }}
       />
-      <span className="text-sm font-semibold text-white tabular-nums">
+      <span className="text-sm font-bold text-white tabular-nums">
         {count.toLocaleString()}
       </span>
       <span className="text-sm text-muted-foreground">songs analyzed</span>
@@ -54,9 +54,9 @@ const statCards = [
 ];
 
 const steps = [
-  { emoji: "🎵", title: "Upload your MP3/WAV", desc: "Any song, any genre. Drag & drop or click to browse." },
-  { emoji: "🧠", title: "AI analyzes everything", desc: "BPM, hook timing, energy, emotion — compared to 500+ viral hits." },
-  { emoji: "🚀", title: "Get your Hit Score + roadmap", desc: "Exact score, playlist targets, and the one change that matters." },
+  { num: "01", title: "Upload your MP3/WAV", desc: "Any song, any genre. Drag & drop or click to browse." },
+  { num: "02", title: "AI analyzes everything", desc: "BPM, hook timing, energy, emotion — compared to 500+ viral hits." },
+  { num: "03", title: "Get your Hit Score + roadmap", desc: "Exact score, playlist targets, and the one change that matters." },
 ];
 
 const viralFeatures = [
@@ -108,21 +108,19 @@ const fade = (delay: number) => ({
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-[#0a0a0a]">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Hero */}
-      <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.12),transparent_60%)]" />
+      <section className="relative flex flex-col items-center justify-center min-h-[100svh] px-4 text-center overflow-hidden pt-24 pb-16">
+        {/* Background effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.08),transparent_60%)]" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
-        {/* Live counter */}
-        <div className="relative mb-6">
-          <LiveCounter />
-        </div>
-
+        {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative mb-8"
+          className="relative mb-6"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
             <span>🎯</span>
@@ -130,36 +128,37 @@ const Index = () => {
           </span>
         </motion.div>
 
+        {/* Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.8 }}
-          className="relative text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold font-heading tracking-tight text-white leading-[1.1]"
+          className="relative text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.05] max-w-4xl"
         >
           Will Your Song
           <br />
-          Go Viral?
+          <span className="gradient-text">Go Viral?</span>
         </motion.h1>
 
-        <motion.h2
+        <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.7 }}
-          className="relative mt-6 text-2xl md:text-3xl font-medium text-muted-foreground"
+          className="relative mt-5 text-xl md:text-2xl font-medium text-muted-foreground max-w-xl"
         >
           Find out before you release it.
-        </motion.h2>
+        </motion.p>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="relative mt-6 max-w-2xl text-lg text-muted-foreground/80 leading-relaxed"
+          className="relative mt-4 max-w-2xl text-base text-muted-foreground/70 leading-relaxed"
         >
           Upload your track. In 60 seconds, get a professional hit score, lyrics analysis, competitor comparison, and your exact roadmap to viral success.
         </motion.p>
 
-        {/* CTA with fire animation */}
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -170,7 +169,7 @@ const Index = () => {
             <Button
               asChild
               size="lg"
-              className="relative gradient-purple text-primary-foreground px-8 py-6 text-base font-bold glow-purple hover:opacity-90 transition-all overflow-hidden"
+              className="relative gradient-purple text-primary-foreground px-10 py-7 text-lg font-bold glow-purple hover:opacity-90 transition-all overflow-hidden"
             >
               <Link to="/analyze" className="flex items-center gap-2">
                 Analyze My Song
@@ -187,29 +186,39 @@ const Index = () => {
             asChild
             size="lg"
             variant="outline"
-            className="px-8 py-6 text-base font-semibold border-white/20 hover:bg-white/5 hover:border-white/30 transition-all"
+            className="px-8 py-7 text-base font-semibold border-white/20 hover:bg-white/5 hover:border-white/30 transition-all"
           >
             <Link to="/results">See Example Report</Link>
           </Button>
+        </motion.div>
+
+        {/* Live counter - clearly separated */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="relative mt-12"
+        >
+          <LiveCounter />
         </motion.div>
 
         {/* Stat cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="relative mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl w-full"
+          transition={{ delay: 0.7, duration: 0.8 }}
+          className="relative mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl w-full"
         >
           {statCards.map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 + i * 0.1 }}
-              className={`rounded-xl bg-gradient-to-b ${stat.color} border p-4 text-center backdrop-blur-sm`}
+              transition={{ delay: 0.8 + i * 0.1 }}
+              className={`rounded-xl bg-gradient-to-b ${stat.color} border p-4 text-center`}
             >
               <span className="text-2xl">{stat.emoji}</span>
-              <p className="text-lg font-black text-white mt-1">{stat.value}</p>
+              <p className="text-lg font-black text-foreground mt-1">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
             </motion.div>
           ))}
@@ -219,8 +228,8 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          transition={{ delay: 1.2, duration: 0.5 }}
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:block"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
@@ -233,20 +242,21 @@ const Index = () => {
       </section>
 
       {/* How It Works */}
-      <section className="border-t border-white/5 py-24 px-4 bg-[#0a0a0a]">
+      <section className="border-t border-white/5 py-24 px-4 bg-background">
         <div className="container max-w-5xl">
-          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-16 text-white">
+          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-16 text-foreground">
             How It Works
           </motion.h2>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3">
             {steps.map((step, i) => (
               <motion.div
                 key={step.title}
                 {...fade(i * 0.1)}
-                className="glass-card p-8 text-center hover:border-primary/20 transition-colors"
+                className="glass-card p-8 text-center hover:border-primary/20 transition-all group relative overflow-hidden"
               >
-                <div className="text-4xl mb-4">{step.emoji}</div>
-                <h3 className="text-lg font-bold font-heading mb-2 text-white">{step.title}</h3>
+                <span className="absolute top-4 right-4 text-5xl font-black text-white/[0.03] font-heading">{step.num}</span>
+                <div className="text-4xl mb-4 font-black brand-gradient-text">{step.num}</div>
+                <h3 className="text-lg font-bold font-heading mb-2 text-foreground">{step.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
               </motion.div>
             ))}
@@ -255,15 +265,15 @@ const Index = () => {
       </section>
 
       {/* Everything You Need */}
-      <section className="py-24 px-4 bg-[#0a0a0a]">
+      <section className="py-24 px-4 bg-background">
         <div className="container max-w-5xl">
-          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-4 text-white">
+          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-4 text-foreground">
             Everything You Need to Go Viral
           </motion.h2>
           <motion.p {...fade(0.05)} className="text-center text-muted-foreground mb-16 max-w-lg mx-auto">
             Six powerful analysis tools working together to maximize your streams.
           </motion.p>
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             {viralFeatures.map((f, i) => (
               <motion.div
                 key={f.title}
@@ -271,7 +281,7 @@ const Index = () => {
                 className="glass-card p-6 hover:border-primary/20 transition-all hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/5 group"
               >
                 <f.icon className={`h-8 w-8 ${f.color} mb-4 transition-transform group-hover:scale-110`} />
-                <h3 className="font-bold font-heading mb-2 text-white text-lg">{f.title}</h3>
+                <h3 className="font-bold font-heading mb-2 text-foreground text-lg">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
             ))}
@@ -280,20 +290,20 @@ const Index = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="border-t border-white/5 py-24 px-4 bg-[#0a0a0a]">
+      <section className="border-t border-white/5 py-24 px-4 bg-background">
         <div className="container max-w-5xl">
-          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-16 text-white">
+          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-16 text-foreground">
             Artists Love HitCheck
           </motion.h2>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t, i) => (
               <motion.div
                 key={t.handle}
                 {...fade(i * 0.1)}
-                className="glass-card p-6"
+                className="glass-card p-6 flex flex-col"
               >
-                <p className="text-sm text-foreground/80 leading-relaxed italic">"{t.quote}"</p>
-                <p className="mt-4 text-sm font-semibold text-primary">{t.handle}</p>
+                <p className="text-sm text-foreground/80 leading-relaxed italic flex-1">"{t.quote}"</p>
+                <p className="mt-4 text-sm font-bold text-primary">{t.handle}</p>
               </motion.div>
             ))}
           </div>
@@ -301,9 +311,9 @@ const Index = () => {
       </section>
 
       {/* Pricing Preview */}
-      <section className="py-24 px-4 bg-[#0a0a0a]">
+      <section className="py-24 px-4 bg-background">
         <div className="container max-w-3xl">
-          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-4 text-white">
+          <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-4 text-foreground">
             Simple Pricing
           </motion.h2>
           <motion.p {...fade(0.05)} className="text-center text-muted-foreground mb-12">
@@ -319,13 +329,13 @@ const Index = () => {
                 }`}
               >
                 {plan.highlighted && (
-                  <span className="mb-3 inline-block self-start rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                  <span className="mb-3 inline-block self-start rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
                     Most Popular
                   </span>
                 )}
-                <h3 className="text-xl font-bold font-heading text-white">{plan.name}</h3>
+                <h3 className="text-xl font-bold font-heading text-foreground">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-white">{plan.price}</span>
+                  <span className="text-4xl font-black text-foreground">{plan.price}</span>
                   {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
                 </div>
                 <ul className="mt-6 flex-1 space-y-2">
@@ -355,19 +365,19 @@ const Index = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="border-t border-white/5 py-24 px-4 text-center bg-[#0a0a0a]">
+      <section className="border-t border-white/5 py-24 px-4 text-center bg-background">
         <motion.div {...fade(0)} className="container max-w-2xl">
-          <h2 className="text-3xl md:text-4xl font-black font-heading mb-4 text-white">
+          <h2 className="text-3xl md:text-4xl font-black font-heading mb-4 text-foreground">
             Ready to know your <span className="gradient-text">hit score</span>?
           </h2>
           <p className="text-muted-foreground mb-8">
-            Upload your song and get your analysis in 30 seconds. No credit card needed.
+            Upload your song and get your analysis in 60 seconds. No credit card needed.
           </p>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
             <Button
               asChild
               size="lg"
-              className="gradient-purple text-primary-foreground px-10 py-6 text-lg font-bold glow-purple hover:opacity-90 transition-opacity"
+              className="gradient-purple text-primary-foreground px-10 py-7 text-lg font-bold glow-purple hover:opacity-90 transition-opacity"
             >
               <Link to="/analyze" className="flex items-center gap-2">
                 Analyze My Song Free

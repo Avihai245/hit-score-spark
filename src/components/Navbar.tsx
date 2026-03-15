@@ -5,18 +5,11 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const WaveformLogo = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="36" height="36" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M4 14C4 14 6 8 8 14C10 20 12 14 12 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M12 14C12 14 14 4 16 14C18 24 20 14 20 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     <path d="M20 14C20 14 22 10 24 14" stroke="hsl(38 92% 50%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
-);
-
-const PulsingDot = () => (
-  <span className="relative flex h-2 w-2">
-    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-  </span>
 );
 
 const Navbar = () => {
@@ -29,27 +22,24 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-[12px]">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5">
-          <WaveformLogo />
-          <span className="text-lg font-bold font-heading brand-gradient-text">HitCheck</span>
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+            <WaveformLogo />
+          </div>
+          <span className="text-xl font-black font-heading brand-gradient-text tracking-tight">HitCheck</span>
         </Link>
 
         {/* Desktop */}
-        <div className="hidden md:flex items-center gap-8">
-          {/* Real AI Analysis badge */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <PulsingDot />
-            <span className="text-xs font-medium text-green-400">Real AI Analysis</span>
-          </div>
-
+        <div className="hidden md:flex items-center gap-6">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
+                "text-sm font-semibold transition-colors hover:text-primary px-1",
                 pathname === l.to ? "text-foreground" : "text-muted-foreground"
               )}
             >
@@ -59,7 +49,7 @@ const Navbar = () => {
           <Button
             asChild
             size="sm"
-            className="bg-accent text-accent-foreground font-semibold hover:bg-accent/90 glow-gold"
+            className="bg-accent text-accent-foreground font-bold hover:bg-accent/90 glow-gold ml-2"
           >
             <Link to="/pricing">Get Pro</Link>
           </Button>
@@ -76,19 +66,14 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[#0a0a0a]/95 backdrop-blur-[12px] px-4 py-4 space-y-3">
-          {/* Mobile AI badge */}
-          <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10 w-fit">
-            <PulsingDot />
-            <span className="text-xs font-medium text-green-400">Real AI Analysis</span>
-          </div>
+        <div className="md:hidden border-t border-white/10 bg-[#0a0a0a]/95 backdrop-blur-xl px-4 py-4 space-y-3">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "block text-sm font-medium py-2 transition-colors",
+                "block text-sm font-semibold py-2.5 transition-colors",
                 pathname === l.to ? "text-foreground" : "text-muted-foreground"
               )}
             >
@@ -98,7 +83,7 @@ const Navbar = () => {
           <Button
             asChild
             size="sm"
-            className="w-full bg-accent text-accent-foreground font-semibold hover:bg-accent/90"
+            className="w-full bg-accent text-accent-foreground font-bold hover:bg-accent/90"
           >
             <Link to="/pricing" onClick={() => setMobileOpen(false)}>Get Pro</Link>
           </Button>
