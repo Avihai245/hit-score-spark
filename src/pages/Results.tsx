@@ -172,7 +172,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
 
     try {
       // Re-upload
-      const urlRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
+      const urlRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
@@ -185,7 +185,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
 
-      const coverRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
+      const coverRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style, analysisData }),
@@ -198,7 +198,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       // Poll
       const poll = async () => {
         try {
-          const res = await fetch(import.meta.env.VITE_LAMBDA_URL, {
+          const res = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: 'suno-cover', taskId }),
