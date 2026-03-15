@@ -60,7 +60,7 @@ const steps = [
 ];
 
 const viralFeatures = [
-  { icon: Headphones, color: "text-primary", title: "Real Audio Listening", desc: "GPT-4o actually listens to your song and hears BPM, hook timing, and emotional energy." },
+  { icon: Headphones, color: "text-primary", title: "Real Audio Listening", desc: "Our AI actually listens to your song and detects BPM, hook timing, and emotional energy." },
   { icon: BarChart3, color: "text-accent", title: "Spotify Algorithm Score", desc: "We predict your save rate, skip risk, valence and danceability against Spotify's exact signals." },
   { icon: Target, color: "text-primary", title: "Competitor DNA Match", desc: "See which viral hits your song sounds like and exactly what they have that you're missing." },
   { icon: Users, color: "text-accent", title: "Target Audience Profile", desc: "Know who will listen, when, and what TikTok content matches your sound." },
@@ -74,7 +74,7 @@ const testimonials = [
     handle: "@axelbeats",
   },
   {
-    quote: "The competitor match blew my mind. I never knew my song was that close to a Dennis Lloyd vibe.",
+    quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.",
     handle: "@lunawave",
   },
   {
@@ -126,7 +126,7 @@ const Index = () => {
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary">
             <span>🎯</span>
-            <span>Powered by GPT-4o Audio — Real Song Analysis</span>
+            <span>Powered by Real Hit Data — AI Song Analysis</span>
           </span>
         </motion.div>
 

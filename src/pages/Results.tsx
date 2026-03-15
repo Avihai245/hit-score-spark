@@ -276,7 +276,7 @@ const ProcessingWaveform = () => (
 
 const remixMessages = (elapsed: number) => {
   if (elapsed < 10) return "Uploading your song...";
-  if (elapsed < 30) return "Suno AI is reading your melody...";
+  if (elapsed < 30) return "Our AI is analyzing your melody...";
   if (elapsed < 90) return "Generating your enhanced version...";
   return "Finalizing the mix...";
 };
@@ -526,7 +526,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       <WaveformBg bars={80} className="opacity-[0.04]" />
       <div className="relative text-center space-y-2">
         <h2 className="text-2xl md:text-3xl font-black font-heading text-white">🎧 AI Remix — Make It Go Viral</h2>
-        <p className="text-sm text-muted-foreground">AI covers your song with the same vibe but stronger hook and viral energy</p>
+        <p className="text-sm text-muted-foreground">Our system enhances your song with stronger hook and viral energy based on data from hundreds of hits</p>
       </div>
 
       {status === "idle" && (
@@ -799,7 +799,7 @@ const Results = () => {
                 transition={{ delay: 2 }}
                 className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold border border-green-500/20 bg-green-500/10 text-green-400"
               >
-                <Headphones className="h-3.5 w-3.5" /> Analyzed with Real Audio AI
+                <Headphones className="h-3.5 w-3.5" /> Analyzed with HitCheck AI Engine
               </motion.div>
             )}
           </div>
@@ -845,7 +845,7 @@ const Results = () => {
           <Section delay={0.2}>
             <SectionTitle emoji="🔮" title="THE HONEST TRUTH" />
             <div className="border-l-4 border-primary bg-primary/5 rounded-r-xl p-6">
-              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-3">What Our AI Heard About This Song:</p>
+              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-3">Based on data from 500+ viral hits:</p>
               <p className="text-base text-foreground/90 leading-relaxed">{viralPotential}</p>
             </div>
           </Section>

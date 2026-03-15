@@ -41,7 +41,7 @@ const plans = [
 const faqs = [
   {
     q: "How accurate is the score?",
-    a: "Based on 500+ viral hits analysis using GPT-4o Audio. Our scoring model is continuously improved with real-world streaming data.",
+    a: "Our scoring model is built on real data from 500+ viral hits from the past year. It's continuously improved with real-world streaming data and pattern analysis.",
   },
   {
     q: "What file formats are supported?",
