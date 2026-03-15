@@ -73,8 +73,13 @@ const Analyze = () => {
       toast({ title: "Invalid file", description: "Please upload an MP3 or WAV file.", variant: "destructive" });
       return;
     }
-    if (f.size > 50 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max 50 MB.", variant: "destructive" });
+    const isWav = f.type === "audio/wav" || f.type === "audio/x-wav" || f.name.toLowerCase().endsWith(".wav");
+    const maxSize = isWav ? 10 * 1024 * 1024 : 30 * 1024 * 1024;
+    if (f.size > maxSize) {
+      const msg = isWav 
+        ? "WAV too large (max 10MB). Please convert to MP3 — analysis will be faster and better."
+        : "MP3 must be under 30MB.";
+      toast({ title: "File too large", description: msg, variant: "destructive" });
       return;
     }
     setFile(f);
