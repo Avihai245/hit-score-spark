@@ -3,14 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-
-const WaveformLogo = () => (
-  <svg width="36" height="36" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4 14C4 14 6 8 8 14C10 20 12 14 12 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 14C12 14 14 4 16 14C18 24 20 14 20 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M20 14C20 14 22 10 24 14" stroke="hsl(38 92% 50%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+import { ViralizeLogo } from "@/components/ViralizeLogo";
 
 const Navbar = () => {
   const { pathname } = useLocation();
@@ -24,12 +17,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-            <WaveformLogo />
-          </div>
-          <span className="text-xl font-black font-heading brand-gradient-text tracking-tight">Viralize</span>
+        <Link to="/" className="flex items-center group">
+          <ViralizeLogo variant="navbar" showTagline={false} />
         </Link>
 
         {/* Desktop */}
