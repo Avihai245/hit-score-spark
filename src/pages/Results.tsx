@@ -722,7 +722,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             MP3 file • Ready to upload to Spotify, Apple Music, SoundCloud
           </p>
           <div className="flex justify-center pt-2">
-            <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-white/20 hover:bg-white/5">
+            <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-border hover:bg-secondary">
               Remix Again
             </Button>
           </div>
