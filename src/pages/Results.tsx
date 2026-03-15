@@ -143,6 +143,25 @@ const remixStyles = [
 ];
 
 /* ─── AI Remix Section ─── */
+// Download audio via fetch → blob (works cross-origin)
+const downloadTrack = async (url: string, filename: string) => {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+  }
+};
+
 const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any }) => {
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
@@ -338,13 +357,13 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
                 </p>
                 {track.title && <p className="text-xs text-muted-foreground truncate">{track.title}</p>}
               </div>
-              <a
-                href={track.url}
-                download
+              <button
+                onClick={() => downloadTrack(track.url, `${songTitle || 'AI-Remix'}-v${idx + 1}.mp3`)}
                 className="flex-shrink-0 h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors"
+                title="Download MP3"
               >
                 <Download className="h-4 w-4 text-accent" />
-              </a>
+              </button>
               <audio
                 ref={(el) => { audioRefs.current[idx] = el; }}
                 src={track.url}
@@ -352,6 +371,9 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
               />
             </div>
           ))}
+          <p className="text-xs text-center text-muted-foreground/60 mt-1">
+            MP3 file • Ready to upload to Spotify, Apple Music, SoundCloud
+          </p>
           <div className="flex justify-center gap-3 pt-2">
             <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-white/20 hover:bg-white/5">
               Remix Again
