@@ -828,7 +828,7 @@ const Results = () => {
               {profileStats.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   {profileStats.map((stat) => (
-                    <div key={stat.label} className="rounded-lg bg-white/5 border border-white/5 p-4 text-center">
+                    <div key={stat.label} className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
                       <stat.icon className="h-4 w-4 mx-auto text-primary mb-2" />
                       <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
                       <div className="text-base font-bold text-white mt-1">{stat.value}</div>
