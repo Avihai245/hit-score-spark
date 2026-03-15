@@ -228,7 +228,7 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 bg-[#0a0a0a]">
+      <div className="flex min-h-screen items-center justify-center px-4 bg-background">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
