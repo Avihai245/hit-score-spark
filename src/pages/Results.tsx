@@ -364,7 +364,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               </div>
               <div className="space-y-2">
                 <span className="text-xs text-green-400 font-bold uppercase tracking-wider">AI Improved</span>
-                <div className="h-48 overflow-auto rounded-xl bg-green-500/5 border border-green-500/10 p-3 text-sm text-green-300/80 whitespace-pre-wrap font-mono">
+                <div className="h-48 overflow-auto rounded-xl bg-green-500/5 border border-green-500/10 p-3 text-sm text-green-700 dark:text-green-300/80 whitespace-pre-wrap font-mono">
                   {improved}
                 </div>
               </div>
