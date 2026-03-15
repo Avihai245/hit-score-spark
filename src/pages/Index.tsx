@@ -60,7 +60,7 @@ const steps = [
 ];
 
 const viralFeatures = [
-  { icon: Headphones, color: "text-primary", title: "Real Audio Listening", desc: "GPT-4o actually listens to your song and hears BPM, hook timing, and emotional energy." },
+  { icon: Headphones, color: "text-primary", title: "Real Audio Listening", desc: "Our AI actually listens to your song and detects BPM, hook timing, and emotional energy." },
   { icon: BarChart3, color: "text-accent", title: "Spotify Algorithm Score", desc: "We predict your save rate, skip risk, valence and danceability against Spotify's exact signals." },
   { icon: Target, color: "text-primary", title: "Competitor DNA Match", desc: "See which viral hits your song sounds like and exactly what they have that you're missing." },
   { icon: Users, color: "text-accent", title: "Target Audience Profile", desc: "Know who will listen, when, and what TikTok content matches your sound." },

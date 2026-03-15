@@ -845,7 +845,7 @@ const Results = () => {
           <Section delay={0.2}>
             <SectionTitle emoji="🔮" title="THE HONEST TRUTH" />
             <div className="border-l-4 border-primary bg-primary/5 rounded-r-xl p-6">
-              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-3">What Our AI Heard About This Song:</p>
+              <p className="text-xs text-primary font-bold uppercase tracking-wider mb-3">Based on data from 500+ viral hits:</p>
               <p className="text-base text-foreground/90 leading-relaxed">{viralPotential}</p>
             </div>
           </Section>
