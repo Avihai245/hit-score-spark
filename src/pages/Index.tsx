@@ -74,7 +74,7 @@ const testimonials = [
     handle: "@axelbeats",
   },
   {
-    quote: "The competitor match blew my mind. I never knew my song was that close to a Dennis Lloyd vibe.",
+    quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.",
     handle: "@lunawave",
   },
   {
