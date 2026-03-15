@@ -200,7 +200,7 @@ const generateRoadmap = (score: number) => {
   if (score >= 60) {
     return [
       { week: "Week 1", action: "Apply the ONE CHANGE suggested above. Re-record or remix the flagged sections.", status: "🟡" },
-      { week: "Week 2", action: "Re-analyze on HitCheck. Target 80+ before release. Fine-tune the hook.", status: "🟡" },
+      { week: "Week 2", action: "Re-analyze on Viralize. Target 80+ before release. Fine-tune the hook.", status: "🟡" },
       { week: "Week 3", action: "Once score hits 80+, set up pre-save and begin curator outreach.", status: "🟢" },
       { week: "Week 4", action: "Release and promote. Track data daily. Submit to playlists listed below.", status: "🟢" },
     ];
@@ -208,7 +208,7 @@ const generateRoadmap = (score: number) => {
   return [
     { week: "Week 1", action: "Focus on the improvements listed above. Consider re-writing the weakest sections.", status: "🔴" },
     { week: "Week 2", action: "Re-record with improvements. Pay attention to hook timing and energy levels.", status: "🔴" },
-    { week: "Week 3", action: "Re-analyze on HitCheck. Iterate until you hit 65+. Don't release below that.", status: "🟡" },
+    { week: "Week 3", action: "Re-analyze on Viralize. Iterate until you hit 65+. Don't release below that.", status: "🟡" },
     { week: "Week 4", action: "Once ready, set up distribution and begin your release campaign.", status: "🟢" },
   ];
 };
@@ -758,7 +758,7 @@ const Results = () => {
   const roadmap = generateRoadmap(score);
 
   const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    `My song "${title}" scored ${score}/100 on HitCheck! 🎵🔥\n\nCheck yours → hitcheck.app`
+    `My song "${title}" scored ${score}/100 on Viralize! 🎵🔥\n\nCheck yours → viralize.app`
   )}`;
 
   const profileStats = [
