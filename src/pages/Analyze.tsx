@@ -305,7 +305,7 @@ const Analyze = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-12 bg-[#0a0a0a]">
+    <div className="min-h-screen px-4 pt-24 pb-12 bg-background">
       <div className="container max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

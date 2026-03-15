@@ -775,7 +775,7 @@ const Results = () => {
   ].filter((f) => f.value);
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-20 bg-[#0a0a0a]">
+    <div className="min-h-screen px-4 pt-24 pb-20 bg-background">
       <div className="container max-w-4xl space-y-16">
 
         {/* ═══ 1. SCORE + VERDICT ═══ */}
