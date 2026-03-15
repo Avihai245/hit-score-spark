@@ -898,7 +898,7 @@ const Results = () => {
                   {saveRatePrediction && (
                     <div className="rounded-lg bg-primary/10 border border-primary/20 p-4">
                       <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Save Rate Prediction</p>
-                      <p className="text-lg font-bold text-white">{saveRatePrediction}</p>
+                      <p className="text-lg font-bold text-foreground">{saveRatePrediction}</p>
                     </div>
                   )}
                   {skipRiskMoment && (
