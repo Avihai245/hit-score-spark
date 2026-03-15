@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Upload, Music, X } from "lucide-react";
+import { Lock, Upload, Music, X, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +16,38 @@ const goals = [
   { value: "streams", label: "Maximize streams" },
 ];
 
-const LoadingBars = () => (
-  <div className="flex items-end justify-center gap-2 h-20">
+const analysisSteps = [
+  { label: "Uploading your song", key: "upload" },
+  { label: "AI Listening to your track", key: "listen" },
+  { label: "Comparing to 500+ hits", key: "compare" },
+  { label: "Generating your report", key: "report" },
+];
+
+/* ─── Fake Waveform Preview ─── */
+const WaveformPreview = () => {
+  const bars = useRef(Array.from({ length: 40 }, () => 15 + Math.random() * 75));
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex items-end justify-center gap-[2px] h-16 mt-4"
+    >
+      {bars.current.map((h, i) => (
+        <motion.div
+          key={i}
+          className="w-[4px] rounded-full bg-gradient-to-t from-primary/60 to-primary"
+          initial={{ height: 0 }}
+          animate={{ height: `${h}%` }}
+          transition={{ delay: i * 0.02, duration: 0.4, ease: "easeOut" }}
+        />
+      ))}
+    </motion.div>
+  );
+};
+
+/* ─── Bouncing Waveform for Loading ─── */
+const LoadingWaveform = () => (
+  <div className="flex items-end justify-center gap-2 h-24">
     {[0, 1, 2, 3, 4, 5, 6].map((i) => (
       <motion.div
         key={i}
@@ -35,20 +65,12 @@ const LoadingBars = () => (
   </div>
 );
 
-const loadingMessages = [
-  "Getting upload URL...",
-  "Uploading your song...",
-  "Analyzing BPM & energy...",
-  "Checking hook timing...",
-  "Comparing to viral hits...",
-  "Generating your roadmap...",
-];
-
 const Analyze = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
@@ -66,6 +88,11 @@ const Analyze = () => {
     }
     return () => { if (elapsedRef.current) clearInterval(elapsedRef.current); };
   }, [loading]);
+
+  const markStep = (step: number) => {
+    setCompletedSteps(prev => [...prev, step]);
+    if (step < analysisSteps.length - 1) setCurrentStep(step + 1);
+  };
 
   const acceptFile = useCallback((f: File) => {
     const valid = ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/wave"];
@@ -95,11 +122,11 @@ const Analyze = () => {
     }
 
     setLoading(true);
-    setLoadingStep(0);
+    setCurrentStep(0);
+    setCompletedSteps([]);
 
     try {
       // Step 1 – Get presigned upload URL
-      setLoadingStep(0);
       const urlRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -109,16 +136,12 @@ const Analyze = () => {
       const { uploadUrl, s3Key } = await urlRes.json();
 
       // Step 2 – Upload file directly to S3
-      setLoadingStep(1);
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
+      const uploadRes = await fetch(uploadUrl, { method: "PUT", body: file });
+      if (!uploadRes.ok) throw new Error("S3 upload failed");
+      markStep(0); // Upload done
 
-      });
-      if (!uploadRes.ok) { const errText = await uploadRes.text().catch(() => ""); throw new Error("S3 upload failed: " + uploadRes.status + " " + errText.slice(0,100)); }
-
-      // Step 3 – Start async analysis (returns immediately with jobId)
-      setLoadingStep(2);
+      // Step 3 – Start async analysis
+      setCurrentStep(1);
       const analysisRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,7 +158,6 @@ const Analyze = () => {
       const { jobId } = analysisData;
 
       if (!jobId) {
-        // Fallback: if API returned results directly (no jobId)
         if (analysisData.score != null) {
           navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
           return;
@@ -143,9 +165,12 @@ const Analyze = () => {
         throw new Error("No jobId received from server");
       }
 
-      // Step 4 – Poll every 3 seconds until done (max 2 minutes)
+      markStep(1); // AI Listening done
+
+      // Step 4 – Poll every 3 seconds
       const maxPollTime = 120000;
       const pollStart = Date.now();
+      let pollCount = 0;
 
       const pollResult = async () => {
         if (Date.now() - pollStart > maxPollTime) {
@@ -158,8 +183,9 @@ const Analyze = () => {
           return;
         }
 
-        // Cycle through loading messages
-        setLoadingStep((prev) => Math.min(prev + 1, loadingMessages.length - 1));
+        pollCount++;
+        // Progress step markers based on poll count
+        if (pollCount >= 2 && !completedSteps.includes(2)) markStep(2);
 
         try {
           const res = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
@@ -170,13 +196,15 @@ const Analyze = () => {
           const data = await res.json();
 
           if (data.status === "complete") {
-            setLoading(false);
-            navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+            markStep(3);
+            setTimeout(() => {
+              setLoading(false);
+              navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+            }, 600);
           } else if (data.status === "error") {
             setLoading(false);
             toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
           } else {
-            // Still processing, poll again in 3s
             setTimeout(pollResult, 3000);
           }
         } catch {
@@ -204,33 +232,72 @@ const Analyze = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-8"
+          className="flex flex-col items-center gap-8 max-w-md w-full"
         >
           <div className="relative">
             <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
-            <LoadingBars />
+            <LoadingWaveform />
           </div>
           <div className="text-center">
-            <motion.p
-              key={loadingStep}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-lg font-semibold font-heading text-white"
-            >
-              {loadingMessages[loadingStep]}
-            </motion.p>
-            <p className="mt-2 text-sm text-muted-foreground">Analyzing... ({elapsedSeconds}s)</p>
+            <p className="text-lg font-bold font-heading text-white">
+              Analyzing your song...
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
           </div>
-          <div className="flex gap-1.5">
-            {loadingMessages.map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "h-1.5 w-8 rounded-full transition-all duration-500",
-                  i <= loadingStep ? "gradient-purple glow-purple" : "bg-white/10"
-                )}
-              />
-            ))}
+
+          {/* Step progress */}
+          <div className="w-full space-y-3">
+            {analysisSteps.map((step, i) => {
+              const isCompleted = completedSteps.includes(i);
+              const isCurrent = currentStep === i && !isCompleted;
+              return (
+                <motion.div
+                  key={step.key}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl border transition-all",
+                    isCompleted
+                      ? "border-green-500/30 bg-green-500/10"
+                      : isCurrent
+                        ? "border-primary/30 bg-primary/10"
+                        : "border-white/5 bg-white/[0.02] opacity-50"
+                  )}
+                >
+                  <div className={cn(
+                    "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
+                    isCompleted
+                      ? "bg-green-500"
+                      : isCurrent
+                        ? "bg-primary/30 border-2 border-primary"
+                        : "bg-white/10"
+                  )}>
+                    {isCompleted ? (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
+                        <Check className="h-4 w-4 text-white" />
+                      </motion.div>
+                    ) : isCurrent ? (
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-primary"
+                        animate={{ scale: [1, 1.5, 1] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                      />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">{i + 1}</span>
+                    )}
+                  </div>
+                  <span className={cn(
+                    "text-sm font-medium",
+                    isCompleted ? "text-green-400" : isCurrent ? "text-white" : "text-muted-foreground"
+                  )}>
+                    {step.label}
+                    {isCompleted && " ✓"}
+                    {isCurrent && "..."}
+                  </span>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
@@ -270,7 +337,7 @@ const Analyze = () => {
                 inp.click();
               }}
               className={cn(
-                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed min-h-[320px] transition-all",
+                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed min-h-[380px] transition-all relative overflow-hidden",
                 dragOver
                   ? "border-primary bg-primary/10 scale-[1.02]"
                   : file
@@ -279,32 +346,50 @@ const Analyze = () => {
               )}
             >
               {file ? (
-                <div className="flex flex-col items-center gap-3 p-6">
-                  <div className="h-16 w-16 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Music className="h-8 w-8 text-accent" />
-                  </div>
+                <div className="flex flex-col items-center gap-3 p-6 w-full">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center"
+                  >
+                    <Music className="h-10 w-10 text-accent" />
+                  </motion.div>
                   <div className="text-center">
-                    <p className="font-semibold">{file.name}</p>
+                    <p className="font-bold text-lg text-white">{file.name}</p>
                     <p className="text-sm text-muted-foreground mt-1">{formatSize(file.size)}</p>
                   </div>
+                  {/* Waveform preview */}
+                  <WaveformPreview />
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 rounded-full border border-border px-3 py-1.5 transition-colors"
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-3 rounded-full border border-border px-3 py-1.5 transition-colors"
                   >
                     <X className="h-3 w-3" /> Remove
                   </button>
                 </div>
               ) : (
                 <>
-                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Upload className="h-10 w-10 text-primary" />
-                  </div>
+                  <motion.div
+                    animate={dragOver ? { scale: 1.1, y: -5 } : { scale: 1, y: 0 }}
+                    className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center"
+                  >
+                    <Upload className="h-12 w-12 text-primary" />
+                  </motion.div>
                   <div className="text-center">
-                    <p className="font-semibold text-lg">Drop your song here</p>
-                    <p className="text-sm text-muted-foreground mt-1">MP3 or WAV · max 50 MB</p>
+                    <p className="font-bold text-xl text-white">Drop your song here</p>
+                    <p className="text-sm text-muted-foreground mt-2">MP3 or WAV · max 100 MB</p>
                     <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
                   </div>
+                  {dragOver && (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-primary font-bold text-lg"
+                    >
+                      Drop it! 🎵
+                    </motion.p>
+                  )}
                 </>
               )}
             </div>

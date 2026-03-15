@@ -5,23 +5,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Check, X, Target, ListMusic, Lightbulb, Clock, Activity, Zap,
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin, Smartphone,
-  ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2
+  ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles
 } from "lucide-react";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
+import { toast } from "sonner";
 
 /* ─── Score color helper ─── */
 const scoreColor = (s: number) => {
   if (s < 40) return "hsl(0 84% 60%)";
   if (s < 65) return "hsl(25 95% 53%)";
-  if (s < 80) return "hsl(48 96% 53%)";
-  return "hsl(142 71% 45%)";
+  if (s < 80) return "hsl(142 71% 45%)";
+  return "hsl(270 91% 65%)";
+};
+
+const scoreGradient = (s: number) => {
+  if (s < 40) return "from-red-500 to-red-600";
+  if (s < 65) return "from-orange-400 to-orange-600";
+  if (s < 80) return "from-green-400 to-green-600";
+  return "from-purple-400 via-primary to-fuchsia-500";
 };
 
 const scoreBadge = (s: number) => {
   if (s < 40) return { label: "NEEDS WORK", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
   if (s < 65) return { label: "PROMISING", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
   if (s < 80) return { label: "STRONG", cls: "bg-green-500/15 text-green-400 border-green-500/30" };
-  return { label: "HIT POTENTIAL", cls: "gradient-purple text-white border-primary/40" };
+  return { label: "HIT POTENTIAL 🔥", cls: "bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 text-purple-300 border-purple-500/40" };
 };
 
 /* ─── Animated Score Gauge ─── */
@@ -34,31 +42,104 @@ const ScoreGauge = ({ score }: { score: number }) => {
   const rounded = useTransform(count, (v) => Math.round(v));
 
   useEffect(() => {
-    const ctrl = animate(count, score, { duration: 1.6, ease: "easeOut" });
+    const ctrl = animate(count, score, { duration: 2, ease: "easeOut" });
     return ctrl.stop;
   }, [count, score]);
 
   return (
     <div className="relative flex items-center justify-center">
-      <div className="absolute w-64 h-64 rounded-full blur-3xl opacity-30" style={{ backgroundColor: color }} />
+      {/* Outer glow */}
+      <motion.div
+        className="absolute w-72 h-72 rounded-full blur-[80px] opacity-40"
+        style={{ backgroundColor: color }}
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 0.4 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+      />
+      {/* Particle ring */}
+      {score >= 80 && (
+        <motion.div
+          className="absolute w-[300px] h-[300px] rounded-full border border-purple-500/20"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+        >
+          {[0, 60, 120, 180, 240, 300].map((deg) => (
+            <motion.div
+              key={deg}
+              className="absolute w-2 h-2 rounded-full bg-purple-400"
+              style={{
+                top: '50%', left: '50%',
+                transform: `rotate(${deg}deg) translateX(150px) translateY(-50%)`,
+              }}
+              animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
+              transition={{ repeat: Infinity, duration: 2, delay: deg / 360 }}
+            />
+          ))}
+        </motion.div>
+      )}
       <svg width="280" height="280" className="-rotate-90">
-        <circle cx="140" cy="140" r={r} fill="none" stroke="hsl(0 0% 10%)" strokeWidth="14" />
+        <circle cx="140" cy="140" r={r} fill="none" stroke="hsl(0 0% 8%)" strokeWidth="16" />
         <motion.circle
           cx="140" cy="140" r={r} fill="none"
-          stroke={color}
-          strokeWidth="14"
+          stroke="url(#scoreGrad)"
+          strokeWidth="16"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.6, ease: "easeOut" }}
+          transition={{ duration: 2, ease: "easeOut" }}
         />
+        <defs>
+          <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={color} />
+            <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
+          </linearGradient>
+        </defs>
       </svg>
       <div className="absolute text-center">
         <motion.div className="text-7xl font-black tracking-tight tabular-nums" style={{ color }}>
           {rounded}
         </motion.div>
         <div className="text-sm text-muted-foreground font-medium mt-1">/ 100</div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Viral Potential Meter ─── */
+const ViralMeter = ({ score, danceability, valence }: { score: number; danceability?: number; valence?: number }) => {
+  const viral = Math.min(100, Math.round(
+    (score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)
+  ));
+
+  return (
+    <div className="glass-card p-6">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-accent" />
+          <span className="text-sm font-bold text-white uppercase tracking-wider">Viral Potential</span>
+        </div>
+        <span className="text-2xl font-black text-accent">{viral}%</span>
+      </div>
+      <div className="relative h-4 rounded-full bg-white/5 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300"
+          initial={{ width: 0 }}
+          animate={{ width: `${viral}%` }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+        />
+        {/* Spark particles */}
+        <motion.div
+          className="absolute top-0 h-full w-1 bg-white/80 blur-[2px]"
+          initial={{ left: 0 }}
+          animate={{ left: `${viral}%` }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+        />
+      </div>
+      <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+        <span>Low</span>
+        <span>Moderate</span>
+        <span>🔥 Viral</span>
       </div>
     </div>
   );
@@ -88,7 +169,7 @@ const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; va
 };
 
 /* ─── Section ─── */
-const Section = ({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) => (
+const Section = ({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) => (
   <motion.section
     initial={{ opacity: 0, y: 30 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -142,8 +223,7 @@ const remixStyles = [
   { value: "radio", label: "Radio pop crossover" },
 ];
 
-/* ─── AI Remix Section ─── */
-// Download audio via fetch → blob (works cross-origin)
+/* ─── Download helper ─── */
 const downloadTrack = async (url: string, filename: string) => {
   try {
     const res = await fetch(url);
@@ -157,9 +237,48 @@ const downloadTrack = async (url: string, filename: string) => {
     document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
   } catch {
-    // Fallback: open in new tab
     window.open(url, '_blank');
   }
+};
+
+/* ─── Waveform Background ─── */
+const WaveformBg = ({ bars = 50, className = "" }: { bars?: number; className?: string }) => (
+  <div className={`absolute inset-0 flex items-end justify-center gap-[2px] opacity-[0.06] pointer-events-none overflow-hidden ${className}`}>
+    {Array.from({ length: bars }).map((_, i) => (
+      <div
+        key={i}
+        className="w-[3px] rounded-full bg-primary"
+        style={{ height: `${15 + Math.random() * 70}%` }}
+      />
+    ))}
+  </div>
+);
+
+/* ─── Remix Processing Waveform ─── */
+const ProcessingWaveform = () => (
+  <div className="flex items-end justify-center gap-1.5 h-16">
+    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+      <motion.div
+        key={i}
+        className="w-2 rounded-full bg-gradient-to-t from-accent to-yellow-300"
+        animate={{ scaleY: [0.2, 1, 0.2] }}
+        transition={{
+          repeat: Infinity,
+          duration: 0.8,
+          delay: i * 0.12,
+          ease: "easeInOut",
+        }}
+        style={{ height: "100%", transformOrigin: "bottom" }}
+      />
+    ))}
+  </div>
+);
+
+const remixMessages = (elapsed: number) => {
+  if (elapsed < 10) return "Uploading your song...";
+  if (elapsed < 30) return "Suno AI is reading your melody...";
+  if (elapsed < 90) return "Generating your enhanced version...";
+  return "Finalizing the mix...";
 };
 
 /* ─── Lyrics Editor with Recommendations ─── */
@@ -170,11 +289,12 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   const viralLine = analysisData?.viralLine || "";
   const oneChange = analysisData?.oneChange || "";
 
-  const [lyrics, setLyrics] = React.useState(original);
-  const [applyImproved, setApplyImproved] = React.useState(false);
-  const [recommendations, setRecommendations] = React.useState<{id: string, text: string, applied: boolean}[]>([]);
+  const [lyrics, setLyrics] = useState(original);
+  const [applyImproved, setApplyImproved] = useState(false);
+  const [showDiff, setShowDiff] = useState(false);
+  const [recommendations, setRecommendations] = useState<{id: string, text: string, applied: boolean}[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const recs: {id: string, text: string, applied: boolean}[] = [];
     if (lyricFix) recs.push({ id: "lyricfix", text: lyricFix, applied: false });
     if (oneChange) recs.push({ id: "onechange", text: oneChange, applied: false });
@@ -182,7 +302,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
     setRecommendations(recs);
   }, [lyricFix, oneChange, viralLine]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (applyImproved && improved) setLyrics(improved);
     else if (!applyImproved && original) setLyrics(original);
   }, [applyImproved]);
@@ -194,49 +314,121 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-semibold text-white">Song Lyrics</label>
-          {improved && (
-            <button
-              onClick={() => setApplyImproved(!applyImproved)}
-              className={`text-xs px-3 py-1 rounded-full border transition-colors ${applyImproved ? "bg-primary/20 border-primary text-primary" : "border-white/20 text-muted-foreground hover:border-white/40"}`}
-            >
-              {applyImproved ? "✓ Using improved lyrics" : "Use AI-improved lyrics"}
-            </button>
+    <div className="space-y-6">
+      {/* Lyrics card with waveform bg */}
+      <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+        <WaveformBg bars={60} />
+        <div className="relative p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-white flex items-center gap-2">
+              <Music className="h-4 w-4 text-primary" />
+              Song Lyrics
+            </label>
+            {improved && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setShowDiff(!showDiff); if (!showDiff) setApplyImproved(false); }}
+                  className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-muted-foreground hover:border-primary/40 hover:text-primary transition-all"
+                >
+                  {showDiff ? "Hide comparison" : "Compare versions"}
+                </button>
+                <button
+                  onClick={() => { setApplyImproved(!applyImproved); setShowDiff(false); }}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                    applyImproved
+                      ? "bg-primary/20 border-primary/40 text-primary"
+                      : "border-white/20 text-muted-foreground hover:border-primary/30"
+                  }`}
+                >
+                  <div className={`w-8 h-4 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-white/20"}`}>
+                    <motion.div
+                      className="absolute top-0.5 w-3 h-3 rounded-full bg-white"
+                      animate={{ left: applyImproved ? 16 : 2 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  </div>
+                  AI-improved
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Side by side diff */}
+          {showDiff && improved ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <span className="text-xs text-red-400 font-bold uppercase tracking-wider">Original</span>
+                <div className="h-48 overflow-auto rounded-xl bg-red-500/5 border border-red-500/10 p-3 text-sm text-white/70 whitespace-pre-wrap font-mono">
+                  {original}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <span className="text-xs text-green-400 font-bold uppercase tracking-wider">AI Improved</span>
+                <div className="h-48 overflow-auto rounded-xl bg-green-500/5 border border-green-500/10 p-3 text-sm text-green-300/80 whitespace-pre-wrap font-mono">
+                  {improved}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <textarea
+              value={lyrics}
+              onChange={(e) => setLyrics(e.target.value)}
+              placeholder={original ? "Your song lyrics..." : "Paste your song lyrics here for best results..."}
+              className="w-full h-48 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
+            />
           )}
         </div>
-        <textarea
-          value={lyrics}
-          onChange={(e) => setLyrics(e.target.value)}
-          placeholder={original ? "Your song lyrics..." : "Paste your song lyrics here for best results..."}
-          className="w-full h-40 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50"
-        />
-        <p className="text-xs text-muted-foreground">Edit your lyrics directly, or use the AI-improved version above.</p>
       </div>
 
+      {/* Recommendations as toggles */}
       {recommendations.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-white">Our Recommendations</p>
+        <div className="space-y-3">
+          <p className="text-sm font-bold text-white flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-accent" />
+            AI Recommendations
+          </p>
           {recommendations.map(rec => (
-            <div key={rec.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${rec.applied ? "bg-primary/10 border-primary/40" : "bg-white/5 border-white/10 hover:border-white/20"}`}
-              onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}>
-              <div className={`mt-0.5 h-4 w-4 rounded border flex-shrink-0 flex items-center justify-center ${rec.applied ? "bg-primary border-primary" : "border-white/30"}`}>
-                {rec.applied && <span className="text-white text-xs">✓</span>}
+            <motion.div
+              key={rec.id}
+              layout
+              className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                rec.applied
+                  ? "bg-primary/10 border-primary/30 shadow-lg shadow-primary/5"
+                  : "bg-white/[0.02] border-white/10 hover:border-white/20"
+              }`}
+              onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}
+            >
+              <div className={`mt-0.5 flex-shrink-0 w-10 h-5 rounded-full relative transition-colors ${rec.applied ? "bg-primary" : "bg-white/15"}`}>
+                <motion.div
+                  className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md"
+                  animate={{ left: rec.applied ? 20 : 2 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
               </div>
-              <p className="text-sm text-white/80">{rec.text}</p>
-            </div>
+              <p className="text-sm text-white/80 flex-1">{rec.text}</p>
+            </motion.div>
           ))}
         </div>
       )}
 
-      <button
+      {/* Big gold CTA */}
+      <motion.button
         onClick={() => onLyricsReady(buildFinalLyrics())}
-        className="w-full py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-semibold hover:bg-primary/30 transition-colors text-sm"
+        className="relative w-full py-5 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black text-lg overflow-hidden group"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
-        Create AI Remix with These Lyrics →
-      </button>
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          animate={{ x: ["-100%", "200%"] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+        />
+        <span className="relative flex items-center justify-center gap-3">
+          <Sparkles className="h-6 w-6" />
+          Create AI Remix with These Lyrics
+          <ArrowRight className="h-5 w-5" />
+        </span>
+      </motion.button>
     </div>
   );
 };
@@ -270,7 +462,6 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
     setElapsed(0);
 
     try {
-      // Re-upload
       const urlRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -280,7 +471,6 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       const { uploadUrl, s3Key } = await urlRes.json();
       await fetch(uploadUrl, { method: "PUT", body: file });
 
-      // Start cover
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
 
@@ -294,7 +484,6 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       if (!coverData.taskId) throw new Error(coverData.error || "Failed to start remix");
       const { taskId } = coverData;
 
-      // Poll
       const poll = async () => {
         try {
           const res = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
@@ -333,14 +522,15 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
   const tracks = (result?.tracks || (result?.audioUrl ? [{ audioUrl: result.audioUrl, imageUrl: result.imageUrl, title: "AI Remix" }] : [])).map((t: any) => ({ ...t, url: t.url || t.audioUrl }));
 
   return (
-    <div className="rounded-2xl border-2 border-accent/40 bg-accent/5 p-8 md:p-10 space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-black font-heading text-white">🎧 AI Remix — Make It Go Viral</h2>
+    <div className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 md:p-10 space-y-6 relative overflow-hidden">
+      <WaveformBg bars={80} className="opacity-[0.04]" />
+      <div className="relative text-center space-y-2">
+        <h2 className="text-2xl md:text-3xl font-black font-heading text-white">🎧 AI Remix — Make It Go Viral</h2>
         <p className="text-sm text-muted-foreground">AI covers your song with the same vibe but stronger hook and viral energy</p>
       </div>
 
       {status === "idle" && (
-        <div className="flex flex-col items-center gap-4">
+        <div className="relative flex flex-col items-center gap-5">
           {!file && (
             <div className="w-full max-w-sm">
               <label className="text-sm font-medium text-muted-foreground mb-2 block">Upload your song file</label>
@@ -364,61 +554,51 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
               </SelectContent>
             </Select>
           </div>
-          <Button
+          <motion.button
             onClick={() => setStatus("lyrics")}
             disabled={!file}
-            className="gradient-purple text-primary-foreground font-bold glow-purple hover:opacity-90 px-10 h-14 text-lg disabled:opacity-40"
+            className="relative px-12 py-5 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black text-lg disabled:opacity-40 overflow-hidden"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
-            Create AI Remix →
-          </Button>
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+            />
+            <span className="relative flex items-center gap-2">
+              <Sparkles className="h-5 w-5" />
+              Create AI Remix →
+            </span>
+          </motion.button>
           <p className="text-xs text-muted-foreground">Review lyrics → Create enhanced remix</p>
         </div>
       )}
 
       {status === "lyrics" && (
-        <LyricsEditor
-          analysisData={analysisData}
-          onLyricsReady={(lyrics) => {
-            setFinalLyrics(lyrics);
-            startRemix(lyrics);
-          }}
-        />
+        <div className="relative">
+          <LyricsEditor
+            analysisData={analysisData}
+            onLyricsReady={(lyrics) => {
+              setFinalLyrics(lyrics);
+              startRemix(lyrics);
+            }}
+          />
+        </div>
       )}
 
       {(status === "uploading" || status === "processing") && (
-        <div className="flex flex-col items-center gap-4 py-6">
-          <Loader2 className="h-10 w-10 text-primary animate-spin" />
-          <p className="text-lg font-semibold text-white">
-            {status === "uploading" ? "Uploading your song..." : "Creating your remix..."}
-          </p>
-          {status === "processing" && (
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground tabular-nums">{elapsed}s</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                {elapsed < 30 ? "Uploading your song to Suno AI..." :
-                 elapsed < 60 ? "Suno is analyzing your style..." :
-                 elapsed < 90 ? "Generating your AI remix..." :
-                 elapsed < 150 ? "Finalizing the production..." :
-                 "Almost ready... Suno is perfecting the mix"}
-              </p>
-            </div>
-          )}
-          <div className="flex gap-1.5">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <motion.div
-                key={i}
-                className="w-2 h-8 rounded-full bg-primary/60"
-                animate={{ scaleY: [0.3, 1, 0.3] }}
-                transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
-                style={{ transformOrigin: "bottom" }}
-              />
-            ))}
+        <div className="relative flex flex-col items-center gap-6 py-8">
+          <ProcessingWaveform />
+          <div className="text-center">
+            <p className="text-lg font-bold text-white">{remixMessages(elapsed)}</p>
+            <p className="text-sm text-muted-foreground tabular-nums mt-2">{elapsed}s</p>
           </div>
         </div>
       )}
 
       {status === "error" && (
-        <div className="flex flex-col items-center gap-4 py-4">
+        <div className="relative flex flex-col items-center gap-4 py-4">
           <p className="text-red-400 font-medium">{error}</p>
           <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10">
             Try Again
@@ -427,49 +607,126 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       )}
 
       {status === "complete" && tracks.length > 0 && (
-        <div className="space-y-4">
+        <motion.div
+          className="relative space-y-6"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          {/* Cover art */}
           {(result?.imageUrl || result?.coverArt) && (
-            <div className="flex justify-center">
-              <img src={result.imageUrl || result.coverArt} alt="Remix cover" className="w-40 h-40 rounded-xl object-cover border-2 border-accent/30" />
-            </div>
+            <motion.div
+              className="flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <img src={result.imageUrl || result.coverArt} alt="Remix cover" className="w-48 h-48 rounded-2xl object-cover border-2 border-accent/30 shadow-2xl shadow-accent/20" />
+            </motion.div>
           )}
+          {/* Track cards */}
           {tracks.map((track: any, idx: number) => (
-            <div key={idx} className="rounded-xl bg-white/5 border border-white/10 p-4 flex items-center gap-4">
-              <button
-                onClick={() => togglePlay(idx)}
-                className="flex-shrink-0 h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center hover:bg-primary/30 transition-colors"
-              >
-                {playing === idx ? <Pause className="h-5 w-5 text-primary" /> : <Play className="h-5 w-5 text-primary ml-0.5" />}
-              </button>
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + idx * 0.15 }}
+              className="rounded-2xl bg-white/5 border border-white/10 p-5 flex items-center gap-4"
+            >
+              {/* Album art placeholder */}
+              <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-white/10 flex items-center justify-center">
+                {track.imageUrl ? (
+                  <img src={track.imageUrl} alt="" className="w-full h-full rounded-xl object-cover" />
+                ) : (
+                  <Music className="h-7 w-7 text-primary" />
+                )}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">
+                <p className="text-base font-bold text-white truncate">
                   {tracks.length > 1 ? `Version ${idx + 1}` : "AI Remix"}
                 </p>
                 {track.title && <p className="text-xs text-muted-foreground truncate">{track.title}</p>}
+                {/* Fake audio bar */}
+                <div className="flex items-end gap-[2px] h-4 mt-2">
+                  {Array.from({ length: 30 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="w-[3px] rounded-full bg-primary/40"
+                      animate={playing === idx ? { scaleY: [0.3, 1, 0.3] } : {}}
+                      transition={playing === idx ? { repeat: Infinity, duration: 0.5 + Math.random() * 0.3, delay: i * 0.03 } : {}}
+                      style={{ height: "100%", transformOrigin: "bottom", transform: playing !== idx ? `scaleY(${0.2 + Math.random() * 0.6})` : undefined }}
+                    />
+                  ))}
+                </div>
               </div>
-              <button
-                onClick={() => downloadTrack(track.url, `${songTitle || 'AI-Remix'}-v${idx + 1}.mp3`)}
-                className="flex-shrink-0 h-9 w-9 rounded-lg bg-accent/20 flex items-center justify-center hover:bg-accent/30 transition-colors"
-                title="Download MP3"
+              {/* Play button */}
+              <motion.button
+                onClick={() => togglePlay(idx)}
+                className="flex-shrink-0 h-14 w-14 rounded-full bg-primary/20 flex items-center justify-center hover:bg-primary/30 transition-colors border border-primary/20"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Download className="h-4 w-4 text-accent" />
-              </button>
+                {playing === idx ? (
+                  <Pause className="h-6 w-6 text-primary" />
+                ) : (
+                  <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
+                    <Play className="h-6 w-6 text-primary ml-0.5" />
+                  </motion.div>
+                )}
+              </motion.button>
               <audio
                 ref={(el) => { audioRefs.current[idx] = el; }}
                 src={track.url}
                 onEnded={() => setPlaying(null)}
               />
-            </div>
+            </motion.div>
           ))}
-          <p className="text-xs text-center text-muted-foreground/60 mt-1">
+
+          {/* Download + Share buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            {tracks.map((track: any, idx: number) => (
+              <motion.button
+                key={idx}
+                onClick={() => downloadTrack(track.url, `${songTitle || 'AI-Remix'}-v${idx + 1}.mp3`)}
+                className="relative w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black text-base overflow-hidden"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  animate={{ x: ["-100%", "200%"] }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                />
+                <span className="relative flex items-center justify-center gap-2">
+                  <Download className="h-5 w-5" />
+                  Download {tracks.length > 1 ? `V${idx + 1}` : "MP3"} → Upload to Spotify
+                </span>
+              </motion.button>
+            ))}
+            <Button
+              variant="outline"
+              className="border-white/20 hover:bg-white/5 gap-2"
+              onClick={() => {
+                const url = tracks[0]?.url;
+                if (url) {
+                  navigator.clipboard.writeText(url);
+                  toast.success("Link copied to clipboard!");
+                }
+              }}
+            >
+              <Copy className="h-4 w-4" />
+              Share Link
+            </Button>
+          </div>
+          <p className="text-xs text-center text-muted-foreground/60">
             MP3 file • Ready to upload to Spotify, Apple Music, SoundCloud
           </p>
-          <div className="flex justify-center gap-3 pt-2">
+          <div className="flex justify-center pt-2">
             <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-white/20 hover:bg-white/5">
               Remix Again
             </Button>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
@@ -525,19 +782,32 @@ const Results = () => {
         <Section delay={0} className="flex flex-col items-center text-center">
           <ScoreGauge score={score} />
           <div className="mt-6 space-y-4">
-            <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-bold border ${badge.cls}`}>
+            <motion.span
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.5, duration: 0.4, type: "spring" }}
+              className={`inline-block px-5 py-2 rounded-full text-sm font-black border ${badge.cls}`}
+            >
               {badge.label}
-            </span>
+            </motion.span>
             <h1 className="text-3xl md:text-4xl font-black font-heading text-white tracking-tight">{verdict}</h1>
             <p className="text-lg text-muted-foreground">"{title}"</p>
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border border-white/10 bg-white/5">
-              {isRealAudio ? (
-                <><Headphones className="h-4 w-4 text-primary" /> Real Audio Analysis</>
-              ) : (
-                <>📊 Genre Estimate</>
-              )}
-            </div>
+            {isRealAudio && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2 }}
+                className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold border border-green-500/20 bg-green-500/10 text-green-400"
+              >
+                <Headphones className="h-3.5 w-3.5" /> Analyzed with Real Audio AI
+              </motion.div>
+            )}
           </div>
+        </Section>
+
+        {/* ═══ 1.5 VIRAL POTENTIAL METER ═══ */}
+        <Section delay={0.1}>
+          <ViralMeter score={score} danceability={danceability} valence={valence} />
         </Section>
 
         {/* ═══ 2. SONG PROFILE ═══ */}
@@ -676,28 +946,37 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ 7. SONGS LIKE YOURS ═══ */}
+        {/* ═══ 7. GENRE COMPARISON — premium song cards ═══ */}
         {similarSongs?.length > 0 && (
           <Section delay={0.4}>
-            <SectionTitle emoji="🏆" title="SONGS LIKE YOURS THAT BLEW UP" />
-            <div className="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+            <SectionTitle emoji="🏆" title="GENRE COMPARISON" />
+            <div className="grid gap-5 md:grid-cols-3">
               {similarSongs.slice(0, 3).map((song: any, i: number) => (
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.45 + i * 0.08 }}
-                  className="glass-card p-5 min-w-[280px] flex-shrink-0 snap-start space-y-3 hover:border-primary/20 transition-colors"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45 + i * 0.12 }}
+                  className="relative rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.06] to-transparent p-6 space-y-3 hover:border-accent/40 transition-all hover:shadow-lg hover:shadow-accent/10 group overflow-hidden"
                 >
-                  <div className="font-bold text-white">{song.title}</div>
-                  <div className="text-sm text-muted-foreground">{song.artist}</div>
+                  {/* Gold accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent to-transparent opacity-60" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
+                      <Music className="h-5 w-5 text-accent" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-white truncate">{song.title}</p>
+                      <p className="text-xs text-muted-foreground">{song.artist}</p>
+                    </div>
+                  </div>
                   {song.streams && (
-                    <div className="text-2xl font-black text-primary">{song.streams}</div>
+                    <div className="text-2xl font-black text-accent">{song.streams}</div>
                   )}
                   {song.whatTheyHaveThatYouDont && (
-                    <div className="pt-2 border-t border-white/5">
-                      <span className="text-xs text-muted-foreground italic">What they have that you don't:</span>
-                      <p className="text-sm text-foreground/80 mt-1">{song.whatTheyHaveThatYouDont}</p>
+                    <div className="pt-3 border-t border-accent/10">
+                      <span className="text-[10px] text-accent/70 font-bold uppercase tracking-widest">What they have that you don't</span>
+                      <p className="text-sm text-foreground/80 mt-1.5 leading-relaxed">{song.whatTheyHaveThatYouDont}</p>
                     </div>
                   )}
                 </motion.div>

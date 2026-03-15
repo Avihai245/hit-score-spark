@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
-import { Headphones, BarChart3, Target, Users, FileText, CalendarDays } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Headphones, BarChart3, Target, Users, FileText, CalendarDays, Flame } from "lucide-react";
 
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number; to: number; duration?: number; suffix?: string }) => {
   const ref = useRef<HTMLSpanElement>(null);
@@ -20,10 +20,37 @@ const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number
   return <motion.span ref={ref}>{rounded}</motion.span>;
 };
 
-const heroStats = [
-  { value: 10247, suffix: "+", label: "songs analyzed" },
-  { value: 24, prefix: "+", suffix: "", label: "Average improvement", suffixLabel: " points" },
-  { value: 67, suffix: "", label: "Used in", suffixLabel: " countries" },
+/* ─── Live incrementing counter ─── */
+const LiveCounter = () => {
+  const [count, setCount] = useState(10247);
+  useEffect(() => {
+    const interval = setInterval(() => setCount(c => c + 1), 3000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+    >
+      <motion.div
+        className="w-2 h-2 rounded-full bg-green-400"
+        animate={{ opacity: [1, 0.4, 1] }}
+        transition={{ repeat: Infinity, duration: 1.5 }}
+      />
+      <span className="text-sm font-semibold text-white tabular-nums">
+        {count.toLocaleString()}
+      </span>
+      <span className="text-sm text-muted-foreground">songs analyzed</span>
+    </motion.div>
+  );
+};
+
+const statCards = [
+  { emoji: "🎵", label: "Avg score improvement", value: "+24 pts", color: "from-primary/10 to-primary/5 border-primary/20" },
+  { emoji: "⚡", label: "Analysis time", value: "~20s", color: "from-accent/10 to-accent/5 border-accent/20" },
+  { emoji: "🌍", label: "Used in", value: "67 countries", color: "from-green-500/10 to-green-500/5 border-green-500/20" },
 ];
 
 const steps = [
@@ -82,12 +109,15 @@ const fade = (delay: number) => ({
 const Index = () => {
   return (
     <div className="flex min-h-screen flex-col bg-[#0a0a0a]">
-      {/* Hero - Full viewport height */}
+      {/* Hero */}
       <section className="relative flex flex-col items-center justify-center min-h-screen px-4 text-center overflow-hidden">
-        {/* Subtle purple radial gradient background */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.12),transparent_60%)]" />
-        
-        {/* Purple pill badge */}
+
+        {/* Live counter */}
+        <div className="relative mb-6">
+          <LiveCounter />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -100,7 +130,6 @@ const Index = () => {
           </span>
         </motion.div>
 
-        {/* H1 - Huge bold white */}
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -112,7 +141,6 @@ const Index = () => {
           Go Viral?
         </motion.h1>
 
-        {/* H2 - Muted grey */}
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -122,7 +150,6 @@ const Index = () => {
           Find out before you release it.
         </motion.h2>
 
-        {/* Paragraph */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -132,20 +159,30 @@ const Index = () => {
           Upload your track. In 60 seconds, get a professional hit score, lyrics analysis, competitor comparison, and your exact roadmap to viral success.
         </motion.p>
 
-        {/* Two CTA buttons */}
+        {/* CTA with fire animation */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
           className="relative mt-10 flex flex-col sm:flex-row items-center gap-4"
         >
-          <Button
-            asChild
-            size="lg"
-            className="gradient-purple text-primary-foreground px-8 py-6 text-base font-bold glow-purple hover:opacity-90 transition-all hover:scale-105"
-          >
-            <Link to="/analyze">Analyze My Song Free →</Link>
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Button
+              asChild
+              size="lg"
+              className="relative gradient-purple text-primary-foreground px-8 py-6 text-base font-bold glow-purple hover:opacity-90 transition-all overflow-hidden"
+            >
+              <Link to="/analyze" className="flex items-center gap-2">
+                Analyze My Song
+                <motion.span
+                  animate={{ y: [0, -3, 0], scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  🔥
+                </motion.span>
+              </Link>
+            </Button>
+          </motion.div>
           <Button
             asChild
             size="lg"
@@ -156,26 +193,25 @@ const Index = () => {
           </Button>
         </motion.div>
 
-        {/* Three animated stat counters */}
+        {/* Stat cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
-          className="relative mt-16 flex flex-wrap items-center justify-center gap-6 md:gap-10"
+          className="relative mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl w-full"
         >
-          {heroStats.map((stat, i) => (
-            <div key={stat.label} className="flex items-center gap-6">
-              {i > 0 && <span className="hidden md:block w-px h-8 bg-white/10" />}
-              <div className="text-center">
-                <span className="text-2xl md:text-3xl font-bold text-white tabular-nums">
-                  {stat.prefix && <span>{stat.prefix}</span>}
-                  <AnimatedCounter from={0} to={stat.value} duration={2.5} />
-                  {stat.suffix && <span>{stat.suffix}</span>}
-                  {stat.suffixLabel && <span className="text-muted-foreground">{stat.suffixLabel}</span>}
-                </span>
-                <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-              </div>
-            </div>
+          {statCards.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 + i * 0.1 }}
+              className={`rounded-xl bg-gradient-to-b ${stat.color} border p-4 text-center backdrop-blur-sm`}
+            >
+              <span className="text-2xl">{stat.emoji}</span>
+              <p className="text-lg font-black text-white mt-1">{stat.value}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -218,7 +254,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Everything You Need to Go Viral */}
+      {/* Everything You Need */}
       <section className="py-24 px-4 bg-[#0a0a0a]">
         <div className="container max-w-5xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-bold font-heading mb-4 text-white">
@@ -327,13 +363,23 @@ const Index = () => {
           <p className="text-muted-foreground mb-8">
             Upload your song and get your analysis in 30 seconds. No credit card needed.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="gradient-purple text-primary-foreground px-10 py-6 text-lg font-bold glow-purple hover:opacity-90 transition-opacity"
-          >
-            <Link to="/analyze">Analyze My Song Free →</Link>
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Button
+              asChild
+              size="lg"
+              className="gradient-purple text-primary-foreground px-10 py-6 text-lg font-bold glow-purple hover:opacity-90 transition-opacity"
+            >
+              <Link to="/analyze" className="flex items-center gap-2">
+                Analyze My Song Free
+                <motion.span
+                  animate={{ y: [0, -3, 0], scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  🔥
+                </motion.span>
+              </Link>
+            </Button>
+          </motion.div>
         </motion.div>
       </section>
     </div>
