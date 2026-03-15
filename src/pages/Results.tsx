@@ -1075,7 +1075,7 @@ const Results = () => {
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <ListMusic className="h-4 w-4 text-primary" />
-                      <span className="font-semibold text-sm text-white">{pl.name}</span>
+                      <span className="font-semibold text-sm text-foreground">{pl.name}</span>
                     </div>
                     {pl.followers && <p className="text-xs text-muted-foreground">{pl.followers} followers</p>}
                     {pl.reason && <p className="text-xs text-primary/70 mt-1">{pl.reason}</p>}
