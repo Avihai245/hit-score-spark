@@ -172,7 +172,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
 
     try {
       // Re-upload
-      const urlRes = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
+      const urlRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
@@ -185,7 +185,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
 
-      const coverRes = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
+      const coverRes = await fetch(import.meta.env.VITE_SUNO_COVER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ s3Key, title: songTitle, genre: songGenre, style }),
@@ -198,7 +198,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       // Poll
       const poll = async () => {
         try {
-          const res = await fetch("https://hitcheck.vercel.app/api/suno-cover", {
+          const res = await fetch(import.meta.env.VITE_SUNO_COVER_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ taskId }),

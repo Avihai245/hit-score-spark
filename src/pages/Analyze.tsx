@@ -100,7 +100,7 @@ const Analyze = () => {
     try {
       // Step 1 – Get presigned upload URL
       setLoadingStep(0);
-      const urlRes = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
+      const urlRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
@@ -119,7 +119,7 @@ const Analyze = () => {
 
       // Step 3 – Start async analysis (returns immediately with jobId)
       setLoadingStep(2);
-      const analysisRes = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
+      const analysisRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -162,7 +162,7 @@ const Analyze = () => {
         setLoadingStep((prev) => Math.min(prev + 1, loadingMessages.length - 1));
 
         try {
-          const res = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
+          const res = await fetch(import.meta.env.VITE_LAMBDA_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action: "poll", jobId }),
