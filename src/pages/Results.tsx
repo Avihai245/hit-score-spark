@@ -231,7 +231,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
 
   useEffect(() => () => { clearInterval(timerRef.current); }, []);
 
-  const tracks = result?.tracks || (result?.audioUrl ? [{ url: result.audioUrl, title: "AI Remix" }] : []);
+  const tracks = (result?.tracks || (result?.audioUrl ? [{ audioUrl: result.audioUrl, imageUrl: result.imageUrl, title: "AI Remix" }] : [])).map((t: any) => ({ ...t, url: t.url || t.audioUrl }));
 
   return (
     <div className="rounded-2xl border-2 border-accent/40 bg-accent/5 p-8 md:p-10 space-y-6">
@@ -310,9 +310,9 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
 
       {status === "complete" && tracks.length > 0 && (
         <div className="space-y-4">
-          {result?.coverArt && (
+          {(result?.imageUrl || result?.coverArt) && (
             <div className="flex justify-center">
-              <img src={result.coverArt} alt="Remix cover" className="w-40 h-40 rounded-xl object-cover border-2 border-accent/30" />
+              <img src={result.imageUrl || result.coverArt} alt="Remix cover" className="w-40 h-40 rounded-xl object-cover border-2 border-accent/30" />
             </div>
           )}
           {tracks.map((track: any, idx: number) => (
