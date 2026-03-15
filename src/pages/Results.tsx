@@ -185,10 +185,10 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
 
-      const coverRes = await fetch(import.meta.env.VITE_SUNO_COVER_URL, {
+      const coverRes = await fetch(import.meta.env.VITE_LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ s3Key, title: songTitle, genre: songGenre, style }),
+        body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style }),
       });
       if (!coverRes.ok) throw new Error("Failed to start remix");
       const coverData = await coverRes.json();
@@ -198,10 +198,10 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre }: { uploadedFile: 
       // Poll
       const poll = async () => {
         try {
-          const res = await fetch(import.meta.env.VITE_SUNO_COVER_URL, {
+          const res = await fetch(import.meta.env.VITE_LAMBDA_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ taskId }),
+            body: JSON.stringify({ action: 'suno-cover', taskId }),
           });
           const data = await res.json();
           if (data.status === "complete") {
