@@ -276,7 +276,7 @@ const ProcessingWaveform = () => (
 
 const remixMessages = (elapsed: number) => {
   if (elapsed < 10) return "Uploading your song...";
-  if (elapsed < 30) return "Suno AI is reading your melody...";
+  if (elapsed < 30) return "Our AI is analyzing your melody...";
   if (elapsed < 90) return "Generating your enhanced version...";
   return "Finalizing the mix...";
 };
