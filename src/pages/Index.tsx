@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef } from "react";
+import { Headphones, BarChart3, Target, Users, FileText, CalendarDays } from "lucide-react";
 
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number; to: number; duration?: number; suffix?: string }) => {
   const ref = useRef<HTMLSpanElement>(null);
