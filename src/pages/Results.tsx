@@ -162,13 +162,93 @@ const downloadTrack = async (url: string, filename: string) => {
   }
 };
 
+/* ─── Lyrics Editor with Recommendations ─── */
+const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLyricsReady: (lyrics: string) => void }) => {
+  const original = analysisData?.originalLyrics || "";
+  const improved = analysisData?.improvedLyrics || "";
+  const lyricFix = analysisData?.lyricFix || "";
+  const viralLine = analysisData?.viralLine || "";
+  const oneChange = analysisData?.oneChange || "";
+
+  const [lyrics, setLyrics] = React.useState(original);
+  const [applyImproved, setApplyImproved] = React.useState(false);
+  const [recommendations, setRecommendations] = React.useState<{id: string, text: string, applied: boolean}[]>([]);
+
+  React.useEffect(() => {
+    const recs: {id: string, text: string, applied: boolean}[] = [];
+    if (lyricFix) recs.push({ id: "lyricfix", text: lyricFix, applied: false });
+    if (oneChange) recs.push({ id: "onechange", text: oneChange, applied: false });
+    if (viralLine && viralLine !== "none yet") recs.push({ id: "viral", text: `Keep this viral line: "${viralLine}"`, applied: true });
+    setRecommendations(recs);
+  }, [lyricFix, oneChange, viralLine]);
+
+  React.useEffect(() => {
+    if (applyImproved && improved) setLyrics(improved);
+    else if (!applyImproved && original) setLyrics(original);
+  }, [applyImproved]);
+
+  const buildFinalLyrics = () => {
+    let final = lyrics;
+    const appliedRecs = recommendations.filter(r => r.applied).map(r => r.text).join(". ");
+    return final + (appliedRecs ? `\n\n[Notes for AI: ${appliedRecs}]` : "");
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-semibold text-white">Song Lyrics</label>
+          {improved && (
+            <button
+              onClick={() => setApplyImproved(!applyImproved)}
+              className={`text-xs px-3 py-1 rounded-full border transition-colors ${applyImproved ? "bg-primary/20 border-primary text-primary" : "border-white/20 text-muted-foreground hover:border-white/40"}`}
+            >
+              {applyImproved ? "✓ Using improved lyrics" : "Use AI-improved lyrics"}
+            </button>
+          )}
+        </div>
+        <textarea
+          value={lyrics}
+          onChange={(e) => setLyrics(e.target.value)}
+          placeholder={original ? "Your song lyrics..." : "Paste your song lyrics here for best results..."}
+          className="w-full h-40 bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50"
+        />
+        <p className="text-xs text-muted-foreground">Edit your lyrics directly, or use the AI-improved version above.</p>
+      </div>
+
+      {recommendations.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-white">Our Recommendations</p>
+          {recommendations.map(rec => (
+            <div key={rec.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${rec.applied ? "bg-primary/10 border-primary/40" : "bg-white/5 border-white/10 hover:border-white/20"}`}
+              onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}>
+              <div className={`mt-0.5 h-4 w-4 rounded border flex-shrink-0 flex items-center justify-center ${rec.applied ? "bg-primary border-primary" : "border-white/30"}`}>
+                {rec.applied && <span className="text-white text-xs">✓</span>}
+              </div>
+              <p className="text-sm text-white/80">{rec.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={() => onLyricsReady(buildFinalLyrics())}
+        className="w-full py-3 rounded-xl bg-primary/20 border border-primary/40 text-primary font-semibold hover:bg-primary/30 transition-colors text-sm"
+      >
+        Create AI Remix with These Lyrics →
+      </button>
+    </div>
+  );
+};
+
 const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any }) => {
-  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "lyrics" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState("");
   const [result, setResult] = useState<any>(null);
   const [file, setFile] = useState<File | null>(uploadedFile);
+  const [finalLyrics, setFinalLyrics] = useState("");
   const [playing, setPlaying] = useState<number | null>(null);
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -183,7 +263,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
     }
   }, [playing]);
 
-  const startRemix = async () => {
+  const startRemix = async (customLyrics?: string) => {
     if (!file) return;
     setStatus("uploading");
     setError("");
@@ -207,7 +287,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
       const coverRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style, analysisData }),
+        body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style, analysisData: { ...(analysisData || {}), customLyrics: customLyrics || finalLyrics } }),
       });
       if (!coverRes.ok) throw new Error("Failed to start remix");
       const coverData = await coverRes.json();
@@ -285,14 +365,24 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             </Select>
           </div>
           <Button
-            onClick={startRemix}
+            onClick={() => setStatus("lyrics")}
             disabled={!file}
             className="gradient-purple text-primary-foreground font-bold glow-purple hover:opacity-90 px-10 h-14 text-lg disabled:opacity-40"
           >
-            Create AI Remix
+            Create AI Remix →
           </Button>
-          <p className="text-xs text-muted-foreground">Takes 30–90 seconds</p>
+          <p className="text-xs text-muted-foreground">Review lyrics → Create enhanced remix</p>
         </div>
+      )}
+
+      {status === "lyrics" && (
+        <LyricsEditor
+          analysisData={analysisData}
+          onLyricsReady={(lyrics) => {
+            setFinalLyrics(lyrics);
+            startRemix(lyrics);
+          }}
+        />
       )}
 
       {(status === "uploading" || status === "processing") && (
