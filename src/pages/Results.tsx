@@ -631,7 +631,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + idx * 0.15 }}
-              className="rounded-2xl bg-white/5 border border-white/10 p-5 flex items-center gap-4"
+              className="rounded-2xl bg-secondary/50 border border-border p-5 flex items-center gap-4"
             >
               {/* Album art placeholder */}
               <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-white/10 flex items-center justify-center">
