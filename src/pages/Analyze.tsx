@@ -97,9 +97,6 @@ const Analyze = () => {
     setLoading(true);
     setLoadingStep(0);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-
     try {
       // Step 1 – Get presigned upload URL
       setLoadingStep(0);
@@ -107,7 +104,6 @@ const Analyze = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
-        signal: controller.signal,
       });
       if (!urlRes.ok) throw new Error("Failed to get upload URL");
       const { uploadUrl, s3Key } = await urlRes.json();
@@ -118,16 +114,11 @@ const Analyze = () => {
         method: "PUT",
         body: file,
         headers: { "Content-Type": file.type || "audio/mpeg" },
-        signal: controller.signal,
       });
       if (!uploadRes.ok) throw new Error("File upload failed");
 
-      // Step 3 – Analyze
+      // Step 3 – Start async analysis (returns immediately with jobId)
       setLoadingStep(2);
-      const stepInterval = setInterval(() => {
-        setLoadingStep((prev) => Math.min(prev + 1, loadingMessages.length - 1));
-      }, 3000);
-
       const analysisRes = await fetch("https://hitcheck.vercel.app/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -138,40 +129,67 @@ const Analyze = () => {
           genre: genre || undefined,
           goal: goal || undefined,
         }),
-        signal: controller.signal,
       });
-      clearInterval(stepInterval);
-      clearTimeout(timeoutId);
-      if (!analysisRes.ok) throw new Error("Analysis failed");
-      const data = await analysisRes.json();
-      
-      if (!data.score && data.message) {
-        throw new Error(data.message);
+      if (!analysisRes.ok) throw new Error("Analysis failed to start");
+      const analysisData = await analysisRes.json();
+      const { jobId } = analysisData;
+
+      if (!jobId) {
+        // Fallback: if API returned results directly (no jobId)
+        if (analysisData.score != null) {
+          navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+          return;
+        }
+        throw new Error("No jobId received from server");
       }
-      if (data.score == null) {
-        throw new Error("No score received from analysis");
-      }
-      navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+
+      // Step 4 – Poll every 3 seconds until done (max 2 minutes)
+      const maxPollTime = 120000;
+      const pollStart = Date.now();
+
+      const pollResult = async () => {
+        if (Date.now() - pollStart > maxPollTime) {
+          setLoading(false);
+          toast({
+            title: "Timeout",
+            description: "Analysis taking longer than expected. Please try again with a shorter MP3 file (under 5 minutes).",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Cycle through loading messages
+        setLoadingStep((prev) => Math.min(prev + 1, loadingMessages.length - 1));
+
+        try {
+          const res = await fetch("https://hitcheck.vercel.app/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "poll", jobId }),
+          });
+          const data = await res.json();
+
+          if (data.status === "complete") {
+            setLoading(false);
+            navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+          } else if (data.status === "error") {
+            setLoading(false);
+            toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+          } else {
+            // Still processing, poll again in 3s
+            setTimeout(pollResult, 3000);
+          }
+        } catch {
+          setLoading(false);
+          toast({ title: "Connection error", description: "Lost connection to server. Please try again.", variant: "destructive" });
+        }
+      };
+
+      setTimeout(pollResult, 3000);
     } catch (err: any) {
-      clearTimeout(timeoutId);
-      if (err?.name === "AbortError") {
-        toast({
-          title: "Timeout",
-          description: "Analysis taking longer than expected. Please try again with a shorter MP3 file (under 5 minutes).",
-          variant: "destructive",
-        });
-      } else {
-        const msg = err?.message || "Something went wrong.";
-        toast({ 
-          title: "Analysis failed", 
-          description: msg.includes("Internal server error") 
-            ? "The server is temporarily overloaded. Please wait a moment and try again." 
-            : `${msg} Please try again.`, 
-          variant: "destructive" 
-        });
-      }
-    } finally {
       setLoading(false);
+      const msg = err?.message || "Something went wrong.";
+      toast({ title: "Analysis failed", description: `${msg} Please try again.`, variant: "destructive" });
     }
   };
 
