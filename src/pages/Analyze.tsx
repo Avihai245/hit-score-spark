@@ -134,8 +134,15 @@ const Analyze = () => {
         throw new Error("No score received from analysis");
       }
       navigate("/results", { state: { results: data, title: title || file.name, goal } });
-    } catch {
-      toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+    } catch (err: any) {
+      const msg = err?.message || "Something went wrong.";
+      toast({ 
+        title: "Analysis failed", 
+        description: msg.includes("Internal server error") 
+          ? "The server is temporarily overloaded. Please wait a moment and try again." 
+          : `${msg} Please try again.`, 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
     }
