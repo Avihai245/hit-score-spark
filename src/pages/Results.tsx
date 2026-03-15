@@ -358,7 +358,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <span className="text-xs text-red-400 font-bold uppercase tracking-wider">Original</span>
-                <div className="h-48 overflow-auto rounded-xl bg-red-500/5 border border-red-500/10 p-3 text-sm text-white/70 whitespace-pre-wrap font-mono">
+                <div className="h-48 overflow-auto rounded-xl bg-red-500/5 border border-red-500/10 p-3 text-sm text-foreground/70 whitespace-pre-wrap font-mono">
                   {original}
                 </div>
               </div>
