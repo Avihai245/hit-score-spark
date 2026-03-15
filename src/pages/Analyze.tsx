@@ -119,7 +119,7 @@ const Analyze = () => {
 
       // Step 3 – Start async analysis (returns immediately with jobId)
       setLoadingStep(2);
-      const analysisRes = await fetch("https://hitcheck.vercel.app/api/upload", {
+      const analysisRes = await fetch("https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
