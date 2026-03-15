@@ -1014,7 +1014,7 @@ const Results = () => {
               )}
               {improvements?.length > 0 && (
                 <div>
-                  <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-white">
+                  <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-foreground">
                     <span className="text-red-400">❌</span> What to Fix
                   </h2>
                   <div className="glass-card p-6 space-y-3">
