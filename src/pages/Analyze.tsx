@@ -377,7 +377,7 @@ const Analyze = () => {
                     <Upload className="h-12 w-12 text-primary" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-xl text-white">Drop your song here</p>
+                    <p className="font-bold text-xl text-foreground">Drop your song here</p>
                     <p className="text-sm text-muted-foreground mt-2">MP3 or WAV · max 100 MB</p>
                     <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
                   </div>
