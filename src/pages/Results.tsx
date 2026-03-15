@@ -7,6 +7,9 @@ import {
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin, Smartphone,
   ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 
