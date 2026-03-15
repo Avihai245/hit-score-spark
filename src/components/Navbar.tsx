@@ -7,6 +7,7 @@ import { LogoIcon } from "@/components/ViralizeLogo";
 import { useTheme } from "@/components/ThemeProvider";
 
 const Navbar = () => {
+  const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
