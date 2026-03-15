@@ -1,9 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { LogoIcon } from "@/components/ViralizeLogo";
+import { useTheme } from "@/components/ThemeProvider";
 
 const Navbar = () => {
   const { pathname } = useLocation();
