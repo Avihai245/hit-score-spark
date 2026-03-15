@@ -374,7 +374,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               value={lyrics}
               onChange={(e) => setLyrics(e.target.value)}
               placeholder={original ? "Your song lyrics..." : "Paste your song lyrics here for best results..."}
-              className="w-full h-48 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
+              className="w-full h-48 bg-secondary/50 border border-border rounded-xl p-4 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
             />
           )}
         </div>
