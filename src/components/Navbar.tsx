@@ -4,6 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 
+const WaveformLogo = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 14C4 14 6 8 8 14C10 20 12 14 12 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 14C12 14 14 4 16 14C18 24 20 14 20 14" stroke="hsl(258 90% 66%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M20 14C20 14 22 10 24 14" stroke="hsl(38 92% 50%)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const PulsingDot = () => (
+  <span className="relative flex h-2 w-2">
+    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+  </span>
+);
+
 const Navbar = () => {
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -14,21 +29,27 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-[12px]">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-          <span>HitCheck</span>
-          <span className="text-xl">🎵</span>
+        <Link to="/" className="flex items-center gap-2.5">
+          <WaveformLogo />
+          <span className="text-lg font-bold font-heading brand-gradient-text">HitCheck</span>
         </Link>
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
+          {/* Real AI Analysis badge */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <PulsingDot />
+            <span className="text-xs font-medium text-green-400">Real AI Analysis</span>
+          </div>
+
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-foreground",
+                "text-sm font-medium transition-colors hover:text-primary",
                 pathname === l.to ? "text-foreground" : "text-muted-foreground"
               )}
             >
@@ -55,7 +76,12 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-white/10 bg-[#0a0a0a]/95 backdrop-blur-[12px] px-4 py-4 space-y-3">
+          {/* Mobile AI badge */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 border border-white/10 w-fit">
+            <PulsingDot />
+            <span className="text-xs font-medium text-green-400">Real AI Analysis</span>
+          </div>
           {links.map((l) => (
             <Link
               key={l.to}
