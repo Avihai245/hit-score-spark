@@ -4,47 +4,28 @@ const LogoIcon = ({ size = 36, className }: { size?: number; className?: string 
   <svg
     width={size}
     height={size}
-    viewBox="0 0 40 40"
+    viewBox="0 0 32 32"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
     <defs>
-      <linearGradient id="vir-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <linearGradient id="vir-g1" x1="0" y1="32" x2="32" y2="0">
         <stop offset="0%" stopColor="#8B5CF6" />
+        <stop offset="70%" stopColor="#D946EF" />
         <stop offset="100%" stopColor="#F59E0B" />
       </linearGradient>
-      <linearGradient id="vir-grad-arrow" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#A78BFA" />
-        <stop offset="100%" stopColor="#FBBF24" />
-      </linearGradient>
     </defs>
-    {/* Waveform bars morphing upward */}
-    <rect x="4" y="24" width="3.5" rx="1.75" height="10" fill="url(#vir-grad)" opacity="0.7" />
-    <rect x="10" y="18" width="3.5" rx="1.75" height="16" fill="url(#vir-grad)" opacity="0.8" />
-    <rect x="16" y="12" width="3.5" rx="1.75" height="22" fill="url(#vir-grad)" opacity="0.9" />
-    <rect x="22" y="8" width="3.5" rx="1.75" height="26" fill="url(#vir-grad)" />
-    {/* Arrow / viral upward burst */}
-    <path
-      d="M30 22 L33 6 L36 22"
-      stroke="url(#vir-grad-arrow)"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-    <path
-      d="M29 12 L33 4 L37 12"
-      stroke="url(#vir-grad-arrow)"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-    {/* Spark dots */}
-    <circle cx="33" cy="3" r="1.5" fill="#FBBF24" />
-    <circle cx="38" cy="8" r="1" fill="#FBBF24" opacity="0.6" />
-    <circle cx="28" cy="7" r="1" fill="#8B5CF6" opacity="0.6" />
+    {/* Clean rounded rectangle background */}
+    <rect x="0" y="0" width="32" height="32" rx="7.5" fill="url(#vir-g1)" />
+    {/* Minimal waveform bars - white, centered, perfectly balanced */}
+    <rect x="5.5" y="13" width="2.8" rx="1.4" height="6" fill="white" />
+    <rect x="10" y="9.5" width="2.8" rx="1.4" height="13" fill="white" />
+    <rect x="14.5" y="6" width="2.8" rx="1.4" height="20" fill="white" />
+    <rect x="19" y="9.5" width="2.8" rx="1.4" height="13" fill="white" />
+    {/* Last bar as upward arrow — viral growth */}
+    <rect x="23.5" y="11" width="2.8" rx="1.4" height="10" fill="white" />
+    <path d="M24.9 11 L22.2 15.5 L27.6 15.5 Z" fill="white" />
   </svg>
 );
 
@@ -60,34 +41,27 @@ const ViralizeLogo = ({ variant = "navbar", className, showTagline }: ViralizeLo
   return (
     <div className={cn(
       "flex items-center",
-      isStacked ? "flex-col gap-2" : "gap-3",
+      isStacked ? "flex-col gap-3" : "gap-2.5",
       className
     )}>
-      <div className={cn(
-        "relative group/logo",
-        isStacked ? "" : ""
-      )}>
-        {/* Hover glow */}
-        <div className="absolute inset-0 rounded-full bg-primary/30 blur-xl opacity-0 group-hover/logo:opacity-100 transition-opacity duration-500" />
-        <div className="absolute inset-0 rounded-full bg-accent/20 blur-lg opacity-0 group-hover/logo:opacity-100 transition-opacity duration-700 delay-100" />
-        <LogoIcon size={isStacked ? 56 : 38} className="relative z-10 drop-shadow-[0_0_8px_rgba(139,92,246,0.3)]" />
+      <div className="relative group/logo">
+        <div className="absolute -inset-2 rounded-2xl bg-primary/20 blur-xl opacity-0 group-hover/logo:opacity-100 transition-opacity duration-500" />
+        <LogoIcon
+          size={isStacked ? 52 : 32}
+          className="relative z-10 transition-transform duration-300 group-hover/logo:scale-105"
+        />
       </div>
-      <div className={cn(
-        "flex flex-col",
-        isStacked ? "items-center" : ""
-      )}>
-        <span
-          className={cn(
-            "font-black font-heading uppercase tracking-wider brand-gradient-text",
-            isStacked ? "text-3xl" : "text-xl"
-          )}
-        >
-          VIRALIZE
+      <div className={cn("flex flex-col", isStacked ? "items-center" : "")}>
+        <span className={cn(
+          "font-black font-heading tracking-tight text-foreground",
+          isStacked ? "text-3xl" : "text-lg"
+        )}>
+          Viralize
         </span>
         {(showTagline || isStacked) && (
           <span className={cn(
             "text-muted-foreground font-medium tracking-wide",
-            isStacked ? "text-sm mt-0.5" : "text-[10px] leading-tight -mt-0.5"
+            isStacked ? "text-xs mt-0.5" : "text-[9px] leading-none -mt-0.5"
           )}>
             AI Music Intelligence
           </span>
