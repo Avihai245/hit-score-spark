@@ -117,7 +117,7 @@ const ViralMeter = ({ score, danceability, valence }: { score: number; danceabil
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-accent" />
-          <span className="text-sm font-bold text-white uppercase tracking-wider">Viral Potential</span>
+          <span className="text-sm font-bold text-foreground uppercase tracking-wider">Viral Potential</span>
         </div>
         <span className="text-2xl font-black text-accent">{viral}%</span>
       </div>
