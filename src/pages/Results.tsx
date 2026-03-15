@@ -907,7 +907,7 @@ const Results = () => {
                         <AlertTriangle className="h-4 w-4 text-red-400" />
                         <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Skip Risk</p>
                       </div>
-                      <p className="text-sm font-semibold text-red-300">{skipRiskMoment}</p>
+                      <p className="text-sm font-semibold text-red-500 dark:text-red-300">{skipRiskMoment}</p>
                     </div>
                   )}
                 </div>
