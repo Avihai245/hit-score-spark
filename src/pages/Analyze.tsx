@@ -113,7 +113,7 @@ const Analyze = () => {
       const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
-        headers: { "Content-Type": "audio/mpeg" },
+
       });
       if (!uploadRes.ok) { const errText = await uploadRes.text().catch(() => ""); throw new Error("S3 upload failed: " + uploadRes.status + " " + errText.slice(0,100)); }
 
