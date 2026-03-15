@@ -83,7 +83,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/[0.06] bg-background/95 backdrop-blur-2xl px-6 py-5 space-y-1">
+        <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-2xl px-6 py-5 space-y-1">
           {navLinks.map((l) => (
             <Link
               key={l.to}
