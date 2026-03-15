@@ -201,7 +201,7 @@ const Analyze = () => {
             >
               {loadingMessages[loadingStep]}
             </motion.p>
-            <p className="mt-2 text-sm text-muted-foreground">This may take up to 60 seconds</p>
+            <p className="mt-2 text-sm text-muted-foreground">Analyzing... ({elapsedSeconds}s)</p>
           </div>
           <div className="flex gap-1.5">
             {loadingMessages.map((_, i) => (
