@@ -154,7 +154,7 @@ const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; va
         <span className="text-sm font-medium text-foreground">{label}</span>
         <span className="text-sm font-bold" style={{ color }}>{value}/{max}</span>
       </div>
-      <div className="h-3 rounded-full bg-white/5 overflow-hidden">
+      <div className="h-3 rounded-full bg-secondary overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: color }}
