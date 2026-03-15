@@ -7,6 +7,9 @@ import {
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin, Smartphone,
   ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -78,7 +81,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
         </motion.div>
       )}
       <svg width="280" height="280" className="-rotate-90">
-        <circle cx="140" cy="140" r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="16" />
+        <circle cx="140" cy="140" r={r} fill="none" stroke="hsl(0 0% 8%)" strokeWidth="16" />
         <motion.circle
           cx="140" cy="140" r={r} fill="none"
           stroke="url(#scoreGrad)"
@@ -117,11 +120,11 @@ const ViralMeter = ({ score, danceability, valence }: { score: number; danceabil
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-accent" />
-          <span className="text-sm font-bold text-foreground uppercase tracking-wider">Viral Potential</span>
+          <span className="text-sm font-bold text-white uppercase tracking-wider">Viral Potential</span>
         </div>
         <span className="text-2xl font-black text-accent">{viral}%</span>
       </div>
-      <div className="relative h-4 rounded-full bg-secondary overflow-hidden">
+      <div className="relative h-4 rounded-full bg-white/5 overflow-hidden">
         <motion.div
           className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300"
           initial={{ width: 0 }}
@@ -154,7 +157,7 @@ const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; va
         <span className="text-sm font-medium text-foreground">{label}</span>
         <span className="text-sm font-bold" style={{ color }}>{value}/{max}</span>
       </div>
-      <div className="h-3 rounded-full bg-secondary overflow-hidden">
+      <div className="h-3 rounded-full bg-white/5 overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: color }}
@@ -316,11 +319,11 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   return (
     <div className="space-y-6">
       {/* Lyrics card with waveform bg */}
-      <div className="relative rounded-2xl border border-border bg-card/50 overflow-hidden">
+      <div className="relative rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
         <WaveformBg bars={60} />
         <div className="relative p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-bold text-foreground flex items-center gap-2">
+            <label className="text-sm font-bold text-white flex items-center gap-2">
               <Music className="h-4 w-4 text-primary" />
               Song Lyrics
             </label>
@@ -328,7 +331,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => { setShowDiff(!showDiff); if (!showDiff) setApplyImproved(false); }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-all"
+                  className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-muted-foreground hover:border-primary/40 hover:text-primary transition-all"
                 >
                   {showDiff ? "Hide comparison" : "Compare versions"}
                 </button>
@@ -337,10 +340,10 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
                   className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
                     applyImproved
                       ? "bg-primary/20 border-primary/40 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/30"
+                      : "border-white/20 text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  <div className={`w-8 h-4 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-muted"}`}>
+                  <div className={`w-8 h-4 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-white/20"}`}>
                     <motion.div
                       className="absolute top-0.5 w-3 h-3 rounded-full bg-white"
                       animate={{ left: applyImproved ? 16 : 2 }}
@@ -358,13 +361,13 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <span className="text-xs text-red-400 font-bold uppercase tracking-wider">Original</span>
-                <div className="h-48 overflow-auto rounded-xl bg-red-500/5 border border-red-500/10 p-3 text-sm text-foreground/70 whitespace-pre-wrap font-mono">
+                <div className="h-48 overflow-auto rounded-xl bg-red-500/5 border border-red-500/10 p-3 text-sm text-white/70 whitespace-pre-wrap font-mono">
                   {original}
                 </div>
               </div>
               <div className="space-y-2">
                 <span className="text-xs text-green-400 font-bold uppercase tracking-wider">AI Improved</span>
-                <div className="h-48 overflow-auto rounded-xl bg-green-500/5 border border-green-500/10 p-3 text-sm text-green-700 dark:text-green-300/80 whitespace-pre-wrap font-mono">
+                <div className="h-48 overflow-auto rounded-xl bg-green-500/5 border border-green-500/10 p-3 text-sm text-green-300/80 whitespace-pre-wrap font-mono">
                   {improved}
                 </div>
               </div>
@@ -374,7 +377,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               value={lyrics}
               onChange={(e) => setLyrics(e.target.value)}
               placeholder={original ? "Your song lyrics..." : "Paste your song lyrics here for best results..."}
-              className="w-full h-48 bg-secondary/50 border border-border rounded-xl p-4 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
+              className="w-full h-48 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
             />
           )}
         </div>
@@ -383,7 +386,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
       {/* Recommendations as toggles */}
       {recommendations.length > 0 && (
         <div className="space-y-3">
-          <p className="text-sm font-bold text-foreground flex items-center gap-2">
+          <p className="text-sm font-bold text-white flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-accent" />
             AI Recommendations
           </p>
@@ -394,18 +397,18 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               className={`flex items-start gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
                 rec.applied
                   ? "bg-primary/10 border-primary/30 shadow-lg shadow-primary/5"
-                  : "bg-card border-border hover:border-foreground/20"
+                  : "bg-white/[0.02] border-white/10 hover:border-white/20"
               }`}
               onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}
             >
-              <div className={`mt-0.5 flex-shrink-0 w-10 h-5 rounded-full relative transition-colors ${rec.applied ? "bg-primary" : "bg-muted"}`}>
+              <div className={`mt-0.5 flex-shrink-0 w-10 h-5 rounded-full relative transition-colors ${rec.applied ? "bg-primary" : "bg-white/15"}`}>
                 <motion.div
                   className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md"
                   animate={{ left: rec.applied ? 20 : 2 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
               </div>
-              <p className="text-sm text-foreground/80 flex-1">{rec.text}</p>
+              <p className="text-sm text-white/80 flex-1">{rec.text}</p>
             </motion.div>
           ))}
         </div>
@@ -525,7 +528,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
     <div className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 md:p-10 space-y-6 relative overflow-hidden">
       <WaveformBg bars={80} className="opacity-[0.04]" />
       <div className="relative text-center space-y-2">
-        <h2 className="text-2xl md:text-3xl font-black font-heading text-foreground">🎧 AI Remix — Make It Go Viral</h2>
+        <h2 className="text-2xl md:text-3xl font-black font-heading text-white">🎧 AI Remix — Make It Go Viral</h2>
         <p className="text-sm text-muted-foreground">AI covers your song with the same vibe but stronger hook and viral energy</p>
       </div>
 
@@ -591,7 +594,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
         <div className="relative flex flex-col items-center gap-6 py-8">
           <ProcessingWaveform />
           <div className="text-center">
-            <p className="text-lg font-bold text-foreground">{remixMessages(elapsed)}</p>
+            <p className="text-lg font-bold text-white">{remixMessages(elapsed)}</p>
             <p className="text-sm text-muted-foreground tabular-nums mt-2">{elapsed}s</p>
           </div>
         </div>
@@ -631,10 +634,10 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + idx * 0.15 }}
-              className="rounded-2xl bg-secondary/50 border border-border p-5 flex items-center gap-4"
+              className="rounded-2xl bg-white/5 border border-white/10 p-5 flex items-center gap-4"
             >
               {/* Album art placeholder */}
-              <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-border flex items-center justify-center">
+              <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-white/10 flex items-center justify-center">
                 {track.imageUrl ? (
                   <img src={track.imageUrl} alt="" className="w-full h-full rounded-xl object-cover" />
                 ) : (
@@ -642,7 +645,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-bold text-foreground truncate">
+                <p className="text-base font-bold text-white truncate">
                   {tracks.length > 1 ? `Version ${idx + 1}` : "AI Remix"}
                 </p>
                 {track.title && <p className="text-xs text-muted-foreground truncate">{track.title}</p>}
@@ -705,7 +708,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             ))}
             <Button
               variant="outline"
-              className="border-border hover:bg-secondary gap-2"
+              className="border-white/20 hover:bg-white/5 gap-2"
               onClick={() => {
                 const url = tracks[0]?.url;
                 if (url) {
@@ -722,7 +725,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             MP3 file • Ready to upload to Spotify, Apple Music, SoundCloud
           </p>
           <div className="flex justify-center pt-2">
-            <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-border hover:bg-secondary">
+            <Button onClick={() => { setStatus("idle"); setResult(null); }} variant="outline" className="border-white/20 hover:bg-white/5">
               Remix Again
             </Button>
           </div>
@@ -790,7 +793,7 @@ const Results = () => {
             >
               {badge.label}
             </motion.span>
-            <h1 className="text-3xl md:text-4xl font-black font-heading text-foreground tracking-tight">{verdict}</h1>
+            <h1 className="text-3xl md:text-4xl font-black font-heading text-white tracking-tight">{verdict}</h1>
             <p className="text-lg text-muted-foreground">"{title}"</p>
             {isRealAudio && (
               <motion.div
@@ -803,6 +806,134 @@ const Results = () => {
               </motion.div>
             )}
           </div>
+        </Section>
+
+        {/* ═══ SHARE SCORE CARD ═══ */}
+        <Section delay={0.05} className="flex justify-center">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                size="lg"
+                className="rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground font-bold gap-2 px-8 h-12 hover:opacity-90 transition-all"
+              >
+                <Share2 className="h-5 w-5" />
+                Share Score Card
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md bg-card border-border text-foreground p-0 overflow-hidden rounded-2xl">
+              <DialogHeader className="p-6 pb-0">
+                <DialogTitle className="text-lg font-bold">Share Your Score</DialogTitle>
+              </DialogHeader>
+              <div className="p-6 space-y-5">
+                {/* Score Card Preview */}
+                <div
+                  id="share-score-card"
+                  className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#0a0a0a] via-[#1a1025] to-[#0a0a0a] p-6 border border-primary/20"
+                >
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                  <div className="absolute top-4 right-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest">viralize.app</div>
+
+                  <div className="flex items-center gap-5">
+                    {/* Score circle */}
+                    <div className="relative flex-shrink-0">
+                      <svg width="90" height="90" className="-rotate-90">
+                        <circle cx="45" cy="45" r="36" fill="none" stroke="hsl(0 0% 15%)" strokeWidth="6" />
+                        <circle
+                          cx="45" cy="45" r="36" fill="none"
+                          stroke={scoreColor(score)}
+                          strokeWidth="6"
+                          strokeLinecap="round"
+                          strokeDasharray={2 * Math.PI * 36}
+                          strokeDashoffset={2 * Math.PI * 36 - (score / 100) * 2 * Math.PI * 36}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-2xl font-black text-white">{score}</span>
+                      </div>
+                    </div>
+                    {/* Song info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold text-lg truncate">{title}</p>
+                      <span className={`inline-block mt-1 px-3 py-0.5 rounded-full text-[10px] font-black border ${badge.cls}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="grid grid-cols-3 gap-3 mt-5">
+                    {bpmEstimate && (
+                      <div className="text-center rounded-lg bg-white/5 py-2">
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">BPM</p>
+                        <p className="text-sm font-bold text-white">{bpmEstimate}</p>
+                      </div>
+                    )}
+                    {hookTiming && (
+                      <div className="text-center rounded-lg bg-white/5 py-2">
+                        <p className="text-[10px] text-white/40 uppercase tracking-wider">Hook</p>
+                        <p className="text-sm font-bold text-white">{hookTiming}</p>
+                      </div>
+                    )}
+                    <div className="text-center rounded-lg bg-white/5 py-2">
+                      <p className="text-[10px] text-white/40 uppercase tracking-wider">Viral</p>
+                      <p className="text-sm font-bold text-accent">
+                        {Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)))}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="grid grid-cols-3 gap-3">
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-secondary gap-1.5 text-xs h-10"
+                    onClick={() => {
+                      const url = `${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copied!");
+                    }}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy Link
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-secondary gap-1.5 text-xs h-10"
+                    onClick={() => {
+                      const text = `My song scored ${score}/100 🎵 Check yours at viralize.ai`;
+                      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+                    }}
+                  >
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Share on X
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-border hover:bg-secondary gap-1.5 text-xs h-10"
+                    onClick={async () => {
+                      try {
+                        const el = document.getElementById('share-score-card');
+                        if (!el) return;
+                        const { default: html2canvas } = await import('html2canvas');
+                        const canvas = await html2canvas(el, { backgroundColor: '#0a0a0a', scale: 2 });
+                        const link = document.createElement('a');
+                        link.download = `viralize-score-${score}.png`;
+                        link.href = canvas.toDataURL();
+                        link.click();
+                      } catch {
+                        toast.error("Download failed. Try again.");
+                      }
+                    }}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </Section>
 
         {/* ═══ 1.5 VIRAL POTENTIAL METER ═══ */}
@@ -828,10 +959,10 @@ const Results = () => {
               {profileStats.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   {profileStats.map((stat) => (
-                    <div key={stat.label} className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
+                    <div key={stat.label} className="rounded-lg bg-white/5 border border-white/5 p-4 text-center">
                       <stat.icon className="h-4 w-4 mx-auto text-primary mb-2" />
                       <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
-                      <div className="text-base font-bold text-foreground mt-1">{stat.value}</div>
+                      <div className="text-base font-bold text-white mt-1">{stat.value}</div>
                     </div>
                   ))}
                 </div>
@@ -898,7 +1029,7 @@ const Results = () => {
                   {saveRatePrediction && (
                     <div className="rounded-lg bg-primary/10 border border-primary/20 p-4">
                       <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Save Rate Prediction</p>
-                      <p className="text-lg font-bold text-foreground">{saveRatePrediction}</p>
+                      <p className="text-lg font-bold text-white">{saveRatePrediction}</p>
                     </div>
                   )}
                   {skipRiskMoment && (
@@ -907,7 +1038,7 @@ const Results = () => {
                         <AlertTriangle className="h-4 w-4 text-red-400" />
                         <p className="text-xs text-red-400 font-bold uppercase tracking-wider">Skip Risk</p>
                       </div>
-                      <p className="text-sm font-semibold text-red-500 dark:text-red-300">{skipRiskMoment}</p>
+                      <p className="text-sm font-semibold text-red-300">{skipRiskMoment}</p>
                     </div>
                   )}
                 </div>
@@ -966,7 +1097,7 @@ const Results = () => {
                       <Music className="h-5 w-5 text-accent" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-foreground truncate">{song.title}</p>
+                      <p className="font-bold text-white truncate">{song.title}</p>
                       <p className="text-xs text-muted-foreground">{song.artist}</p>
                     </div>
                   </div>
@@ -991,7 +1122,7 @@ const Results = () => {
             <div className="grid gap-6 md:grid-cols-2">
               {strengths?.length > 0 && (
                 <div>
-                   <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-foreground">
+                  <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-white">
                     <span className="text-green-400">✅</span> What's Working
                   </h2>
                   <div className="glass-card p-6 space-y-3">
@@ -1014,7 +1145,7 @@ const Results = () => {
               )}
               {improvements?.length > 0 && (
                 <div>
-                  <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-foreground">
+                  <h2 className="flex items-center gap-2 text-lg font-bold font-heading mb-4 text-white">
                     <span className="text-red-400">❌</span> What to Fix
                   </h2>
                   <div className="glass-card p-6 space-y-3">
@@ -1045,7 +1176,7 @@ const Results = () => {
             <div className="rounded-2xl border-2 border-accent/40 bg-accent/10 p-8 md:p-10 text-center glow-gold">
               <Target className="h-8 w-8 text-accent mx-auto mb-4" />
               <p className="text-xs text-accent font-bold uppercase tracking-widest mb-4">If You Change ONE Thing Before Releasing:</p>
-              <p className="text-xl md:text-2xl font-black text-foreground leading-snug max-w-2xl mx-auto">{oneChange}</p>
+              <p className="text-xl md:text-2xl font-black text-white leading-snug max-w-2xl mx-auto">{oneChange}</p>
               <p className="text-sm text-muted-foreground mt-4 italic">This single change could be the difference between 1,000 and 1,000,000 streams.</p>
             </div>
           </Section>
@@ -1075,7 +1206,7 @@ const Results = () => {
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <ListMusic className="h-4 w-4 text-primary" />
-                      <span className="font-semibold text-sm text-foreground">{pl.name}</span>
+                      <span className="font-semibold text-sm text-white">{pl.name}</span>
                     </div>
                     {pl.followers && <p className="text-xs text-muted-foreground">{pl.followers} followers</p>}
                     {pl.reason && <p className="text-xs text-primary/70 mt-1">{pl.reason}</p>}
@@ -1135,7 +1266,7 @@ const Results = () => {
               asChild
               size="lg"
               variant="outline"
-              className="border-border hover:bg-secondary px-8 h-14 text-base font-semibold gap-2"
+              className="border-white/20 hover:bg-white/5 px-8 h-14 text-base font-semibold gap-2"
             >
               <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>

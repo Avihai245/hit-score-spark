@@ -20,6 +20,7 @@ const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number
   return <motion.span ref={ref}>{rounded}</motion.span>;
 };
 
+/* ─── Live incrementing counter ─── */
 const LiveCounter = () => {
   const [count, setCount] = useState(10247);
   useEffect(() => {
@@ -31,14 +32,14 @@ const LiveCounter = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-secondary/50 border border-border"
+      className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/[0.04] border border-white/10"
     >
       <motion.div
-        className="w-2 h-2 rounded-full bg-green-500"
+        className="w-2 h-2 rounded-full bg-green-400"
         animate={{ opacity: [1, 0.4, 1] }}
         transition={{ repeat: Infinity, duration: 1.5 }}
       />
-      <span className="text-sm font-bold text-foreground tabular-nums">
+      <span className="text-sm font-bold text-white tabular-nums">
         {count.toLocaleString()}
       </span>
       <span className="text-sm text-muted-foreground">songs analyzed</span>
@@ -68,14 +69,34 @@ const viralFeatures = [
 ];
 
 const testimonials = [
-  { quote: "I was about to release a 58/100 song. Viralize showed me one fix. Rereleased at 84. Now at 2M streams.", handle: "@axelbeats" },
-  { quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.", handle: "@lunawave" },
-  { quote: "Saved me $300 in SubmitHub submissions by knowing exactly who to target.", handle: "@sonicpilot" },
+  {
+    quote: "I was about to release a 58/100 song. Viralize showed me one fix. Rereleased at 84. Now at 2M streams.",
+    handle: "@axelbeats",
+  },
+  {
+    quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.",
+    handle: "@lunawave",
+  },
+  {
+    quote: "Saved me $300 in SubmitHub submissions by knowing exactly who to target.",
+    handle: "@sonicpilot",
+  },
 ];
 
 const pricingPreview = [
-  { name: "Free", price: "$0", features: ["1 analysis / month", "Basic hit score", "Strengths & improvements"], highlighted: false },
-  { name: "Pro", price: "$19", period: "/mo", features: ["Unlimited analyses", "Competitor Match", "30-Day Roadmap", "Playlist Targeting", "Priority analysis"], highlighted: true },
+  {
+    name: "Free",
+    price: "$0",
+    features: ["1 analysis / month", "Basic hit score", "Strengths & improvements"],
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: "$19",
+    period: "/mo",
+    features: ["Unlimited analyses", "Competitor Match", "30-Day Roadmap", "Playlist Targeting", "Priority analysis"],
+    highlighted: true,
+  },
 ];
 
 const fade = (delay: number) => ({
@@ -90,9 +111,11 @@ const Index = () => {
     <div className="flex min-h-screen flex-col bg-background">
       {/* Hero */}
       <section className="relative flex flex-col items-center justify-center min-h-[100svh] px-4 text-center overflow-hidden pt-24 pb-16">
+        {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.08),transparent_60%)]" />
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] pointer-events-none" />
 
+        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -105,6 +128,7 @@ const Index = () => {
           </span>
         </motion.div>
 
+        {/* Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,6 +158,7 @@ const Index = () => {
           Upload your track. In 60 seconds, get a professional hit score, lyrics analysis, competitor comparison, and your exact roadmap to viral success.
         </motion.p>
 
+        {/* CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,12 +186,13 @@ const Index = () => {
             asChild
             size="lg"
             variant="outline"
-            className="px-8 py-7 text-base font-semibold border-border hover:bg-secondary transition-all"
+            className="px-8 py-7 text-base font-semibold border-white/20 hover:bg-white/5 hover:border-white/30 transition-all"
           >
             <Link to="/results">See Example Report</Link>
           </Button>
         </motion.div>
 
+        {/* Live counter - clearly separated */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -176,6 +202,7 @@ const Index = () => {
           <LiveCounter />
         </motion.div>
 
+        {/* Stat cards */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -197,6 +224,7 @@ const Index = () => {
           ))}
         </motion.div>
 
+        {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -206,15 +234,15 @@ const Index = () => {
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-            className="w-6 h-10 rounded-full border-2 border-border flex items-start justify-center p-1"
+            className="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1"
           >
-            <motion.div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+            <motion.div className="w-1.5 h-1.5 rounded-full bg-white/60" />
           </motion.div>
         </motion.div>
       </section>
 
       {/* How It Works */}
-      <section className="border-t border-border py-24 px-4 bg-background">
+      <section className="border-t border-white/5 py-24 px-4 bg-background">
         <div className="container max-w-5xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-16 text-foreground">
             How It Works
@@ -226,7 +254,7 @@ const Index = () => {
                 {...fade(i * 0.1)}
                 className="glass-card p-8 text-center hover:border-primary/20 transition-all group relative overflow-hidden"
               >
-                <span className="absolute top-4 right-4 text-5xl font-black text-foreground/[0.03] font-heading">{step.num}</span>
+                <span className="absolute top-4 right-4 text-5xl font-black text-white/[0.03] font-heading">{step.num}</span>
                 <div className="text-4xl mb-4 font-black brand-gradient-text">{step.num}</div>
                 <h3 className="text-lg font-bold font-heading mb-2 text-foreground">{step.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
@@ -262,7 +290,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="border-t border-border py-24 px-4 bg-background">
+      <section className="border-t border-white/5 py-24 px-4 bg-background">
         <div className="container max-w-5xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-16 text-foreground">
             Artists Love Viralize
@@ -337,7 +365,7 @@ const Index = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="border-t border-border py-24 px-4 text-center bg-background">
+      <section className="border-t border-white/5 py-24 px-4 text-center bg-background">
         <motion.div {...fade(0)} className="container max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-black font-heading mb-4 text-foreground">
             Ready to know your <span className="gradient-text">hit score</span>?

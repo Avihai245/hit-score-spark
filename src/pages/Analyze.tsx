@@ -239,7 +239,7 @@ const Analyze = () => {
             <LoadingWaveform />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold font-heading text-foreground">
+            <p className="text-lg font-bold font-heading text-white">
               Analyzing your song...
             </p>
             <p className="mt-2 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
@@ -262,7 +262,7 @@ const Analyze = () => {
                       ? "border-green-500/30 bg-green-500/10"
                       : isCurrent
                         ? "border-primary/30 bg-primary/10"
-                        : "border-border bg-secondary/30 opacity-50"
+                        : "border-white/5 bg-white/[0.02] opacity-50"
                   )}
                 >
                   <div className={cn(
@@ -271,11 +271,11 @@ const Analyze = () => {
                       ? "bg-green-500"
                       : isCurrent
                         ? "bg-primary/30 border-2 border-primary"
-                        : "bg-muted"
+                        : "bg-white/10"
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
-                        <Check className="h-4 w-4 text-primary-foreground" />
+                        <Check className="h-4 w-4 text-white" />
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
@@ -289,7 +289,7 @@ const Analyze = () => {
                   </div>
                   <span className={cn(
                     "text-sm font-medium",
-                    isCompleted ? "text-green-500 dark:text-green-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
+                    isCompleted ? "text-green-400" : isCurrent ? "text-white" : "text-muted-foreground"
                   )}>
                     {step.label}
                     {isCompleted && " ✓"}
@@ -311,7 +311,7 @@ const Analyze = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-foreground">Analyze Your Song</h1>
+          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-white">Analyze Your Song</h1>
           <p className="text-center text-muted-foreground mb-10">
             Upload your track and get your hit score in 60 seconds
           </p>
@@ -355,7 +355,7 @@ const Analyze = () => {
                     <Music className="h-10 w-10 text-accent" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-lg text-foreground">{file.name}</p>
+                    <p className="font-bold text-lg text-white">{file.name}</p>
                     <p className="text-sm text-muted-foreground mt-1">{formatSize(file.size)}</p>
                   </div>
                   {/* Waveform preview */}
@@ -377,7 +377,7 @@ const Analyze = () => {
                     <Upload className="h-12 w-12 text-primary" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-xl text-foreground">Drop your song here</p>
+                    <p className="font-bold text-xl text-white">Drop your song here</p>
                     <p className="text-sm text-muted-foreground mt-2">MP3 or WAV · max 100 MB</p>
                     <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
                   </div>
