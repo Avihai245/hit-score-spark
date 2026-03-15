@@ -790,7 +790,7 @@ const Results = () => {
             >
               {badge.label}
             </motion.span>
-            <h1 className="text-3xl md:text-4xl font-black font-heading text-white tracking-tight">{verdict}</h1>
+            <h1 className="text-3xl md:text-4xl font-black font-heading text-foreground tracking-tight">{verdict}</h1>
             <p className="text-lg text-muted-foreground">"{title}"</p>
             {isRealAudio && (
               <motion.div
