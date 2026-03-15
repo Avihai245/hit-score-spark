@@ -398,7 +398,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               }`}
               onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}
             >
-              <div className={`mt-0.5 flex-shrink-0 w-10 h-5 rounded-full relative transition-colors ${rec.applied ? "bg-primary" : "bg-white/15"}`}>
+              <div className={`mt-0.5 flex-shrink-0 w-10 h-5 rounded-full relative transition-colors ${rec.applied ? "bg-primary" : "bg-muted"}`}>
                 <motion.div
                   className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md"
                   animate={{ left: rec.applied ? 20 : 2 }}
