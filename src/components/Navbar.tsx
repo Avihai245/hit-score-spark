@@ -90,7 +90,7 @@ const Navbar = () => {
               to={l.to}
               onClick={() => setMobileOpen(false)}
               className={cn(
-                "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-white/[0.04]",
+                "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/50",
                 pathname === l.to ? "text-foreground" : "text-muted-foreground"
               )}
             >
