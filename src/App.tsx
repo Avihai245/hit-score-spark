@@ -11,8 +11,6 @@ import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
 import Results from "./pages/Results";
 import Pricing from "./pages/Pricing";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
