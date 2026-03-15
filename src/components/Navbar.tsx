@@ -39,7 +39,7 @@ const Navbar = () => {
             <div className="absolute -inset-3 rounded-2xl opacity-0 group-hover:opacity-60 transition-opacity duration-700 bg-primary/25 blur-2xl" />
             <LogoIcon size={30} className="relative z-10 transition-transform duration-300 group-hover:scale-110" />
           </div>
-          <span className="text-[15px] font-heading font-semibold tracking-[0.08em] text-foreground uppercase">
+          <span className="text-xl font-heading font-bold tracking-[0.06em] uppercase brand-gradient-text">
             Viralize
           </span>
         </Link>
