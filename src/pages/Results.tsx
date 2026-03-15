@@ -642,7 +642,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-bold text-white truncate">
+                <p className="text-base font-bold text-foreground truncate">
                   {tracks.length > 1 ? `Version ${idx + 1}` : "AI Remix"}
                 </p>
                 {track.title && <p className="text-xs text-muted-foreground truncate">{track.title}</p>}
