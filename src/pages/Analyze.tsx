@@ -239,7 +239,7 @@ const Analyze = () => {
             <LoadingWaveform />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold font-heading text-white">
+            <p className="text-lg font-bold font-heading text-foreground">
               Analyzing your song...
             </p>
             <p className="mt-2 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
