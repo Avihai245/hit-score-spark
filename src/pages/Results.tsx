@@ -831,7 +831,7 @@ const Results = () => {
                     <div key={stat.label} className="rounded-lg bg-secondary/50 border border-border p-4 text-center">
                       <stat.icon className="h-4 w-4 mx-auto text-primary mb-2" />
                       <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
-                      <div className="text-base font-bold text-white mt-1">{stat.value}</div>
+                      <div className="text-base font-bold text-foreground mt-1">{stat.value}</div>
                     </div>
                   ))}
                 </div>
