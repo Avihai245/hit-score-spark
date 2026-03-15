@@ -17,12 +17,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#0a0a0a]/90 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-primary/20 blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-            <WaveformLogo />
-          </div>
-          <span className="text-xl font-black font-heading brand-gradient-text tracking-tight">Viralize</span>
+        <Link to="/" className="flex items-center group">
+          <ViralizeLogo variant="navbar" showTagline={false} />
         </Link>
 
         {/* Desktop */}
