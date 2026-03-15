@@ -125,6 +125,14 @@ const Analyze = () => {
       clearInterval(stepInterval);
       if (!analysisRes.ok) throw new Error("Analysis failed");
       const data = await analysisRes.json();
+      
+      // API sometimes returns 200 with an error message and no score
+      if (!data.score && data.message) {
+        throw new Error(data.message);
+      }
+      if (data.score == null) {
+        throw new Error("No score received from analysis");
+      }
       navigate("/results", { state: { results: data, title: title || file.name, goal } });
     } catch {
       toast({ title: "Analysis failed", description: "Something went wrong. Please try again.", variant: "destructive" });
