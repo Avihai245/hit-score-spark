@@ -1,7 +1,7 @@
 import { useLocation, Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Check, X, Target, Copy, ListMusic, Lightbulb, Clock, Activity, Zap, Headphones, Database, Music } from "lucide-react";
+import { Check, X, Target, Copy, ListMusic, Lightbulb, Clock, Activity, Zap, Headphones, Database, Music, User, AlertTriangle, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const scoreColor = (s: number) => {
@@ -45,6 +45,32 @@ const ScoreGauge = ({ score }: { score: number }) => {
         </motion.div>
         <div className="text-sm text-muted-foreground font-medium mt-1">/ 100</div>
       </div>
+    </div>
+  );
+};
+
+const MiniGauge = ({ label, value, max, color = "hsl(var(--primary))" }: { label: string; value: number; max: number; color?: string }) => {
+  const r = 32;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (value / max) * circ;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <svg width="80" height="80" className="-rotate-90">
+        <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(0 0% 12%)" strokeWidth="6" />
+        <motion.circle
+          cx="40" cy="40" r={r} fill="none"
+          stroke={color}
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute mt-5 text-sm font-bold" style={{ color }}>{value}</div>
+      <div className="text-xs text-muted-foreground font-medium text-center mt-1">{label}</div>
     </div>
   );
 };
@@ -96,6 +122,13 @@ const Results = () => {
     hookTiming, bpmEstimate, energyLevel, dataSource, openingLyrics,
     hookAnalysis, viralPotential, competitorMatch,
     matchedPlaylists, playlistStrategy, sunoPrompt,
+    musicalKey,
+    // New fields
+    songTheme, emotionalCore, viralLine,
+    lyricWeakness, lyricFix,
+    targetAudience, listeningMoment, tikTokFit,
+    valence, danceability, saveRatePrediction, skipRiskMoment,
+    similarSongs,
   } = results;
 
   const isRealAudio = dataSource === "real_audio_analysis";
@@ -113,10 +146,13 @@ const Results = () => {
 
   const audioStats = [
     { icon: Clock, label: "Hook Timing", value: hookTiming },
-    { icon: Activity, label: "BPM Estimate", value: bpmEstimate },
+    { icon: Activity, label: "BPM", value: bpmEstimate },
+    { icon: KeyRound, label: "Key", value: musicalKey },
     { icon: Zap, label: "Energy Level", value: energyLevel },
     { icon: Music, label: "Opening Lyrics", value: openingLyrics },
   ].filter((f) => f.value != null);
+
+  const hasViralLine = viralLine && viralLine !== "none yet";
 
   return (
     <div className="min-h-screen px-4 pt-24 pb-16">
@@ -139,6 +175,39 @@ const Results = () => {
             )}
           </div>
         </motion.div>
+
+        {/* SONG IDENTITY */}
+        {(songTheme || emotionalCore || viralLine) && (
+          <motion.section {...fade(0.22)}>
+            <SectionHeader emoji="🎭" title="SONG IDENTITY" delay={0.22} />
+            <div className="glass-card p-6 space-y-4">
+              {songTheme && (
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Theme</span>
+                  <p className="text-sm text-foreground/90 mt-1">{songTheme}</p>
+                </div>
+              )}
+              {emotionalCore && (
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Emotional Core</span>
+                  <p className="text-sm text-foreground/90 mt-1">{emotionalCore}</p>
+                </div>
+              )}
+              {viralLine != null && (
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Viral Line</span>
+                  {hasViralLine ? (
+                    <p className="text-base font-bold text-accent mt-1 glow-gold inline-block px-3 py-1 rounded-lg border border-accent/30 bg-accent/10">
+                      "{viralLine}"
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-1 italic">No standout viral line detected yet</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
 
         {/* COMPETITOR MATCH */}
         {competitorMatch && (
@@ -164,11 +233,11 @@ const Results = () => {
           </motion.section>
         )}
 
-        {/* 3. AUDIO ANALYSIS */}
+        {/* DETAILED ANALYSIS */}
         {audioStats.length > 0 && (
           <motion.section {...fade(0.3)}>
             <SectionHeader emoji="🔊" title="DETAILED ANALYSIS" delay={0.3} />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {audioStats.map((stat) => (
                 <div
                   key={stat.label}
@@ -185,7 +254,41 @@ const Results = () => {
           </motion.section>
         )}
 
-        {/* 4 & 5. STRENGTHS + IMPROVEMENTS */}
+        {/* SPOTIFY SCORE */}
+        {(valence != null || danceability != null || saveRatePrediction || skipRiskMoment) && (
+          <motion.section {...fade(0.35)}>
+            <SectionHeader emoji="💚" title="SPOTIFY SCORE" delay={0.35} />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {valence != null && (
+                <div className="glass-card p-5 flex flex-col items-center relative">
+                  <MiniGauge label="Valence" value={valence} max={10} color="hsl(142 71% 45%)" />
+                  <div className="text-xs text-muted-foreground mt-1">/ 10</div>
+                </div>
+              )}
+              {danceability != null && (
+                <div className="glass-card p-5 flex flex-col items-center relative">
+                  <MiniGauge label="Danceability" value={danceability} max={10} color="hsl(var(--primary))" />
+                  <div className="text-xs text-muted-foreground mt-1">/ 10</div>
+                </div>
+              )}
+              {saveRatePrediction && (
+                <div className="glass-card p-5 text-center space-y-2">
+                  <div className="text-3xl font-black text-primary">{saveRatePrediction}</div>
+                  <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Save Rate</div>
+                </div>
+              )}
+              {skipRiskMoment && (
+                <div className="glass-card p-5 text-center space-y-2 border-destructive/30">
+                  <AlertTriangle className="h-5 w-5 mx-auto text-destructive" />
+                  <div className="text-sm font-bold text-destructive">{skipRiskMoment}</div>
+                  <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Skip Risk</div>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
+
+        {/* STRENGTHS + IMPROVEMENTS */}
         <motion.div {...fade(0.4)} className="grid gap-6 md:grid-cols-2">
           {strengths?.length > 0 && (
             <div>
@@ -235,7 +338,37 @@ const Results = () => {
           )}
         </motion.div>
 
-        {/* 6. THE ONE CHANGE */}
+        {/* LYRICS FEEDBACK */}
+        {(lyricWeakness || lyricFix) && (
+          <motion.section {...fade(0.45)}>
+            <SectionHeader emoji="✍️" title="LYRICS FEEDBACK" delay={0.45} />
+            <div className="glass-card p-6 space-y-4">
+              {lyricWeakness && (
+                <div>
+                  <span className="text-xs text-destructive uppercase tracking-wider font-bold">Weakest moment</span>
+                  <p className="text-sm text-foreground/80 mt-1 italic">"{lyricWeakness}"</p>
+                </div>
+              )}
+              {lyricFix && (
+                <div>
+                  <span className="text-xs text-green-400 uppercase tracking-wider font-bold">Suggested fix</span>
+                  <div className="mt-2 grid gap-2 md:grid-cols-2">
+                    <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                      <div className="text-xs text-destructive font-bold mb-1">BEFORE</div>
+                      <p className="text-sm text-foreground/70">{lyricWeakness || "—"}</p>
+                    </div>
+                    <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
+                      <div className="text-xs text-green-400 font-bold mb-1">AFTER</div>
+                      <p className="text-sm text-foreground/90">{lyricFix}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
+
+        {/* THE ONE CHANGE */}
         {oneChange && (
           <motion.section {...fade(0.5)}>
             <SectionHeader emoji="🎯" title="THE ONE CHANGE THAT MATTERS" delay={0.5} />
@@ -248,12 +381,11 @@ const Results = () => {
           </motion.section>
         )}
 
-        {/* 7. HOOK ANALYSIS */}
+        {/* HOOK ANALYSIS */}
         {hookAnalysis && (
           <motion.section {...fade(0.55)}>
             <SectionHeader emoji="🎵" title="HOOK ANALYSIS" delay={0.55} />
             <div className="glass-card p-6 relative overflow-hidden">
-              {/* Waveform decoration */}
               <div className="absolute top-0 right-0 w-1/3 h-full opacity-5 flex items-center gap-0.5 pr-4">
                 {Array.from({ length: 30 }).map((_, i) => (
                   <div
@@ -268,16 +400,81 @@ const Results = () => {
           </motion.section>
         )}
 
-        {/* 8. 30-DAY ROADMAP */}
-        <motion.section {...fade(0.6)}>
-          <SectionHeader emoji="📅" title="30-DAY RELEASE ROADMAP" delay={0.6} />
+        {/* AUDIENCE PROFILE */}
+        {(targetAudience || listeningMoment || tikTokFit) && (
+          <motion.section {...fade(0.57)}>
+            <SectionHeader emoji="👤" title="AUDIENCE PROFILE" delay={0.57} />
+            <div className="glass-card p-6 space-y-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <User className="h-5 w-5 text-primary" />
+                </div>
+                <span className="text-sm font-semibold text-foreground/70">Your ideal listener</span>
+              </div>
+              {targetAudience && (
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Who</span>
+                  <p className="text-sm text-foreground/90 mt-1">{targetAudience}</p>
+                </div>
+              )}
+              {listeningMoment && (
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">When they listen</span>
+                  <p className="text-sm text-foreground/90 mt-1">{listeningMoment}</p>
+                </div>
+              )}
+              {tikTokFit && (
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">TikTok Fit</span>
+                  <p className="text-sm text-foreground/90 mt-1">{tikTokFit}</p>
+                </div>
+              )}
+            </div>
+          </motion.section>
+        )}
+
+        {/* SIMILAR SONGS THAT WORKED */}
+        {similarSongs?.length > 0 && (
+          <motion.section {...fade(0.6)}>
+            <SectionHeader emoji="🏆" title="SIMILAR SONGS THAT WORKED" delay={0.6} />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {similarSongs.slice(0, 3).map((song: any, i: number) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.65 + i * 0.08 }}
+                  className="glass-card p-5 hover:border-accent/30 transition-colors space-y-3"
+                >
+                  <div>
+                    <div className="font-bold text-sm">{song.title}</div>
+                    <div className="text-xs text-muted-foreground">{song.artist}</div>
+                  </div>
+                  {song.streams && (
+                    <div className="text-xs text-accent font-semibold">{song.streams} streams</div>
+                  )}
+                  {song.whatTheyHaveThatYouDont && (
+                    <div>
+                      <span className="text-xs text-muted-foreground italic">What they have that you don't:</span>
+                      <p className="text-sm text-foreground/80 mt-1">{song.whatTheyHaveThatYouDont}</p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* 30-DAY ROADMAP */}
+        <motion.section {...fade(0.65)}>
+          <SectionHeader emoji="📅" title="30-DAY RELEASE ROADMAP" delay={0.65} />
           <div className="space-y-4">
             {roadmap.map((item, i) => (
               <motion.div
                 key={item.week}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.65 + i * 0.08 }}
+                transition={{ delay: 0.7 + i * 0.08 }}
                 className="glass-card p-5 flex items-start gap-4"
               >
                 <div className="flex-shrink-0 w-20 text-sm font-bold text-primary">{item.week}</div>
@@ -287,10 +484,10 @@ const Results = () => {
           </div>
         </motion.section>
 
-        {/* 9. SPOTIFY PLAYLIST STRATEGY */}
+        {/* SPOTIFY PLAYLIST TARGETS */}
         {(playlistStrategy || matchedPlaylists?.length > 0) && (
-          <motion.section {...fade(0.7)}>
-            <SectionHeader emoji="📋" title="SPOTIFY PLAYLIST TARGETS" delay={0.7} />
+          <motion.section {...fade(0.75)}>
+            <SectionHeader emoji="📋" title="SPOTIFY PLAYLIST TARGETS" delay={0.75} />
             {playlistStrategy && (
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 mb-6">
                 <div className="flex items-start gap-3">
@@ -306,7 +503,7 @@ const Results = () => {
                     key={i}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.75 + i * 0.05 }}
+                    transition={{ delay: 0.8 + i * 0.05 }}
                     className="glass-card p-5 hover:border-primary/20 transition-colors"
                   >
                     <div className="flex items-center gap-2 mb-2">
@@ -328,8 +525,8 @@ const Results = () => {
 
         {/* VIRAL POTENTIAL */}
         {viralPotential && (
-          <motion.section {...fade(0.8)}>
-            <SectionHeader emoji="🚀" title="VIRAL POTENTIAL" delay={0.8} />
+          <motion.section {...fade(0.85)}>
+            <SectionHeader emoji="🚀" title="VIRAL POTENTIAL" delay={0.85} />
             <div className="glass-card p-6 border-primary/20">
               <p className="text-sm text-foreground/80 leading-relaxed">{viralPotential}</p>
             </div>
@@ -345,8 +542,8 @@ const Results = () => {
 
         {/* Suno Prompt */}
         {sunoPrompt && (
-          <motion.section {...fade(0.85)}>
-            <SectionHeader emoji="🤖" title="YOUR SUNO PROMPT" delay={0.85} />
+          <motion.section {...fade(0.9)}>
+            <SectionHeader emoji="🤖" title="YOUR SUNO PROMPT" delay={0.9} />
             <div className="glass-card relative p-6">
               <pre className="whitespace-pre-wrap text-sm text-foreground/70 leading-relaxed font-sans">
                 {sunoPrompt}
@@ -364,7 +561,7 @@ const Results = () => {
         )}
 
         {/* Bottom CTA */}
-        <motion.div {...fade(0.9)} className="text-center space-y-4 pt-8">
+        <motion.div {...fade(0.95)} className="text-center space-y-4 pt-8">
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Button asChild className="gradient-purple text-primary-foreground font-bold glow-purple hover:opacity-90 transition-opacity px-10 h-14 text-lg">
               <Link to="/analyze">Analyze Another Song</Link>
