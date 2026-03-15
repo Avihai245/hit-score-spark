@@ -634,7 +634,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
               className="rounded-2xl bg-secondary/50 border border-border p-5 flex items-center gap-4"
             >
               {/* Album art placeholder */}
-              <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-white/10 flex items-center justify-center">
+              <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-border flex items-center justify-center">
                 {track.imageUrl ? (
                   <img src={track.imageUrl} alt="" className="w-full h-full rounded-xl object-cover" />
                 ) : (
