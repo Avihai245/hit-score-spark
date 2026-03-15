@@ -799,7 +799,7 @@ const Results = () => {
                 transition={{ delay: 2 }}
                 className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold border border-green-500/20 bg-green-500/10 text-green-400"
               >
-                <Headphones className="h-3.5 w-3.5" /> Analyzed with Real Audio AI
+                <Headphones className="h-3.5 w-3.5" /> Analyzed with HitCheck AI Engine
               </motion.div>
             )}
           </div>
