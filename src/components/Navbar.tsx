@@ -1,11 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { useState } from "react";
 import { LogoIcon } from "@/components/ViralizeLogo";
+import { useTheme } from "@/components/ThemeProvider";
 
 const Navbar = () => {
+  const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -15,7 +17,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-background/80 backdrop-blur-2xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-2xl">
       <div className="container flex h-14 md:h-16 items-center">
         {/* Left — nav links (desktop) */}
         <div className="hidden md:flex items-center gap-8 flex-1">
@@ -44,8 +46,15 @@ const Navbar = () => {
           </span>
         </Link>
 
-        {/* Right — CTA (desktop) */}
-        <div className="hidden md:flex items-center justify-end gap-4 flex-1">
+        {/* Right — theme toggle + CTA (desktop) */}
+        <div className="hidden md:flex items-center justify-end gap-3 flex-1">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-200"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           <Button
             asChild
             size="sm"
@@ -55,14 +64,21 @@ const Navbar = () => {
           </Button>
         </div>
 
-        {/* Mobile toggle */}
-        <div className="flex-1 md:hidden" />
-        <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex-1 flex justify-end items-center gap-1 md:hidden">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+          <button
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile menu */}
