@@ -591,7 +591,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
         <div className="relative flex flex-col items-center gap-6 py-8">
           <ProcessingWaveform />
           <div className="text-center">
-            <p className="text-lg font-bold text-white">{remixMessages(elapsed)}</p>
+            <p className="text-lg font-bold text-foreground">{remixMessages(elapsed)}</p>
             <p className="text-sm text-muted-foreground tabular-nums mt-2">{elapsed}s</p>
           </div>
         </div>
