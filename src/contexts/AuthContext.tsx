@@ -58,17 +58,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           u.email?.split('@')[0] ||
           null;
 
+        // Check if admin email — give full access
+        const isAdmin = u.email === 'or3004@gmail.com' || u.email === 'office@sabatiers.com';
+
         const { data: newProfile, error: createError } = await supabase
           .from('viralize_users')
           .insert({
             id: u.id,
             email: u.email,
             display_name: displayName,
-            plan: 'free',
+            plan: isAdmin ? 'studio' : 'free',
+            is_admin: isAdmin,
             analyses_used: 0,
             remixes_used: 0,
             analyses_this_month: 0,
-            credits: 0,
+            credits: isAdmin ? 99999 : 0,
+            subscription_status: isAdmin ? 'active' : null,
             api_key: null,
           })
           .select('*')
