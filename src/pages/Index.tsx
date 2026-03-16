@@ -327,36 +327,36 @@ const Index = () => {
 
       {/* Pricing Preview */}
       <section className="py-24 px-4 bg-background">
-        <div className="container max-w-3xl">
+        <div className="container max-w-6xl">
           <motion.h2 {...fade(0)} className="text-center text-3xl md:text-4xl font-black font-heading mb-4 text-foreground">
-            Simple Pricing
+            Simple, Transparent Pricing
           </motion.h2>
-          <motion.p {...fade(0.05)} className="text-center text-muted-foreground mb-12">
-            Start free. Upgrade when you're ready.
+          <motion.p {...fade(0.05)} className="text-center text-muted-foreground mb-12 max-w-xl mx-auto">
+            Start free. Pay only when you're ready. One viral hit pays for itself 100x over.
           </motion.p>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             {pricingPreview.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                {...fade(i * 0.1)}
-                className={`glass-card p-8 flex flex-col ${
-                  plan.highlighted ? "border-accent/40 glow-gold" : ""
+                {...fade(i * 0.08)}
+                className={`glass-card p-7 flex flex-col ${
+                  plan.highlighted ? "border-primary/40 glow-purple xl:scale-[1.03] z-10 relative" : ""
                 }`}
               >
-                {plan.highlighted && (
-                  <span className="mb-3 inline-block self-start rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
-                    Most Popular
+                {plan.badge && (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full gradient-purple px-4 py-1 text-[11px] font-black text-white tracking-wider shadow-lg shadow-primary/30">
+                    ⭐ {plan.badge}
                   </span>
                 )}
-                <h3 className="text-xl font-bold font-heading text-foreground">{plan.name}</h3>
+                <h3 className="text-lg font-bold font-heading text-foreground">{plan.name}</h3>
                 <div className="mt-3 flex items-baseline gap-1">
                   <span className="text-4xl font-black text-foreground">{plan.price}</span>
-                  {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
+                  {plan.period && <span className="text-muted-foreground text-sm">{plan.period}</span>}
                 </div>
-                <ul className="mt-6 flex-1 space-y-2">
+                <ul className="mt-6 flex-1 space-y-2.5">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="text-primary">✓</span> {f}
+                      <span className={plan.highlighted ? "text-primary" : "text-green-400"}>✓</span> {f}
                     </li>
                   ))}
                 </ul>
@@ -369,8 +369,8 @@ const Index = () => {
                   }`}
                   variant={plan.highlighted ? "default" : "outline"}
                 >
-                  <Link to={plan.highlighted ? "/pricing" : "/analyze"}>
-                    {plan.highlighted ? "Upgrade to Pro" : "Get Started"}
+                  <Link to="/pricing">
+                    {plan.highlighted ? "Get Pro" : plan.name === "Free" ? "Start Free" : "See Plans"}
                   </Link>
                 </Button>
               </motion.div>
