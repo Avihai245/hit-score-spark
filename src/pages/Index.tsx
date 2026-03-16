@@ -87,15 +87,30 @@ const pricingPreview = [
   {
     name: "Free",
     price: "$0",
-    features: ["1 analysis / month", "Basic hit score", "Strengths & improvements"],
+    features: ["1 analysis / month", "Hit score (0–100)", "3 improvement tips", "Strengths & weaknesses"],
+    highlighted: false,
+  },
+  {
+    name: "Pay As You Go",
+    price: "$2.99",
+    period: "/song",
+    features: ["Full analysis report", "AI Remix — $6.99", "Download MP3 & WAV", "No subscription"],
     highlighted: false,
   },
   {
     name: "Pro",
-    price: "$19",
+    price: "$29",
     period: "/mo",
-    features: ["Unlimited analyses", "Competitor Match", "30-Day Roadmap", "Playlist Targeting", "Priority analysis"],
+    badge: "MOST POPULAR",
+    features: ["Unlimited analyses", "10 AI Remixes/month", "Competitor DNA Match", "Playlist Targeting", "30-Day Roadmap", "Priority processing"],
     highlighted: true,
+  },
+  {
+    name: "Studio",
+    price: "$49",
+    period: "/mo",
+    features: ["Everything in Pro", "Unlimited AI Remixes", "API access", "White-label reports", "3 team seats"],
+    highlighted: false,
   },
 ];
 
