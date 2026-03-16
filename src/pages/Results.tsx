@@ -855,7 +855,7 @@ const Results = () => {
   const analysesUsed = profile?.analyses_used ?? 0;
   const analysesLimit = PLAN_LIMITS[plan].analyses;
   const hasExhaustedFreeAnalysis = plan === 'free' && analysesUsed >= analysesLimit;
-  const canRemix = plan !== 'free';
+  const canRemix = plan !== 'free' || profile?.is_admin === true;
 
   const { results, title, goal, uploadedFile, songGenre } = state;
   const {
