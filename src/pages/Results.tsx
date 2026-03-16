@@ -227,7 +227,7 @@ const remixStyles = [
 ];
 
 /* ─── Download helper ─── */
-const downloadTrack = async (url: string, filename: string) => {
+const downloadTrack = async (url: string, filename: string, asWav = false) => {
   try {
     const res = await fetch(url);
     const blob = await res.blob();
