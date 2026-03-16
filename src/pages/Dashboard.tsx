@@ -56,17 +56,29 @@ export default function Dashboard() {
     }
   }, [loading, user, navigate]);
 
+  const [totalAnalysesCount, setTotalAnalysesCount] = useState(0);
+  const [totalRemixesCount, setTotalRemixesCount] = useState(0);
+  const [totalAvgScore, setTotalAvgScore] = useState(0);
+
   useEffect(() => {
     if (!user) return;
     const load = async () => {
       setDataLoading(true);
       try {
-        const [{ data: a }, { data: r }] = await Promise.all([
+        const [{ data: a }, { data: r }, { data: allScores }, { count: remixCount }] = await Promise.all([
           supabase.from('viralize_analyses').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3),
           supabase.from('viralize_remixes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3),
+          supabase.from('viralize_analyses').select('score').eq('user_id', user.id),
+          supabase.from('viralize_remixes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         ]);
         setAnalyses(a || []);
         setRemixes(r || []);
+        const scores = allScores || [];
+        setTotalAnalysesCount(scores.length);
+        setTotalRemixesCount(remixCount || 0);
+        if (scores.length > 0) {
+          setTotalAvgScore(Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length));
+        }
       } catch {
         // ignore
       } finally {
@@ -83,7 +95,10 @@ export default function Dashboard() {
   const analysesUsed = profile?.analyses_used || 0;
   const remixesUsed = profile?.remixes_used || 0;
   const credits = profile?.credits || 0;
-  const avgScore = analyses.length > 0 ? Math.round(analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length) : 0;
+  // Use real counts from DB queries; fall back to profile counters while loading
+  const displayAnalysesCount = totalAnalysesCount || analysesUsed;
+  const displayRemixesCount = totalRemixesCount || remixesUsed;
+  const avgScore = totalAvgScore;
 
   const formatLimit = (val: number, limit: number) => limit === 999 ? `${val} / ∞` : `${val} / ${limit}`;
 
@@ -122,9 +137,9 @@ export default function Dashboard() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { icon: <BarChart2 className="h-5 w-5 text-primary" />, label: 'Analyses', value: formatLimit(analysesUsed, limits.analyses) },
-            { icon: <RefreshCw className="h-5 w-5 text-accent" />, label: 'Remixes', value: formatLimit(remixesUsed, limits.remixes) },
-            { icon: <TrendingUp className="h-5 w-5 text-emerald-400" />, label: 'Avg Score', value: avgScore > 0 ? `${avgScore}/100` : '—' },
+            { icon: <BarChart2 className="h-5 w-5 text-primary" />, label: 'Songs Analyzed', value: dataLoading ? '…' : displayAnalysesCount.toString() },
+            { icon: <RefreshCw className="h-5 w-5 text-accent" />, label: 'Remixes Made', value: dataLoading ? '…' : displayRemixesCount.toString() },
+            { icon: <TrendingUp className="h-5 w-5 text-emerald-400" />, label: 'Avg Hit Score', value: avgScore > 0 ? `${avgScore}/100` : '—' },
             { icon: <Zap className="h-5 w-5 text-blue-400" />, label: 'Credits', value: plan === 'payg' ? credits.toString() : plan === 'free' ? '—' : '∞' },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-5 hover:bg-card/90 transition-colors">

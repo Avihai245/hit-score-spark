@@ -73,16 +73,18 @@ const saveAnalysisToSupabase = async (userId: string, data: {
   score: number;
   verdict: string;
   fullResult: any;
-}) => {
+}): Promise<string | null> => {
   try {
-    await supabase.from('viralize_analyses').insert({
+    const { data: inserted, error } = await supabase.from('viralize_analyses').insert({
       user_id: userId,
       title: data.title,
       genre: data.genre,
       score: data.score,
       verdict: data.verdict,
       full_result: data.fullResult,
-    });
+    }).select('id').single();
+    if (error) throw error;
+    const analysisId = inserted?.id || null;
     // Increment analyses_this_month
     const { error: rpcError } = await supabase.rpc('increment_analyses_this_month', { user_id_param: userId });
     if (rpcError) {
@@ -99,8 +101,10 @@ const saveAnalysisToSupabase = async (userId: string, data: {
         }).eq('id', userId);
       }
     }
+    return analysisId;
   } catch (err) {
     console.warn('Failed to save analysis:', err);
+    return null;
   }
 };
 
@@ -199,8 +203,9 @@ const Analyze = () => {
 
       if (!jobId) {
         if (analysisData.score != null) {
+          let analysisId: string | null = null;
           if (user) {
-            saveAnalysisToSupabase(user.id, {
+            analysisId = await saveAnalysisToSupabase(user.id, {
               title: title || file.name,
               genre: genre || analysisData.genre || '',
               score: analysisData.score,
@@ -208,7 +213,7 @@ const Analyze = () => {
               fullResult: analysisData,
             });
           }
-          navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+          navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId } });
           return;
         }
         throw new Error("No jobId received from server");
@@ -247,8 +252,9 @@ const Analyze = () => {
           if (data.status === "complete") {
             markStep(3);
             // Save to Supabase if logged in
+            let analysisId: string | null = null;
             if (user) {
-              saveAnalysisToSupabase(user.id, {
+              analysisId = await saveAnalysisToSupabase(user.id, {
                 title: title || file.name,
                 genre: genre || data.genre || '',
                 score: data.score || 0,
@@ -258,7 +264,7 @@ const Analyze = () => {
             }
             setTimeout(() => {
               setLoading(false);
-              navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
+              navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId } });
             }, 600);
           } else if (data.status === "error") {
             setLoading(false);

@@ -439,7 +439,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   );
 };
 
-const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any }) => {
+const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, analysisId }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any; analysisId?: string }) => {
   const { user } = useAuth();
   const [status, setStatus] = useState<"idle" | "lyrics" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
@@ -505,15 +505,20 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             setStatus("complete");
             // Save remix to Supabase if logged in
             if (user) {
-              const tracks = data.tracks || (data.audioUrl ? [{ audioUrl: data.audioUrl }] : []);
+              const tracks = data.tracks || (data.audioUrl ? [{ audioUrl: data.audioUrl, imageUrl: data.imageUrl }] : []);
               const firstTrack = tracks[0];
               const audioUrl = firstTrack?.url || firstTrack?.audioUrl || data.audioUrl || '';
+              const imageUrl = firstTrack?.image_url || firstTrack?.imageUrl || data.imageUrl || '';
               if (audioUrl) {
                 supabase.from('viralize_remixes').insert({
                   user_id: user.id,
                   title: songTitle || 'AI Remix',
                   audio_url: audioUrl,
+                  image_url: imageUrl || null,
                   style,
+                  genre: songGenre || null,
+                  suno_task_id: taskId,
+                  analysis_id: analysisId || null,
                 }).then(({ error: e }) => { if (e) console.warn('Failed to save remix:', e); });
               }
             }
@@ -845,7 +850,7 @@ const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songT
 const Results = () => {
   const location = useLocation();
   const _navigate = useNavigate();
-  const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string } | null;
+  const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string; analysisId?: string } | null;
 
   if (!state?.results) return <Navigate to="/analyze" replace />;
 
@@ -857,7 +862,7 @@ const Results = () => {
   const hasExhaustedFreeAnalysis = plan === 'free' && analysesUsed >= analysesLimit;
   const canRemix = plan !== 'free' || profile?.is_admin === true;
 
-  const { results, title, goal, uploadedFile, songGenre } = state;
+  const { results, title, goal, uploadedFile, songGenre, analysisId } = state;
   const {
     score, verdict, strengths, improvements, oneChange,
     hookTiming, bpmEstimate, energyLevel, dataSource, openingLyrics,
@@ -1372,7 +1377,7 @@ const Results = () => {
         {/* ═══ 12. AI REMIX ═══ */}
         <Section delay={0.85}>
           {canRemix ? (
-            <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} />
+            <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
           ) : (
             <div className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 md:p-10 text-center relative overflow-hidden">
               <div className="text-5xl mb-4">🎧</div>
