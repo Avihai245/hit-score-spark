@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown } from "lucide-react";
+import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { LogoIcon } from "@/components/ViralizeLogo";
 import { useTheme } from "@/components/ThemeProvider";
@@ -58,7 +58,7 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/analyze", label: "Analyze" },
-    { to: "/pricing", label: "Pricing" },
+    { to: "/billing", label: "Pricing" },
   ];
 
   // Close dropdown on outside click
@@ -155,6 +155,16 @@ const Navbar = () => {
               </>
             )}
 
+            {!loading && user && plan === 'free' && (
+              <Link
+                to="/billing"
+                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-gradient-to-r from-accent/20 to-yellow-500/20 border border-accent/30 text-accent hover:border-accent/60 hover:from-accent/30 hover:to-yellow-500/30 transition-all"
+              >
+                <Zap className="h-3.5 w-3.5" />
+                Upgrade
+              </Link>
+            )}
+
             {!loading && user && (
               <div className="relative" ref={dropdownRef}>
                 <button
@@ -190,6 +200,14 @@ const Navbar = () => {
                       >
                         <LayoutDashboard className="h-4 w-4 text-primary" />
                         Dashboard
+                      </Link>
+                      <Link
+                        to="/billing"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <CreditCard className="h-4 w-4 text-accent" />
+                        Billing & Plans
                       </Link>
                       <Link
                         to="/settings"
@@ -260,6 +278,18 @@ const Navbar = () => {
                 )}
               >
                 Dashboard
+              </Link>
+            )}
+            {user && (
+              <Link
+                to="/billing"
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
+                  pathname === '/billing' ? "text-foreground" : "text-muted-foreground"
+                )}
+              >
+                Billing
               </Link>
             )}
             {user && (

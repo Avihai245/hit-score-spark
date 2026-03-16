@@ -1,7 +1,8 @@
 import { useLocation, Link, Navigate } from "react-router-dom";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { PLAN_LIMITS } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -752,12 +753,109 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
   );
 };
 
+/* ─── Paywall Banner ─── */
+const PaywallBanner = ({ score }: { score: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="w-full rounded-2xl border-2 border-orange-500/40 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-7 text-center"
+  >
+    <div className="text-4xl mb-3">🔥</div>
+    <h3 className="text-xl font-black text-white mb-2">You've used your free analysis for this month</h3>
+    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+      Upgrade to Pro for unlimited analyses + 10 AI remixes/month. Your song scored <strong className="text-white">{score}/100</strong> — let's make it go viral.
+    </p>
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+      <Link to="/billing">
+        <motion.button
+          className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black text-sm overflow-hidden"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+          />
+          <span className="relative">Upgrade to Pro — $19/month</span>
+        </motion.button>
+      </Link>
+      <Link to="/billing">
+        <button className="px-6 py-3 rounded-xl border border-white/20 text-white text-sm font-semibold hover:bg-white/5 transition-colors">
+          Buy Single Analysis — $3
+        </button>
+      </Link>
+    </div>
+  </motion.div>
+);
+
+/* ─── Remix Paywall Modal ─── */
+const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songTitle: string; onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+    onClick={onClose}
+  >
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }}
+      className="relative max-w-md w-full rounded-3xl border-2 border-accent/40 bg-[#0f0f0f] p-8 text-center"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="text-4xl mb-3">🎵</div>
+      <h3 className="text-2xl font-black text-white mb-2">AI Remix is a Pro feature</h3>
+      <p className="text-muted-foreground mb-2">
+        Your song <strong className="text-white">"{songTitle}"</strong> scored <strong className="text-accent text-lg">{score}/100</strong>.
+      </p>
+      <p className="text-muted-foreground mb-7">
+        Create an AI remix to take it viral — stronger hook, more energy, same vibe.
+      </p>
+      <div className="flex flex-col gap-3">
+        <Link to="/billing" onClick={onClose}>
+          <motion.button
+            className="relative w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black text-base overflow-hidden"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+              animate={{ x: ['-100%', '200%'] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+            />
+            <span className="relative">Upgrade to Pro — $19/month</span>
+          </motion.button>
+        </Link>
+        <Link to="/billing" onClick={onClose}>
+          <button className="w-full py-3 rounded-xl border border-white/20 text-white text-sm font-semibold hover:bg-white/5 transition-colors">
+            Buy Single Remix — $7
+          </button>
+        </Link>
+        <button onClick={onClose} className="text-xs text-muted-foreground hover:text-white transition-colors">
+          Maybe later
+        </button>
+      </div>
+    </motion.div>
+  </motion.div>
+);
+
 /* ═══════════════════════════════════════ */
 const Results = () => {
   const location = useLocation();
+  const _navigate = useNavigate();
   const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string } | null;
 
   if (!state?.results) return <Navigate to="/analyze" replace />;
+
+  const { user, profile } = useAuth();
+  const [showRemixPaywall, setShowRemixPaywall] = useState(false);
+  const plan = (profile?.plan ?? 'free') as keyof typeof PLAN_LIMITS;
+  const analysesUsed = profile?.analyses_used ?? 0;
+  const analysesLimit = PLAN_LIMITS[plan].analyses;
+  const hasExhaustedFreeAnalysis = plan === 'free' && analysesUsed >= analysesLimit;
+  const canRemix = plan !== 'free';
 
   const { results, title, goal, uploadedFile, songGenre } = state;
   const {
@@ -957,6 +1055,13 @@ const Results = () => {
         <Section delay={0.1}>
           <ViralMeter score={score} danceability={danceability} valence={valence} />
         </Section>
+
+        {/* ═══ PAYWALL BANNER (free users who exhausted their analysis) ═══ */}
+        {user && hasExhaustedFreeAnalysis && (
+          <Section delay={0.12}>
+            <PaywallBanner score={score} />
+          </Section>
+        )}
 
         {/* ═══ 2. SONG PROFILE ═══ */}
         {(themeFields.length > 0 || profileStats.length > 0) && (
@@ -1266,8 +1371,47 @@ const Results = () => {
 
         {/* ═══ 12. AI REMIX ═══ */}
         <Section delay={0.85}>
-          <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} />
+          {canRemix ? (
+            <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} />
+          ) : (
+            <div className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 md:p-10 text-center relative overflow-hidden">
+              <div className="text-5xl mb-4">🎧</div>
+              <h2 className="text-2xl md:text-3xl font-black font-heading text-white mb-3">AI Remix — Make It Go Viral</h2>
+              <p className="text-muted-foreground mb-2 max-w-md mx-auto">
+                AI covers your song with a stronger hook and more viral energy.
+              </p>
+              <p className="text-sm text-muted-foreground mb-7 max-w-sm mx-auto">
+                Your song scored <strong className="text-accent">{score}/100</strong>. Unlock AI Remix to push it to the next level.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <motion.button
+                  onClick={() => setShowRemixPaywall(true)}
+                  className="relative px-10 py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black text-base overflow-hidden"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }}
+                  />
+                  <span className="relative flex items-center gap-2">
+                    <Sparkles className="h-5 w-5" />
+                    Unlock AI Remix →
+                  </span>
+                </motion.button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">Pro — $19/month or $7/remix one-time</p>
+            </div>
+          )}
         </Section>
+
+        {/* ═══ REMIX PAYWALL MODAL ═══ */}
+        <AnimatePresence>
+          {showRemixPaywall && (
+            <RemixPaywallModal score={score} songTitle={title} onClose={() => setShowRemixPaywall(false)} />
+          )}
+        </AnimatePresence>
 
         {/* ═══ 13. BOTTOM CTA ═══ */}
         <Section delay={0.9} className="pt-8">
@@ -1292,7 +1436,7 @@ const Results = () => {
             </Button>
           </div>
           <p className="text-center text-sm text-muted-foreground mt-4">
-            <Link to="/pricing" className="text-accent hover:underline font-medium">
+            <Link to="/billing" className="text-accent hover:underline font-medium">
               Upgrade to Pro for unlimited analyses →
             </Link>
           </p>

@@ -9,10 +9,16 @@ export interface ViralizeProfile {
   plan: Plan;
   analyses_used: number;
   remixes_used: number;
+  remixes_this_month: number;
   analyses_this_month: number;
   credits: number;
   api_key: string | null;
   created_at: string;
+  // Stripe billing fields
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_status: string | null;
+  plan_expires_at: string | null;
 }
 
 interface AuthContextType {

@@ -149,53 +149,107 @@ export default function Settings() {
             {/* Plan & Billing */}
             {activeTab === 'billing' && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold">Plan & Billing</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {PLANS.map((p) => (
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Plan & Billing</h2>
+                  <Link
+                    to="/billing"
+                    className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                  >
+                    View all plans →
+                  </Link>
+                </div>
+
+                {/* Current plan summary */}
+                <div className={`rounded-2xl border p-5 ${
+                  plan === 'free' ? 'border-border bg-secondary/30' :
+                  plan === 'pro' ? 'border-primary bg-primary/10' :
+                  plan === 'studio' ? 'border-yellow-500/40 bg-yellow-500/10' :
+                  'border-blue-500/40 bg-blue-500/10'
+                }`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Current Plan</p>
+                      <p className="text-2xl font-black text-foreground capitalize">{PLAN_LIMITS[plan].label}</p>
+                    </div>
+                    <Badge className={`text-xs font-bold ${
+                      plan === 'free' ? 'bg-secondary text-muted-foreground border-border' :
+                      plan === 'pro' ? 'bg-primary/20 text-primary border-primary/30' :
+                      plan === 'studio' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
+                      'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                    }`}>
+                      {plan === 'free' ? 'Free' : plan === 'payg' ? 'Pay As You Go' : plan === 'pro' ? '$19/mo' : '$49/mo'}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="bg-background/50 rounded-xl p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Analyses used</p>
+                      <p className="text-lg font-bold text-foreground">
+                        {profile?.analyses_used ?? 0}
+                        <span className="text-muted-foreground text-sm font-normal"> / {PLAN_LIMITS[plan].analyses === 999 ? '∞' : PLAN_LIMITS[plan].analyses}</span>
+                      </p>
+                    </div>
+                    <div className="bg-background/50 rounded-xl p-3">
+                      <p className="text-xs text-muted-foreground mb-1">Remixes used</p>
+                      <p className="text-lg font-bold text-foreground">
+                        {profile?.remixes_this_month ?? 0}
+                        <span className="text-muted-foreground text-sm font-normal"> / {PLAN_LIMITS[plan].remixes === 999 ? '∞' : PLAN_LIMITS[plan].remixes === 0 ? 'N/A' : PLAN_LIMITS[plan].remixes}</span>
+                      </p>
+                    </div>
+                  </div>
+                  {plan === 'free' ? (
+                    <Button
+                      asChild
+                      size="sm"
+                      className="w-full rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 font-semibold"
+                    >
+                      <Link to="/billing">⚡ Upgrade to Pro — $19/month</Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full rounded-xl border-border hover:bg-secondary text-foreground"
+                    >
+                      <Link to="/billing">Manage Subscription</Link>
+                    </Button>
+                  )}
+                </div>
+
+                {/* Quick plan grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {PLANS.filter(p => p.id !== 'payg').map((p) => (
                     <div
                       key={p.id}
-                      className={`rounded-2xl border p-5 transition-all ${
+                      className={`rounded-2xl border p-4 transition-all ${
                         plan === p.id
                           ? 'border-primary bg-primary/10'
-                          : 'border-border bg-secondary/30 hover:border-foreground/20'
+                          : 'border-border bg-secondary/30'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="font-semibold">{p.name}</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold text-sm">{p.name}</span>
                         {plan === p.id && (
                           <Badge className="bg-primary/20 text-primary border-0 text-xs">Current</Badge>
                         )}
                       </div>
-                      <p className="text-2xl font-bold font-heading mb-3">{p.price}</p>
-                      <ul className="space-y-1 mb-4">
-                        {p.features.map((f) => (
+                      <p className="text-xl font-bold font-heading mb-2">{p.price}</p>
+                      <ul className="space-y-1">
+                        {p.features.slice(0, 3).map((f) => (
                           <li key={f} className="text-xs text-muted-foreground flex items-center gap-2">
                             <Check className="h-3 w-3 text-primary shrink-0" />{f}
                           </li>
                         ))}
                       </ul>
-                      {plan !== p.id && (
-                        <div className="relative">
-                          <Button
-                            disabled
-                            size="sm"
-                            className="w-full rounded-xl bg-secondary text-muted-foreground cursor-not-allowed border-0 text-xs"
-                          >
-                            {plan === 'free' || PLANS.findIndex(x => x.id === plan) < PLANS.findIndex(x => x.id === p.id) ? 'Upgrade' : 'Downgrade'}
-                          </Button>
-                          <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground border-0 text-[10px] px-2">
-                            Coming Soon
-                          </Badge>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
-                <div className="bg-secondary/30 border border-border rounded-xl p-4 text-sm text-muted-foreground">
-                  <p className="font-medium text-foreground/70 mb-1">Usage this month</p>
-                  <p>Analyses: {profile?.analyses_used || 0} / {PLAN_LIMITS[plan].analyses === 999 ? '∞' : PLAN_LIMITS[plan].analyses}</p>
-                  <p>Remixes: {profile?.remixes_used || 0} / {PLAN_LIMITS[plan].remixes === 999 ? '∞' : PLAN_LIMITS[plan].remixes === 0 ? 'Not included' : PLAN_LIMITS[plan].remixes}</p>
-                </div>
+
+                <p className="text-xs text-muted-foreground text-center">
+                  <Link to="/billing" className="text-primary hover:underline font-semibold">
+                    See full plan comparison →
+                  </Link>
+                </p>
               </div>
             )}
 
