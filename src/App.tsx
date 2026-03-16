@@ -20,6 +20,13 @@ import SongDetail from "./pages/SongDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
+// Admin pages
+import AdminDashboard from "./pages/admin/index";
+import AdminUsers from "./pages/admin/users";
+import AdminAnalytics from "./pages/admin/analytics";
+import AdminRevenue from "./pages/admin/revenue";
+import AdminContent from "./pages/admin/content";
+
 const queryClient = new QueryClient();
 
 const pageVariants = {
@@ -30,6 +37,21 @@ const pageVariants = {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Admin routes: no Navbar, no animation wrapper
+  if (isAdminRoute) {
+    return (
+      <Routes location={location}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
+        <Route path="/admin/revenue" element={<AdminRevenue />} />
+        <Route path="/admin/content" element={<AdminContent />} />
+      </Routes>
+    );
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
@@ -50,6 +72,19 @@ const AnimatedRoutes = () => {
   );
 };
 
+const AppContent = () => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <>
+      {!isAdminRoute && <Navbar />}
+      <AnimatedRoutes />
+      {!isAdminRoute && <AudioPlayer />}
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -59,9 +94,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Navbar />
-              <AnimatedRoutes />
-              <AudioPlayer />
+              <AppContent />
             </BrowserRouter>
           </TooltipProvider>
         </AudioPlayerProvider>
