@@ -84,22 +84,21 @@ const saveAnalysisToSupabase = async (userId: string, data: {
       full_result: data.fullResult,
     });
     // Increment analyses_this_month
-    await supabase.rpc('increment_analyses_this_month', { user_id_param: userId }).then(({ error }) => { if (error) {
+    const { error: rpcError } = await supabase.rpc('increment_analyses_this_month', { user_id_param: userId });
+    if (rpcError) {
       // If RPC doesn't exist, do a manual update
-      supabase
+      const { data: userData } = await supabase
         .from('viralize_users')
         .select('analyses_used, analyses_this_month')
         .eq('id', userId)
-        .single()
-        .then(({ data: userData }) => {
-          if (userData) {
-            supabase.from('viralize_users').update({
-              analyses_used: (userData.analyses_used || 0) + 1,
-              analyses_this_month: (userData.analyses_this_month || 0) + 1,
-            }).eq('id', userId);
-          }
-        });
-    });
+        .single();
+      if (userData) {
+        await supabase.from('viralize_users').update({
+          analyses_used: (userData.analyses_used || 0) + 1,
+          analyses_this_month: (userData.analyses_this_month || 0) + 1,
+        }).eq('id', userId);
+      }
+    }
   } catch (err) {
     console.warn('Failed to save analysis:', err);
   }

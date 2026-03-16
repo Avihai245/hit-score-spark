@@ -513,7 +513,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
                   title: songTitle || 'AI Remix',
                   audio_url: audioUrl,
                   style,
-                }).catch((e: any) => console.warn('Failed to save remix:', e));
+                }).then(({ error: e }) => { if (e) console.warn('Failed to save remix:', e); });
               }
             }
           } else if (data.status === "failed") {
