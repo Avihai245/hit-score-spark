@@ -11,6 +11,6 @@ export type Plan = 'free' | 'payg' | 'pro' | 'studio';
 export const PLAN_LIMITS = {
   free: { analyses: 1, remixes: 0, label: 'Free' },
   payg: { analyses: 999, remixes: 999, label: 'Pay As You Go' },
-  pro: { analyses: 999, remixes: 10, label: 'Pro' },
-  studio: { analyses: 999, remixes: 999, label: 'Studio' },
+  pro: { analyses: 999, remixes: 10, label: 'Pro', price: 29 },
+  studio: { analyses: 999, remixes: 999, label: 'Studio', price: 49 },
 };
