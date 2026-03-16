@@ -1,4 +1,4 @@
-import { useLocation, Link, Navigate } from "react-router-dom";
+import { useLocation, Link, Navigate, useNavigate } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
