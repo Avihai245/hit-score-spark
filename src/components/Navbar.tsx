@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard } from "lucide-react";
+import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { LogoIcon } from "@/components/ViralizeLogo";
 import { useTheme } from "@/components/ThemeProvider";
@@ -61,6 +61,12 @@ const Navbar = () => {
     { to: "/billing", label: "Pricing" },
   ];
 
+  const authNavLinks = [
+    { to: "/library", label: "Library" },
+    { to: "/analyze", label: "Analyze" },
+    { to: "/billing", label: "Pricing" },
+  ];
+
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -89,29 +95,19 @@ const Navbar = () => {
         <div className="container flex h-14 md:h-16 items-center">
           {/* Left — nav links (desktop) */}
           <div className="hidden md:flex items-center gap-8 flex-1">
-            {navLinks.map((l) => (
+            {(user ? authNavLinks : navLinks).map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
                 className={cn(
                   "text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 hover:text-foreground",
-                  pathname === l.to ? "text-foreground" : "text-muted-foreground"
+                  pathname === l.to ? "text-foreground" : "text-muted-foreground",
+                  l.to === '/library' && "text-primary hover:text-primary/80"
                 )}
               >
                 {l.label}
               </Link>
             ))}
-            {user && (
-              <Link
-                to="/dashboard"
-                className={cn(
-                  "text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 hover:text-foreground",
-                  pathname === '/dashboard' ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
-                Dashboard
-              </Link>
-            )}
           </div>
 
           {/* Center — Logo */}
@@ -194,6 +190,14 @@ const Navbar = () => {
                     {/* Menu items */}
                     <div className="p-1">
                       <Link
+                        to="/library"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
+                      >
+                        <Library className="h-4 w-4 text-primary" />
+                        My Library
+                      </Link>
+                      <Link
                         to="/dashboard"
                         onClick={() => setDropdownOpen(false)}
                         className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
@@ -255,14 +259,15 @@ const Navbar = () => {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-2xl px-6 py-5 space-y-1">
-            {navLinks.map((l) => (
+            {(user ? authNavLinks : navLinks).map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
-                  pathname === l.to ? "text-foreground" : "text-muted-foreground"
+                  pathname === l.to ? "text-foreground" : "text-muted-foreground",
+                  l.to === '/library' && "text-primary"
                 )}
               >
                 {l.label}

@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import AudioPlayer from "@/components/AudioPlayer";
 import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
@@ -13,6 +15,8 @@ import Results from "./pages/Results";
 import Pricing from "./pages/Pricing";
 import Billing from "./pages/Billing";
 import Dashboard from "./pages/Dashboard";
+import Library from "./pages/Library";
+import SongDetail from "./pages/SongDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +40,8 @@ const AnimatedRoutes = () => {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/library" element={<Library />} />
+          <Route path="/song/:id" element={<SongDetail />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
@@ -48,14 +54,17 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Navbar />
-            <AnimatedRoutes />
-          </BrowserRouter>
-        </TooltipProvider>
+        <AudioPlayerProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Navbar />
+              <AnimatedRoutes />
+              <AudioPlayer />
+            </BrowserRouter>
+          </TooltipProvider>
+        </AudioPlayerProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

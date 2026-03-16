@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { supabase, PLAN_LIMITS, Plan } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -8,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
   BarChart2, Music2, RefreshCw, Zap, ArrowRight, Download, TrendingUp, Star,
+  Play, Pause, Library, Plus,
 } from 'lucide-react';
 
 interface Analysis {
@@ -39,14 +42,9 @@ const scoreColor = (s: number) => {
   return 'bg-red-500/20 text-red-400';
 };
 
-const MOCK_ANALYSES: Analysis[] = [
-  { id: '1', title: 'Electric Dreams', genre: 'Pop', score: 87, created_at: new Date(Date.now() - 86400000).toISOString() },
-  { id: '2', title: 'Midnight Waves', genre: 'Electronic', score: 73, created_at: new Date(Date.now() - 172800000).toISOString() },
-  { id: '3', title: 'Golden Hour', genre: 'R&B', score: 91, created_at: new Date(Date.now() - 259200000).toISOString() },
-];
-
 export default function Dashboard() {
   const { user, profile, loading } = useAuth();
+  const { playTrack, currentTrack, isPlaying } = useAudioPlayer();
   const navigate = useNavigate();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [remixes, setRemixes] = useState<Remix[]>([]);
@@ -54,7 +52,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!loading && !user) {
-      toast.error('Sign in to see your dashboard');
       navigate('/');
     }
   }, [loading, user, navigate]);
@@ -65,13 +62,13 @@ export default function Dashboard() {
       setDataLoading(true);
       try {
         const [{ data: a }, { data: r }] = await Promise.all([
-          supabase.from('viralize_analyses').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
-          supabase.from('viralize_remixes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(6),
+          supabase.from('viralize_analyses').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3),
+          supabase.from('viralize_remixes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3),
         ]);
-        setAnalyses(a && a.length > 0 ? a : MOCK_ANALYSES);
+        setAnalyses(a || []);
         setRemixes(r || []);
       } catch {
-        setAnalyses(MOCK_ANALYSES);
+        // ignore
       } finally {
         setDataLoading(false);
       }
@@ -90,9 +87,14 @@ export default function Dashboard() {
 
   const formatLimit = (val: number, limit: number) => limit === 999 ? `${val} / ∞` : `${val} / ${limit}`;
 
+  const recentItems = [
+    ...analyses.map(a => ({ ...a, type: 'analysis' as const })),
+    ...remixes.map(r => ({ ...r, type: 'remix' as const, score: 0 })),
+  ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 3);
+
   return (
     <div className="min-h-screen bg-background text-foreground pt-20 pb-16">
-      <div className="container max-w-6xl mx-auto px-4">
+      <div className="container max-w-5xl mx-auto px-4">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
@@ -111,14 +113,14 @@ export default function Dashboard() {
             </Badge>
             {plan !== 'studio' && (
               <Button asChild size="sm" className="rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 hover:opacity-90 h-8 px-4 text-xs font-semibold">
-                <Link to="/settings?tab=billing">Upgrade ✨</Link>
+                <Link to="/billing">Upgrade ✨</Link>
               </Button>
             )}
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { icon: <BarChart2 className="h-5 w-5 text-primary" />, label: 'Analyses', value: formatLimit(analysesUsed, limits.analyses) },
             { icon: <RefreshCw className="h-5 w-5 text-accent" />, label: 'Remixes', value: formatLimit(remixesUsed, limits.remixes) },
@@ -135,10 +137,93 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Analyze New Song CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 mb-8"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-white">Ready to go viral?</h2>
+              <p className="text-sm text-white/50 mt-1">Upload a song and get your viral score in 60 seconds</p>
+            </div>
+            <div className="flex gap-3">
+              <Button asChild className="rounded-full bg-gradient-to-r from-primary to-accent text-black font-bold border-0 hover:opacity-90 gap-2">
+                <Link to="/analyze">
+                  <Plus className="h-4 w-4" />
+                  Analyze New Song
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full border-white/20 hover:bg-white/5 gap-2">
+                <Link to="/library">
+                  <Library className="h-4 w-4" />
+                  View Library →
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Continue where you left off */}
+        {!dataLoading && recentItems.length > 0 && (
+          <div className="glass-card overflow-hidden mb-8">
+            <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+              <h2 className="font-semibold text-sm flex items-center gap-2">
+                <RefreshCw className="h-4 w-4 text-primary" />
+                Continue where you left off
+              </h2>
+              <Link to="/library" className="text-xs text-primary hover:underline flex items-center gap-1">
+                View all <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="divide-y divide-border/30">
+              {recentItems.map((item) => (
+                <div key={item.id} className="px-6 py-4 flex items-center gap-4 hover:bg-secondary/30 transition-colors">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.type === 'analysis' ? 'bg-primary/10' : 'bg-accent/10'}`}>
+                    {item.type === 'analysis'
+                      ? <BarChart2 className="h-5 w-5 text-primary" />
+                      : <Music2 className="h-5 w-5 text-accent" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-white truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.type === 'analysis' ? `Analysis • Score: ${item.score}` : 'Remix'} • {new Date(item.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {item.type === 'analysis' && (
+                      <>
+                        <Badge className={`${scoreColor(item.score)} border-0 text-xs`}>{item.score}</Badge>
+                        <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-primary hover:bg-primary/10">
+                          <Link to={`/song/${item.id}`}>View →</Link>
+                        </Button>
+                      </>
+                    )}
+                    {item.type === 'remix' && (
+                      <button
+                        onClick={() => playTrack({ id: item.id, title: item.title, audioUrl: (item as any).audio_url })}
+                        className="h-7 w-7 rounded-full bg-accent/20 flex items-center justify-center text-accent hover:bg-accent/30 transition-colors"
+                      >
+                        {currentTrack?.id === item.id && isPlaying
+                          ? <Pause className="h-3 w-3" />
+                          : <Play className="h-3 w-3 ml-0.5" />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Usage Progress */}
         {plan !== 'studio' && (
           <div className="glass-card p-6 mb-8">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-4">Usage This Month</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Usage This Month</h2>
+              <Link to="/billing" className="text-xs text-accent hover:underline">Upgrade</Link>
+            </div>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-2">
@@ -166,97 +251,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Recent Analyses */}
-        <div className="glass-card overflow-hidden mb-8">
-          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-            <h2 className="font-semibold flex items-center gap-2">
-              <Music2 className="h-4 w-4 text-primary" />
-              Recent Analyses
-            </h2>
-            <Button asChild variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground">
-              <Link to="/analyze">+ New Analysis</Link>
+        {/* Empty state if no songs */}
+        {!dataLoading && recentItems.length === 0 && (
+          <div className="glass-card p-12 text-center">
+            <Star className="h-10 w-10 text-muted mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">No songs analyzed yet</p>
+            <Button asChild size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
+              <Link to="/analyze">Analyze your first song <ArrowRight className="ml-1 h-3 w-3" /></Link>
             </Button>
           </div>
-
-          {dataLoading ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">Loading...</div>
-          ) : analyses.length === 0 ? (
-            <div className="p-12 text-center">
-              <Star className="h-10 w-10 text-muted mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">No analyses yet</p>
-              <Button asChild size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
-                <Link to="/analyze">Analyze your first song <ArrowRight className="ml-1 h-3 w-3" /></Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border/50">
-                    {['Song', 'Genre', 'Score', 'Date', ''].map((h) => (
-                      <th key={h} className="px-6 py-3 text-left text-xs text-muted-foreground font-medium uppercase tracking-widest">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {analyses.map((a) => (
-                    <tr key={a.id} className="border-b border-border/30 hover:bg-secondary/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-sm">{a.title}</td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">{a.genre}</td>
-                      <td className="px-6 py-4">
-                        <Badge className={`${scoreColor(a.score)} border-0 text-xs font-semibold`}>{a.score}/100</Badge>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted-foreground">
-                        {new Date(a.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4">
-                        <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-primary hover:text-primary-foreground hover:bg-primary/20">
-                          <Link to={`/results?id=${a.id}`}>View</Link>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Recent Remixes */}
-        <div className="glass-card overflow-hidden">
-          <div className="px-6 py-5 border-b border-border flex items-center justify-between">
-            <h2 className="font-semibold flex items-center gap-2">
-              <RefreshCw className="h-4 w-4 text-accent" />
-              Recent Remixes
-            </h2>
-          </div>
-
-          {remixes.length === 0 ? (
-            <div className="p-12 text-center">
-              <RefreshCw className="h-10 w-10 text-muted mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">No remixes yet</p>
-              {plan === 'free' ? (
-                <p className="text-xs text-muted-foreground">Upgrade to Pro or Studio to unlock remixes</p>
-              ) : (
-                <Button asChild size="sm" className="rounded-full bg-accent hover:bg-accent/90 text-accent-foreground border-0 font-semibold">
-                  <Link to="/analyze">Create your first remix <ArrowRight className="ml-1 h-3 w-3" /></Link>
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-              {remixes.map((r) => (
-                <div key={r.id} className="bg-secondary/50 rounded-xl p-4 border border-border">
-                  <p className="font-medium text-sm mb-3 truncate">{r.title}</p>
-                  <audio controls src={r.audio_url} className="w-full h-8 mb-3" />
-                  <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg gap-1">
-                    <Download className="h-3 w-3" /> Download
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
 
       </div>
     </div>

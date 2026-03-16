@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ open, onClose }: AuthModalProps) {
   const { signIn, signUp, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +37,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     if (error) return setError(error.message);
     onClose();
     reset();
+    navigate('/library');
   };
 
   const handleSignUp = async () => {
@@ -44,9 +47,9 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     setLoading(false);
     if (error) return setError(error.message);
     setError(null);
-    // Show success message
     onClose();
     reset();
+    navigate('/library');
   };
 
   const handleGoogle = async () => {
