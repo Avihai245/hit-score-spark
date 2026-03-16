@@ -84,7 +84,7 @@ const saveAnalysisToSupabase = async (userId: string, data: {
       full_result: data.fullResult,
     });
     // Increment analyses_this_month
-    await supabase.rpc('increment_analyses_this_month', { user_id_param: userId }).catch(() => {
+    await supabase.rpc('increment_analyses_this_month', { user_id_param: userId }).then(({ error }) => { if (error) {
       // If RPC doesn't exist, do a manual update
       supabase
         .from('viralize_users')
