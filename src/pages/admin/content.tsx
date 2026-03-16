@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { supabase } from '@/lib/supabase';
-import { Save, Plus, Trash2, Toggle, Megaphone, Tag, Settings, Music } from 'lucide-react';
+import { Save, Plus, Trash2, ToggleLeft, Megaphone, Tag, Settings, Music } from 'lucide-react';
 import { toast } from 'sonner';
 
 const glassCls = 'bg-white/5 border border-white/10 rounded-xl p-5 backdrop-blur-sm';

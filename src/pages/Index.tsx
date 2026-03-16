@@ -102,14 +102,14 @@ const pricingPreview = [
     price: "$29",
     period: "/mo",
     badge: "MOST POPULAR",
-    features: ["Unlimited analyses", "10 AI Remixes/month", "Competitor DNA Match", "Playlist Targeting", "30-Day Roadmap", "Priority processing"],
+    features: ["Unlimited analyses", "4 AI Hit Remixes/month", "Competitor DNA Match", "Playlist Targeting", "30-Day Roadmap", "Priority processing"],
     highlighted: true,
   },
   {
     name: "Studio",
     price: "$49",
     period: "/mo",
-    features: ["Everything in Pro", "Unlimited AI Remixes", "API access", "White-label reports", "3 team seats"],
+    features: ["Everything in Pro", "8 AI Hit Remixes/month", "API access", "White-label reports", "3 team seats"],
     highlighted: false,
   },
 ];

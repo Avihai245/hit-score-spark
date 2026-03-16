@@ -38,7 +38,7 @@ export const createCheckoutSession = async (
       // Fallback: direct Stripe checkout
       const stripe = await stripePromise;
       if (stripe) {
-        await stripe.redirectToCheckout({
+        await (stripe as any).redirectToCheckout({
           lineItems: [{ price: priceId, quantity: 1 }],
           mode,
           successUrl: `${window.location.origin}/library?payment=success`,
