@@ -522,7 +522,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             setError(data.message || "Remix failed. Try again.");
             setStatus("error");
           } else {
-            setTimeout(poll, 5000);
+            setTimeout(poll, 3000);
           }
         } catch {
           clearInterval(timerRef.current);
@@ -530,7 +530,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
           setStatus("error");
         }
       };
-      setTimeout(poll, 5000);
+      setTimeout(poll, 8000);
     } catch (err: any) {
       clearInterval(timerRef.current);
       setError(err?.message || "Something went wrong.");
