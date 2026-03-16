@@ -9,6 +9,7 @@ export interface ViralizeProfile {
   plan: Plan;
   analyses_used: number;
   remixes_used: number;
+  analyses_this_month: number;
   credits: number;
   api_key: string | null;
   created_at: string;
@@ -34,49 +35,85 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<ViralizeProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchOrCreateProfile = async (u: User): Promise<ViralizeProfile | null> => {
     try {
       const { data, error } = await supabase
         .from('viralize_users')
         .select('*')
-        .eq('id', userId)
+        .eq('id', u.id)
         .single();
 
+      // PGRST116 = no rows found
+      if (error && error.code === 'PGRST116') {
+        // Profile doesn't exist yet — create it
+        const displayName =
+          u.user_metadata?.full_name ||
+          u.user_metadata?.name ||
+          u.email?.split('@')[0] ||
+          null;
+
+        const { data: newProfile, error: createError } = await supabase
+          .from('viralize_users')
+          .insert({
+            id: u.id,
+            email: u.email,
+            display_name: displayName,
+            plan: 'free',
+            analyses_used: 0,
+            remixes_used: 0,
+            analyses_this_month: 0,
+            credits: 0,
+            api_key: null,
+          })
+          .select('*')
+          .single();
+
+        if (createError) {
+          console.warn('Profile create error:', createError.message);
+          return null;
+        }
+        return newProfile as ViralizeProfile;
+      }
+
       if (error) {
-        // Profile may not exist yet — that's okay
-        console.warn('Profile fetch:', error.message);
+        console.warn('Profile fetch error:', error.message);
         return null;
       }
+
       return data as ViralizeProfile;
     } catch (err) {
-      console.warn('Profile fetch error:', err);
+      console.warn('fetchOrCreateProfile threw:', err);
       return null;
     }
   };
 
   const refreshProfile = async () => {
     if (user) {
-      const p = await fetchProfile(user.id);
+      const p = await fetchOrCreateProfile(user);
       setProfile(p);
     }
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile).finally(() => setLoading(false));
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (s?.user) {
+        fetchOrCreateProfile(s.user)
+          .then(setProfile)
+          .finally(() => setLoading(false));
       } else {
         setLoading(false);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (s?.user) {
+        fetchOrCreateProfile(s.user).then(setProfile);
       } else {
         setProfile(null);
       }
@@ -106,10 +143,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setUser(null);
+    setSession(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, signInWithGoogle, signOut, refreshProfile }}>
+    <AuthContext.Provider
+      value={{ user, session, profile, loading, signIn, signUp, signInWithGoogle, signOut, refreshProfile }}
+    >
       {children}
     </AuthContext.Provider>
   );

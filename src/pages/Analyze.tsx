@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Lock, Upload, Music, X, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 const genres = ["Pop", "Hip Hop", "R&B", "Indie Pop", "Melodic House", "EDM", "Rock", "Latin", "Afrobeats", "Other"];
 const goals = [
@@ -65,9 +67,48 @@ const LoadingWaveform = () => (
   </div>
 );
 
+const saveAnalysisToSupabase = async (userId: string, data: {
+  title: string;
+  genre: string;
+  score: number;
+  verdict: string;
+  fullResult: any;
+}) => {
+  try {
+    await supabase.from('viralize_analyses').insert({
+      user_id: userId,
+      title: data.title,
+      genre: data.genre,
+      score: data.score,
+      verdict: data.verdict,
+      full_result: data.fullResult,
+    });
+    // Increment analyses_this_month
+    await supabase.rpc('increment_analyses_this_month', { user_id_param: userId }).catch(() => {
+      // If RPC doesn't exist, do a manual update
+      supabase
+        .from('viralize_users')
+        .select('analyses_used, analyses_this_month')
+        .eq('id', userId)
+        .single()
+        .then(({ data: userData }) => {
+          if (userData) {
+            supabase.from('viralize_users').update({
+              analyses_used: (userData.analyses_used || 0) + 1,
+              analyses_this_month: (userData.analyses_this_month || 0) + 1,
+            }).eq('id', userId);
+          }
+        });
+    });
+  } catch (err) {
+    console.warn('Failed to save analysis:', err);
+  }
+};
+
 const Analyze = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -159,6 +200,15 @@ const Analyze = () => {
 
       if (!jobId) {
         if (analysisData.score != null) {
+          if (user) {
+            saveAnalysisToSupabase(user.id, {
+              title: title || file.name,
+              genre: genre || analysisData.genre || '',
+              score: analysisData.score,
+              verdict: analysisData.verdict || '',
+              fullResult: analysisData,
+            });
+          }
           navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });
           return;
         }
@@ -197,6 +247,16 @@ const Analyze = () => {
 
           if (data.status === "complete") {
             markStep(3);
+            // Save to Supabase if logged in
+            if (user) {
+              saveAnalysisToSupabase(user.id, {
+                title: title || file.name,
+                genre: genre || data.genre || '',
+                score: data.score || 0,
+                verdict: data.verdict || '',
+                fullResult: data,
+              });
+            }
             setTimeout(() => {
               setLoading(false);
               navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre } });

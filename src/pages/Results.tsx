@@ -1,5 +1,7 @@
 import { useLocation, Link, Navigate } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -437,6 +439,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
 };
 
 const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any }) => {
+  const { user } = useAuth();
   const [status, setStatus] = useState<"idle" | "lyrics" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
   const [elapsed, setElapsed] = useState(0);
@@ -499,6 +502,20 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData }: { 
             clearInterval(timerRef.current);
             setResult(data);
             setStatus("complete");
+            // Save remix to Supabase if logged in
+            if (user) {
+              const tracks = data.tracks || (data.audioUrl ? [{ audioUrl: data.audioUrl }] : []);
+              const firstTrack = tracks[0];
+              const audioUrl = firstTrack?.url || firstTrack?.audioUrl || data.audioUrl || '';
+              if (audioUrl) {
+                supabase.from('viralize_remixes').insert({
+                  user_id: user.id,
+                  title: songTitle || 'AI Remix',
+                  audio_url: audioUrl,
+                  style,
+                }).catch((e: any) => console.warn('Failed to save remix:', e));
+              }
+            }
           } else if (data.status === "failed") {
             clearInterval(timerRef.current);
             setError(data.message || "Remix failed. Try again.");
