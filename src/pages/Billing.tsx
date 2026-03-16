@@ -358,8 +358,8 @@ const Billing = () => {
         {/* ─── Pay As You Go ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          
           className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 mb-16"
         >
           <div className="text-center mb-8">
@@ -436,8 +436,8 @@ const Billing = () => {
         {user && plan !== 'free' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            
             className="rounded-3xl border border-primary/30 bg-primary/5 p-8 mb-16"
           >
             <h2 className="text-xl font-black text-white mb-6 flex items-center gap-2">
@@ -476,8 +476,8 @@ const Billing = () => {
         {/* ─── Feature comparison ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          
           className="mb-16"
         >
           <h2 className="text-2xl font-black text-white text-center mb-8">Everything you get</h2>
@@ -504,8 +504,8 @@ const Billing = () => {
         {/* ─── Social Proof ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          
           className="mb-16"
         >
           <h2 className="text-2xl font-black text-white text-center mb-8">What artists are saying</h2>
@@ -514,8 +514,8 @@ const Billing = () => {
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
+                
                 transition={{ delay: i * 0.1 }}
                 className="rounded-2xl border border-white/10 bg-white/[0.02] p-6"
               >
@@ -537,8 +537,8 @@ const Billing = () => {
         {/* ─── FAQ ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          
           className="mb-16"
         >
           <h2 className="text-2xl font-black text-white text-center mb-8">Frequently asked questions</h2>
@@ -553,8 +553,8 @@ const Billing = () => {
         {plan === 'free' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            
             className="text-center"
           >
             <div className="rounded-3xl border border-primary/30 bg-gradient-to-b from-primary/10 to-transparent p-12">
