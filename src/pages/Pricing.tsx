@@ -222,9 +222,7 @@ const Pricing = () => {
                     <Icon className={`h-5 w-5 ${plan.iconColor}`} />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xl font-black text-foreground">{plan.name}</h3>
-                    </div>
+                    <h3 className="text-xl font-black text-foreground">{plan.name}</h3>
                     <p className="text-sm text-muted-foreground mt-0.5">{plan.description}</p>
                   </div>
                 </div>
@@ -331,7 +329,7 @@ const Pricing = () => {
           </div>
         </motion.div>
 
-        {/* ─── FAQ Teaser ─── */}
+        {/* ─── Footer ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

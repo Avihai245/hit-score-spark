@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, PLAN_LIMITS, Plan } from '@/lib/supabase';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -11,7 +12,7 @@ import {
 
 interface Analysis {
   id: string;
-  song_title: string;
+  title: string;
   genre: string;
   score: number;
   created_at: string;
@@ -32,15 +33,16 @@ const PLAN_COLORS: Record<Plan, string> = {
 };
 
 const scoreColor = (s: number) => {
-  if (s >= 80) return 'bg-emerald-500/20 text-emerald-400';
-  if (s >= 60) return 'bg-accent/20 text-accent';
+  if (s >= 80) return 'bg-purple-500/20 text-purple-400';
+  if (s >= 65) return 'bg-emerald-500/20 text-emerald-400';
+  if (s >= 40) return 'bg-orange-500/20 text-orange-400';
   return 'bg-red-500/20 text-red-400';
 };
 
 const MOCK_ANALYSES: Analysis[] = [
-  { id: '1', song_title: 'Electric Dreams', genre: 'Pop', score: 87, created_at: new Date(Date.now() - 86400000).toISOString() },
-  { id: '2', song_title: 'Midnight Waves', genre: 'Electronic', score: 73, created_at: new Date(Date.now() - 172800000).toISOString() },
-  { id: '3', song_title: 'Golden Hour', genre: 'R&B', score: 91, created_at: new Date(Date.now() - 259200000).toISOString() },
+  { id: '1', title: 'Electric Dreams', genre: 'Pop', score: 87, created_at: new Date(Date.now() - 86400000).toISOString() },
+  { id: '2', title: 'Midnight Waves', genre: 'Electronic', score: 73, created_at: new Date(Date.now() - 172800000).toISOString() },
+  { id: '3', title: 'Golden Hour', genre: 'R&B', score: 91, created_at: new Date(Date.now() - 259200000).toISOString() },
 ];
 
 export default function Dashboard() {
@@ -51,7 +53,10 @@ export default function Dashboard() {
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) navigate('/');
+    if (!loading && !user) {
+      toast.error('Sign in to see your dashboard');
+      navigate('/');
+    }
   }, [loading, user, navigate]);
 
   useEffect(() => {
@@ -60,8 +65,8 @@ export default function Dashboard() {
       setDataLoading(true);
       try {
         const [{ data: a }, { data: r }] = await Promise.all([
-          supabase.from('analyses').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
-          supabase.from('remixes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(6),
+          supabase.from('viralize_analyses').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
+          supabase.from('viralize_remixes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(6),
         ]);
         setAnalyses(a && a.length > 0 ? a : MOCK_ANALYSES);
         setRemixes(r || []);
@@ -81,7 +86,7 @@ export default function Dashboard() {
   const analysesUsed = profile?.analyses_used || 0;
   const remixesUsed = profile?.remixes_used || 0;
   const credits = profile?.credits || 0;
-  const avgScore = analyses.length > 0 ? Math.round(analyses.reduce((s, a) => s + a.score, 0) / analyses.length) : 0;
+  const avgScore = analyses.length > 0 ? Math.round(analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length) : 0;
 
   const formatLimit = (val: number, limit: number) => limit === 999 ? `${val} / ∞` : `${val} / ${limit}`;
 
@@ -196,7 +201,7 @@ export default function Dashboard() {
                 <tbody>
                   {analyses.map((a) => (
                     <tr key={a.id} className="border-b border-border/30 hover:bg-secondary/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-sm">{a.song_title}</td>
+                      <td className="px-6 py-4 font-medium text-sm">{a.title}</td>
                       <td className="px-6 py-4 text-sm text-muted-foreground">{a.genre}</td>
                       <td className="px-6 py-4">
                         <Badge className={`${scoreColor(a.score)} border-0 text-xs font-semibold`}>{a.score}/100</Badge>
