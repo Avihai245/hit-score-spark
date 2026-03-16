@@ -109,7 +109,7 @@ const pricingPreview = [
     name: "Studio",
     price: "$49",
     period: "/mo",
-    features: ["Everything in Pro", "8 AI Hit Remixes/month", "API access", "White-label reports", "3 team seats"],
+    features: ["Everything in Pro", "8 AI Hit Remixes/month", "Advanced vocal tuning", "Multi-style remixes", "Priority support"],
     highlighted: false,
   },
 ];
