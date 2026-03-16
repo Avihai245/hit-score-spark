@@ -87,7 +87,7 @@ const plans = [
     savings: "Save $40+/mo vs Pay As You Go",
     features: [
       "Unlimited analyses",
-      "10 AI Remixes per month",
+      "4 AI Hit Remixes per month",
       "Deep viral breakdown",
       "PDF download reports",
       "Priority processing",
