@@ -1,10 +1,9 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Check, Sparkles, Crown, Zap, Building2, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Crown, Zap, Building2, ArrowRight, Music, TrendingUp, Star } from "lucide-react";
 import { useState } from "react";
 
-// Inline Coins icon since lucide might not export it in this version
 function Coins({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -23,45 +22,52 @@ const plans = [
     price: "$0",
     period: "",
     badge: null,
-    description: "Try it out, no credit card needed",
+    tagline: "Try it out",
+    description: "See if your song has viral potential — zero risk",
     Icon: Zap,
-    iconColor: "#6b7280",
-    borderColor: "border-white/10",
+    gradient: "from-gray-500/20 to-gray-600/5",
+    iconBg: "bg-gray-500/15",
+    iconColor: "text-gray-400",
+    ring: "ring-white/10",
     features: [
       "1 analysis per month",
-      "Basic hit score (0–100)",
-      "3 improvement suggestions",
+      "Hit score (0–100)",
+      "3 improvement tips",
       "Strengths & weaknesses",
       "Share your score",
     ],
-    missing: ["AI Remix", "PDF Report", "Unlimited analyses", "Playlist targeting"],
-    cta: "Get Started Free",
+    cta: "Start Free",
     ctaLink: "/analyze",
-    ctaStyle: "border border-white/20 bg-white/5 hover:bg-white/10 text-white",
+    ctaClass: "bg-white/10 hover:bg-white/20 text-white border border-white/10",
     highlighted: false,
     comingSoon: false,
   },
   {
     id: "payg",
     name: "Pay As You Go",
-    price: "No subscription",
+    price: null,
     period: "",
     badge: null,
-    description: "Pay only for what you use",
+    tagline: "No commitment",
+    description: "Perfect for artists releasing singles",
     Icon: Coins,
-    iconColor: "#3B82F6",
-    borderColor: "border-blue-500/20",
+    gradient: "from-blue-500/15 to-blue-600/5",
+    iconBg: "bg-blue-500/15",
+    iconColor: "text-blue-400",
+    ring: "ring-blue-500/20",
+    priceLines: [
+      { label: "Deep Analysis", price: "$2.99", note: "per song" },
+      { label: "AI Remix", price: "$6.99", note: "per remix" },
+    ],
     features: [
-      "Analysis — $3 each",
-      "AI Remix — $7 each",
       "Full analysis report",
       "AI Remix with your style",
-      "Download MP3",
-      "No monthly commitment",
+      "Download MP3 & WAV",
+      "Viral potential breakdown",
+      "No expiration on credits",
     ],
-    missing: ["PDF Report", "Priority processing"],
     cta: "Buy Credits",
-    ctaStyle: "border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400",
+    ctaClass: "bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-500/25",
     highlighted: false,
     comingSoon: true,
   },
@@ -69,25 +75,28 @@ const plans = [
     id: "pro",
     name: "Pro",
     price: "$19",
-    period: "/month",
+    period: "/mo",
     badge: "MOST POPULAR",
-    description: "For serious artists going viral",
+    tagline: "Best value",
+    description: "For artists serious about going viral",
     Icon: Crown,
-    iconColor: "#8B5CF6",
-    borderColor: "border-purple-500/40",
+    gradient: "from-purple-500/20 via-purple-600/10 to-purple-500/5",
+    iconBg: "bg-purple-500/20",
+    iconColor: "text-purple-400",
+    ring: "ring-purple-500/40",
+    savings: "Save $40+/mo vs Pay As You Go",
     features: [
       "Unlimited analyses",
       "10 AI Remixes per month",
-      "Full deep analysis",
+      "Deep viral breakdown",
       "PDF download reports",
-      "Priority analysis queue",
+      "Priority processing",
       "Competitor DNA match",
-      "Playlist targeting",
+      "Playlist targeting tips",
       "30-day release roadmap",
     ],
-    missing: [],
-    cta: "Start Pro",
-    ctaStyle: "bg-purple-600 hover:bg-purple-500 text-white font-black",
+    cta: "Get Pro",
+    ctaClass: "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-black shadow-lg shadow-purple-500/25",
     highlighted: true,
     comingSoon: true,
   },
@@ -95,12 +104,15 @@ const plans = [
     id: "studio",
     name: "Studio",
     price: "$49",
-    period: "/month",
+    period: "/mo",
     badge: null,
-    description: "For labels, studios & teams",
+    tagline: "For teams",
+    description: "Labels, studios & management teams",
     Icon: Building2,
-    iconColor: "#F59E0B",
-    borderColor: "border-amber-500/20",
+    gradient: "from-amber-500/15 to-amber-600/5",
+    iconBg: "bg-amber-500/15",
+    iconColor: "text-amber-400",
+    ring: "ring-amber-500/20",
     features: [
       "Everything in Pro",
       "Unlimited AI Remixes",
@@ -110,134 +122,173 @@ const plans = [
       "Dedicated support",
       "Custom integrations",
     ],
-    missing: [],
     cta: "Contact Sales",
-    ctaStyle: "border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400",
+    ctaClass: "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/25",
     highlighted: false,
     comingSoon: true,
   },
+];
+
+const socialProof = [
+  { stat: "2,400+", label: "Songs analyzed" },
+  { stat: "87%", label: "Improved their score" },
+  { stat: "12", label: "Songs went viral" },
 ];
 
 const Pricing = () => {
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-background px-4 pt-24 pb-20">
-      <div className="container max-w-6xl">
+    <div className="min-h-screen bg-background px-4 pt-24 pb-20 overflow-hidden">
+      <div className="container max-w-7xl">
 
         {/* ─── Header ─── */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16 space-y-4"
+          className="text-center mb-6 space-y-5"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-medium mb-4">
-            <Sparkles className="h-4 w-4" />
-            Simple, transparent pricing
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/15 to-amber-500/15 border border-purple-500/20 text-sm font-semibold">
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            <span className="text-purple-300">Simple pricing</span>
+            <span className="text-white/40">·</span>
+            <span className="text-amber-300">Serious results</span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight">
-            Turn your song into a{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-amber-400 bg-clip-text text-transparent">
-              viral hit
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
+            <span className="text-foreground">Invest in your music.</span>
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+              Get viral returns.
             </span>
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Start free. Pay only when you're ready. Scale as you grow.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            One hit song can change your career forever. Our AI finds exactly what's 
+            missing — so every release has maximum viral potential.
           </p>
         </motion.div>
 
+        {/* ─── Social Proof ─── */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="flex items-center justify-center gap-8 md:gap-14 mb-16"
+        >
+          {socialProof.map((item) => (
+            <div key={item.label} className="text-center">
+              <div className="text-2xl md:text-3xl font-black text-foreground">{item.stat}</div>
+              <div className="text-xs md:text-sm text-muted-foreground">{item.label}</div>
+            </div>
+          ))}
+        </motion.div>
+
         {/* ─── Plans Grid ─── */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 items-start">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
           {plans.map((plan, i) => {
             const { Icon } = plan;
+            const isHovered = hoveredPlan === plan.id;
             return (
               <motion.div
                 key={plan.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+                transition={{ delay: 0.1 + i * 0.08 }}
                 onHoverStart={() => setHoveredPlan(plan.id)}
                 onHoverEnd={() => setHoveredPlan(null)}
-                className={`relative rounded-3xl border ${plan.borderColor} p-6 space-y-6 transition-all duration-300 ${
+                className={`relative flex flex-col rounded-2xl ring-1 ${plan.ring} bg-gradient-to-b ${plan.gradient} backdrop-blur-sm p-7 transition-all duration-300 ${
                   plan.highlighted
-                    ? "bg-gradient-to-b from-purple-500/10 to-transparent shadow-2xl shadow-purple-500/10 scale-[1.02]"
-                    : "bg-white/[0.02] hover:bg-white/[0.04]"
-                } ${hoveredPlan === plan.id ? "translate-y-[-4px]" : ""}`}
+                    ? "shadow-2xl shadow-purple-500/15 xl:scale-[1.03] z-10"
+                    : ""
+                } ${isHovered ? "-translate-y-1" : ""}`}
               >
-                {/* Top accent line */}
+                {/* Glow effect for highlighted */}
                 {plan.highlighted && (
-                  <div className="absolute top-0 left-8 right-8 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+                  <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-purple-500/30 via-transparent to-transparent -z-10 blur-sm" />
                 )}
 
                 {/* Badge */}
                 {plan.badge && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1.5 rounded-full bg-purple-600 text-white text-xs font-black tracking-wider shadow-lg shadow-purple-500/30">
-                      ⭐ {plan.badge}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span className="px-5 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 text-white text-[11px] font-black tracking-widest shadow-lg shadow-purple-500/30 flex items-center gap-1.5">
+                      <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
+                      {plan.badge}
                     </span>
                   </div>
                 )}
 
                 {/* Icon + Name */}
-                <div className="space-y-3 pt-2">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${plan.iconColor}20` }}>
-                    <Icon className="h-5 w-5" style={{ color: plan.iconColor }} />
+                <div className="space-y-4 pt-1 mb-5">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${plan.iconBg}`}>
+                    <Icon className={`h-5 w-5 ${plan.iconColor}`} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-white">{plan.name}</h3>
-                    <p className="text-xs text-muted-foreground">{plan.description}</p>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-black text-foreground">{plan.name}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-0.5">{plan.description}</p>
                   </div>
                 </div>
 
                 {/* Price */}
-                <div>
-                  {plan.id === "payg" ? (
-                    <div className="space-y-1">
-                      <div className="text-sm font-bold text-blue-400">No subscription</div>
-                      <div className="text-sm text-muted-foreground">Analysis: <span className="text-white font-bold">$3</span></div>
-                      <div className="text-sm text-muted-foreground">AI Remix: <span className="text-white font-bold">$7</span></div>
+                <div className="mb-6 min-h-[60px]">
+                  {plan.id === "payg" && plan.priceLines ? (
+                    <div className="space-y-2">
+                      {plan.priceLines.map((line) => (
+                        <div key={line.label} className="flex items-baseline justify-between">
+                          <span className="text-sm text-muted-foreground">{line.label}</span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-black text-foreground">{line.price}</span>
+                            <span className="text-xs text-muted-foreground">{line.note}</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : (
                     <div className="flex items-end gap-1">
-                      <span className="text-4xl font-black text-white">{plan.price}</span>
-                      {plan.period && <span className="text-muted-foreground text-sm pb-1">{plan.period}</span>}
+                      <span className="text-5xl font-black text-foreground tracking-tight">{plan.price}</span>
+                      {plan.period && <span className="text-muted-foreground text-base pb-1.5 font-medium">{plan.period}</span>}
                     </div>
+                  )}
+                  {plan.savings && (
+                    <p className="text-xs text-green-400 font-semibold mt-2 flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      {plan.savings}
+                    </p>
                   )}
                 </div>
 
                 {/* CTA */}
-                <div>
+                <div className="mb-6">
                   {plan.comingSoon ? (
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <button
-                        className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all opacity-70 cursor-not-allowed ${plan.ctaStyle}`}
+                        className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all cursor-not-allowed ${plan.ctaClass} ${plan.highlighted ? '' : 'opacity-80'}`}
                         disabled
                       >
                         {plan.cta}
                       </button>
-                      <p className="text-xs text-center text-muted-foreground">Coming soon</p>
+                      <p className="text-[11px] text-center text-muted-foreground">Coming soon</p>
                     </div>
                   ) : (
-                    <Button asChild className={`w-full py-3 rounded-xl font-bold text-sm ${plan.ctaStyle}`}>
+                    <Button asChild className={`w-full py-3.5 h-auto rounded-xl font-bold text-sm ${plan.ctaClass}`}>
                       <Link to={plan.ctaLink || "/analyze"}>
-                        {plan.cta} <ArrowRight className="h-4 w-4 ml-2" />
+                        {plan.cta} <ArrowRight className="h-4 w-4 ml-1.5" />
                       </Link>
                     </Button>
                   )}
                 </div>
 
+                {/* Divider */}
+                <div className="h-px bg-white/[0.06] mb-5" />
+
                 {/* Features */}
-                <div className="space-y-2.5">
+                <div className="space-y-3 flex-1">
                   {plan.features.map((f) => (
                     <div key={f} className="flex items-start gap-2.5">
-                      <Check className="h-4 w-4 text-green-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-white/80">{f}</span>
-                    </div>
-                  ))}
-                  {plan.missing?.map((f) => (
-                    <div key={f} className="flex items-start gap-2.5 opacity-40">
-                      <span className="h-4 w-4 flex-shrink-0 mt-0.5 text-center text-xs">—</span>
-                      <span className="text-sm text-muted-foreground">{f}</span>
+                      <div className={`mt-0.5 rounded-full p-0.5 ${plan.highlighted ? 'bg-purple-500/20' : 'bg-white/5'}`}>
+                        <Check className={`h-3 w-3 ${plan.highlighted ? 'text-purple-400' : 'text-green-400'}`} />
+                      </div>
+                      <span className="text-sm text-foreground/80 leading-tight">{f}</span>
                     </div>
                   ))}
                 </div>
@@ -246,48 +297,51 @@ const Pricing = () => {
           })}
         </div>
 
-        {/* ─── Conversion Banner ─── */}
+        {/* ─── ROI Banner ─── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-20 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-amber-500/10 p-8 md:p-12 text-center space-y-6"
+          transition={{ delay: 0.5 }}
+          className="mt-20 relative rounded-2xl overflow-hidden"
         >
-          <div className="text-5xl">🔥</div>
-          <h2 className="text-2xl md:text-4xl font-black text-white">
-            Your song scored <span className="text-amber-400">[X]/100</span>.
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            You're <span className="text-white font-bold">[100-X] points</span> from going viral.
-            Create your AI Remix now and fix it in 2 minutes.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="px-8 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-lg opacity-70 cursor-not-allowed">
-              Create AI Remix — $7 (Coming Soon)
-            </button>
-            <button className="px-8 py-4 rounded-2xl border border-purple-500/40 bg-purple-500/10 text-purple-300 font-bold text-lg opacity-70 cursor-not-allowed">
-              Go Pro — $19/month · 10x value (Coming Soon)
-            </button>
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-500/10 to-amber-500/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80" />
+          <div className="relative ring-1 ring-white/10 rounded-2xl p-10 md:p-14 text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/20">
+              <Music className="h-4 w-4 text-amber-400" />
+              <span className="text-sm font-semibold text-amber-300">The math is simple</span>
+            </div>
+            <h2 className="text-3xl md:text-5xl font-black text-foreground leading-tight">
+              One viral song = <span className="text-amber-400">$10,000+</span> in streams
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              A single viral hit can generate thousands in streaming revenue, sync deals, and fan growth. 
+              Our AI tells you exactly what to fix — for less than a coffee.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+              <Button asChild className="px-8 py-4 h-auto rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-base hover:from-amber-400 hover:to-yellow-300 shadow-lg shadow-amber-500/20">
+                <Link to="/analyze">
+                  Analyze Your Song Free <ArrowRight className="h-5 w-5 ml-2" />
+                </Link>
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              No credit card required · Results in 30 seconds
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Analyze your song first →{" "}
-            <Link to="/analyze" className="text-primary hover:underline">
-              Start free analysis →
-            </Link>
-          </p>
         </motion.div>
 
-        {/* ─── Footer note ─── */}
+        {/* ─── FAQ Teaser ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-          className="mt-16 text-center space-y-4"
+          transition={{ delay: 0.6 }}
+          className="mt-16 text-center space-y-3"
         >
-          <h3 className="text-xl font-bold text-white">Questions?</h3>
+          <h3 className="text-lg font-bold text-foreground">Still not sure?</h3>
           <p className="text-muted-foreground">
-            Every plan starts with a free analysis. No credit card required.{" "}
-            <Link to="/analyze" className="text-primary hover:underline font-medium">
+            Start with a free analysis — no signup needed.{" "}
+            <Link to="/analyze" className="text-primary hover:underline font-semibold">
               Try it now →
             </Link>
           </p>

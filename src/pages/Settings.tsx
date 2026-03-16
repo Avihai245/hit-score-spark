@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLAN_LIMITS, Plan } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
@@ -47,10 +46,7 @@ export default function Settings() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      toast.error('Sign in to access settings');
-      navigate('/');
-    }
+    if (!user) navigate('/');
   }, [user, navigate]);
 
   if (!user) return null;
