@@ -1,45 +1,53 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-// Test mode publishable key - replace with real key in Amplify env vars
 export const stripePromise = loadStripe(
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder'
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 );
 
-// Price IDs - set these in Amplify environment variables
 export const PRICES = {
-  pro_monthly: import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_pro_monthly',
-  studio_monthly: import.meta.env.VITE_STRIPE_STUDIO_PRICE_ID || 'price_studio_monthly',
-  analysis_credit: import.meta.env.VITE_STRIPE_ANALYSIS_CREDIT || 'price_analysis',
-  remix_credit: import.meta.env.VITE_STRIPE_REMIX_CREDIT || 'price_remix',
-  analysis_5pack: import.meta.env.VITE_STRIPE_ANALYSIS_5PACK || 'price_analysis_5pack',
-  remix_3pack: import.meta.env.VITE_STRIPE_REMIX_3PACK || 'price_remix_3pack',
+  pro_monthly:      import.meta.env.VITE_STRIPE_PRO_PRICE_ID     || 'price_1TBQ1y5OzmHXa8O4fyUQRzop',
+  studio_monthly:   import.meta.env.VITE_STRIPE_STUDIO_PRICE_ID  || 'price_1TBQ1z5OzmHXa8O454UWomQK',
+  analysis_credit:  import.meta.env.VITE_STRIPE_ANALYSIS_CREDIT  || 'price_1TBQ205OzmHXa8O4coeEIBLP',
+  remix_credit:     import.meta.env.VITE_STRIPE_REMIX_CREDIT      || 'price_1TBQ205OzmHXa8O4TxhkFsW4',
+  analysis_5pack:   import.meta.env.VITE_STRIPE_ANALYSIS_5PACK   || 'price_1TBQ215OzmHXa8O4pcXnxbNC',
+  remix_3pack:      import.meta.env.VITE_STRIPE_REMIX_3PACK       || 'price_1TBQ225OzmHXa8O4VD8qGIUo',
 };
 
-/**
- * Redirects to Stripe Checkout for the given price.
- * TODO: Call backend API to create a real Stripe checkout session.
- * For now this is a placeholder that shows a "coming soon" signal.
- */
+// Creates Stripe Checkout Session via Supabase Edge Function
 export const createCheckoutSession = async (
-  _priceId: string,
-  _userId: string
-): Promise<null> => {
-  // TODO: POST to /api/stripe/create-checkout-session
-  // const res = await fetch('/api/stripe/create-checkout-session', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ priceId: _priceId, userId: _userId }),
-  // });
-  // const { url } = await res.json();
-  // window.location.href = url;
-  return null;
-};
+  priceId: string,
+  userId: string,
+  mode: 'subscription' | 'payment' = 'payment'
+) => {
+  try {
+    const { data, error } = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        body: JSON.stringify({ priceId, userId, mode,
+          successUrl: `${window.location.origin}/library?payment=success`,
+          cancelUrl: `${window.location.origin}/billing` })
+      }
+    ).then(r => r.json());
 
-/**
- * Opens the Stripe Customer Portal so users can manage their subscription.
- * TODO: Call backend API to create a portal session.
- */
-export const openCustomerPortal = async (_userId: string): Promise<null> => {
-  // TODO: POST to /api/stripe/create-portal-session
-  return null;
+    if (data?.url) {
+      window.location.href = data.url;
+    } else {
+      // Fallback: direct Stripe checkout
+      const stripe = await stripePromise;
+      if (stripe) {
+        await stripe.redirectToCheckout({
+          lineItems: [{ price: priceId, quantity: 1 }],
+          mode,
+          successUrl: `${window.location.origin}/library?payment=success`,
+          cancelUrl: `${window.location.origin}/billing`,
+        });
+      }
+    }
+  } catch {
+    // Show coming soon if backend not ready
+    return null;
+  }
 };
