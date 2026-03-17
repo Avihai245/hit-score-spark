@@ -55,20 +55,20 @@ const dataFeedMessages = [
 
 /* ─── Fake Waveform Preview ─── */
 const WaveformPreview = () => {
-  const bars = useRef(Array.from({ length: 40 }, () => 15 + Math.random() * 75));
+  const bars = useRef(Array.from({ length: 60 }, () => 15 + Math.random() * 75));
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex items-end justify-center gap-[2px] h-16 mt-4"
+      className="flex items-end justify-center gap-[2px] h-20 mt-4"
     >
       {bars.current.map((h, i) => (
         <motion.div
           key={i}
-          className="w-[4px] rounded-full bg-gradient-to-t from-primary/60 to-primary"
+          className="w-[3px] rounded-full bg-gradient-to-t from-primary/40 via-primary to-accent"
           initial={{ height: 0 }}
           animate={{ height: `${h}%` }}
-          transition={{ delay: i * 0.02, duration: 0.4, ease: "easeOut" }}
+          transition={{ delay: i * 0.015, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
         />
       ))}
     </motion.div>
