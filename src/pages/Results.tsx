@@ -458,10 +458,10 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
       {/* Platform badges */}
       <div className="flex items-center justify-center gap-3 flex-wrap">
         {[
-          { icon: <SpotifyIcon />, name: "Spotify" },
-          { icon: <AppleMusicIcon />, name: "Apple Music" },
-          { icon: <TikTokIcon />, name: "TikTok" },
-          { icon: <YouTubeIcon />, name: "YouTube" },
+          { icon: <SpotifyLogo className="h-3.5 w-3.5" />, name: "Spotify" },
+          { icon: <AppleMusicLogo className="h-3.5 w-3.5" />, name: "Apple Music" },
+          { icon: <TikTokLogo className="h-3.5 w-3.5" />, name: "TikTok" },
+          { icon: <YouTubeLogo className="h-3.5 w-3.5" />, name: "YouTube" },
         ].map((p) => (
           <div key={p.name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-[10px] text-muted-foreground">
             <span className="w-3.5 h-3.5">{p.icon}</span>
