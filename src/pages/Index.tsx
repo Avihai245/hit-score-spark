@@ -26,11 +26,21 @@ const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number
   return <><motion.span ref={ref}>{rounded}</motion.span>{suffix}</>;
 };
 
-/* ─── Live incrementing counter ─── */
+/* ─── Live incrementing counter — deterministic, never resets ─── */
+const COUNTER_EPOCH = new Date('2025-01-01T00:00:00Z').getTime();
+const COUNTER_START = 55000;
+// ~5,400/day ≈ grows from 55k to ~1M+ in ~6 months
+const COUNTER_RATE_PER_MS = 5400 / (24 * 60 * 60 * 1000);
+
+const getBaseCount = () => {
+  const elapsed = Date.now() - COUNTER_EPOCH;
+  return Math.floor(COUNTER_START + elapsed * COUNTER_RATE_PER_MS);
+};
+
 const LiveCounter = () => {
-  const [count, setCount] = useState(50247);
+  const [count, setCount] = useState(getBaseCount);
   useEffect(() => {
-    const interval = setInterval(() => setCount(c => c + 1), 2400);
+    const interval = setInterval(() => setCount(getBaseCount()), 2400);
     return () => clearInterval(interval);
   }, []);
   return (
