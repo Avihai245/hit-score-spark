@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { ParticleField } from "@/components/ParticleField";
+import { DataStream, ScanLine } from "@/components/DataStream";
 
 const genres = ["Pop", "Hip Hop", "R&B", "Indie Pop", "Melodic House", "EDM", "Rock", "Latin", "Afrobeats", "Other"];
 const goals = [
