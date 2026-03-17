@@ -584,25 +584,35 @@ const Analyze = () => {
                 inp.click();
               }}
               className={cn(
-                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed min-h-[380px] transition-all relative overflow-hidden",
+                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed min-h-[380px] transition-all relative overflow-hidden group",
                 dragOver
-                  ? "border-primary bg-primary/10 scale-[1.02]"
+                  ? "border-primary bg-primary/10 scale-[1.02] shadow-[0_0_40px_-10px] shadow-primary/30"
                   : file
                     ? "border-accent/40 bg-accent/5"
-                    : "border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5 bg-card/30"
+                    : "border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5 bg-card/30 hover:shadow-[0_0_30px_-10px] hover:shadow-primary/20"
               )}
             >
+              {/* Ambient glow on hover */}
+              <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-primary/5 blur-[80px]" />
+              </div>
               {file ? (
-                <div className="flex flex-col items-center gap-3 p-6 w-full">
+                <div className="flex flex-col items-center gap-3 p-6 w-full relative z-10">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center"
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center relative"
                   >
-                    <Music className="h-10 w-10 text-accent" />
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-accent/20 blur-xl"
+                      animate={{ scale: [1, 1.3, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                    />
+                    <Music className="h-10 w-10 text-accent relative z-10" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-lg text-white">{file.name}</p>
+                    <p className="font-bold text-lg text-foreground">{file.name}</p>
                     <p className="text-sm text-muted-foreground mt-1">{formatSize(file.size)}</p>
                   </div>
                   {/* Waveform preview */}
@@ -616,11 +626,16 @@ const Analyze = () => {
                   </button>
                 </div>
               ) : (
-                <>
+                <div className="relative z-10 flex flex-col items-center gap-4">
                   <motion.div
-                    animate={dragOver ? { scale: 1.1, y: -5 } : { scale: 1, y: 0 }}
-                    className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center"
+                    animate={dragOver ? { scale: 1.15, y: -8 } : { scale: 1, y: 0 }}
+                    className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center relative"
                   >
+                    <motion.div
+                      className="absolute inset-[-8px] rounded-full border-2 border-dashed border-primary/20"
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                    />
                     <Upload className="h-12 w-12 text-primary" />
                   </motion.div>
                   <div className="text-center">
@@ -631,14 +646,14 @@ const Analyze = () => {
                   </div>
                   {dragOver && (
                     <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
                       className="text-primary font-bold text-lg"
                     >
                       Drop it! 🎵
                     </motion.p>
                   )}
-                </>
+                </div>
               )}
             </div>
 
