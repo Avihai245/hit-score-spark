@@ -233,17 +233,37 @@ const ViralMeter = ({ score, danceability, valence }: { score: number; danceabil
   );
 };
 
-/* ─── Animated Bar ─── */
+/* ─── Animated Bar (with glow) ─── */
 const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; value: number; max: number; color: string; sublabel?: string }) => {
   const pct = Math.min((value / max) * 100, 100);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5" ref={ref}>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="text-sm font-bold tabular-nums" style={{ color }}>{value}/{max}</span>
+        <motion.span
+          className="text-sm font-bold tabular-nums"
+          style={{ color }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+        >
+          {value}/{max}
+        </motion.span>
       </div>
-      <div className="h-2 rounded-full bg-muted overflow-hidden">
-        <motion.div className="h-full rounded-full" style={{ backgroundColor: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1.2, ease: "easeOut" }} />
+      <div className="h-2.5 rounded-full bg-muted overflow-hidden relative">
+        <motion.div
+          className="h-full rounded-full relative"
+          style={{ backgroundColor: color }}
+          initial={{ width: 0 }}
+          animate={isInView ? { width: `${pct}%` } : { width: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{ boxShadow: `0 0 12px ${color}40` }}
+          />
+        </motion.div>
       </div>
       {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
     </div>
