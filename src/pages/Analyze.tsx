@@ -377,11 +377,13 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 bg-background relative overflow-hidden">
-        {/* Cinematic background */}
-        <ParticleField count={60} color="hsl(258, 90%, 66%)" speed={0.8} />
-        <DataStream columns={10} />
-        <ScanLine />
+      <div className="flex min-h-screen items-center justify-center px-4 bg-background relative overflow-hidden z-0">
+        {/* Cinematic background — capped below header */}
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          <ParticleField count={60} color="hsl(258, 90%, 66%)" speed={0.8} />
+          <DataStream columns={10} />
+          <ScanLine />
+        </div>
 
         {/* Radial glow */}
         <div className="absolute inset-0 pointer-events-none">
