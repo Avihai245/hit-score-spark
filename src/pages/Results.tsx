@@ -101,9 +101,9 @@ const confidenceFromScore = (s: number) => {
 
 const percentileFromScore = (s: number) => Math.min(99, Math.max(5, Math.round(s * 0.95 + 3)));
 
-/* ─── Score Gauge (cinematic) ─── */
+/* ─── Score Gauge (mobile-optimized) ─── */
 const ScoreGauge = ({ score }: { score: number }) => {
-  const r = 100;
+  const r = 80;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
@@ -117,29 +117,23 @@ const ScoreGauge = ({ score }: { score: number }) => {
 
   return (
     <motion.div
-      className="relative flex items-center justify-center w-[260px] h-[260px] md:w-[300px] md:h-[300px]"
+      className="relative flex items-center justify-center w-[180px] h-[180px] md:w-[220px] md:h-[220px]"
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
     >
       <motion.div
-        className="absolute w-64 h-64 rounded-full blur-[100px] opacity-0"
+        className="absolute w-48 h-48 rounded-full blur-[80px] opacity-0"
         style={{ backgroundColor: color }}
-        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.35, 0.15] }}
+        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.3, 0.12] }}
         transition={{ duration: 2.5, ease: "easeOut" }}
       />
-      <motion.div
-        className="absolute inset-[-6px] rounded-full border border-dashed opacity-10"
-        style={{ borderColor: color }}
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-      />
-      <svg width="100%" height="100%" viewBox="0 0 220 220" className="-rotate-90">
-        <circle cx="110" cy="110" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="6" strokeOpacity="0.2" />
+      <svg width="100%" height="100%" viewBox="0 0 180 180" className="-rotate-90">
+        <circle cx="90" cy="90" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="5" strokeOpacity="0.2" />
         <motion.circle
-          cx="110" cy="110" r={r} fill="none"
+          cx="90" cy="90" r={r} fill="none"
           stroke="url(#scoreGradV2)"
-          strokeWidth="10"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -147,9 +141,9 @@ const ScoreGauge = ({ score }: { score: number }) => {
           transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
         />
         <motion.circle
-          cx="110" cy="110" r={r} fill="none"
+          cx="90" cy="90" r={r} fill="none"
           stroke="url(#scoreGradV2)"
-          strokeWidth="10"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -164,14 +158,14 @@ const ScoreGauge = ({ score }: { score: number }) => {
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
           <filter id="glowV2">
-            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
       </svg>
       <div className="absolute text-center">
         <motion.div
-          className="text-6xl md:text-7xl font-black tabular-nums font-heading"
+          className="text-5xl md:text-6xl font-black tabular-nums font-heading"
           style={{ color }}
           initial={{ scale: 0.5 }}
           animate={{ scale: [0.5, 1.1, 1] }}
@@ -180,7 +174,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
           {rounded}
         </motion.div>
         <motion.div
-          className="text-xs text-muted-foreground font-semibold mt-1 uppercase tracking-[0.25em]"
+          className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-[0.2em]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.5 }}
@@ -192,74 +186,127 @@ const ScoreGauge = ({ score }: { score: number }) => {
   );
 };
 
-/* ─── Animated DNA Bar ─── */
+/* ─── DNA Bar (compact mobile) ─── */
 const DNABar = ({ label, value, max, explanation, delay = 0 }: { label: string; value: number; max: number; explanation: string; delay?: number }) => {
   const pct = Math.min((value / max) * 100, 100);
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-30px" });
   const color = pct >= 80 ? "hsl(270 91% 65%)" : pct >= 60 ? "hsl(142 71% 45%)" : pct >= 40 ? "hsl(38 92% 50%)" : "hsl(0 84% 60%)";
   return (
     <motion.div
       ref={ref}
-      className="p-4 rounded-xl border border-border bg-card/50 hover:border-primary/20 transition-colors"
-      initial={{ opacity: 0, y: 12 }}
+      className="p-3.5 rounded-xl border border-border bg-card/50"
+      initial={{ opacity: 0, y: 10 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: delay * 0.08, duration: 0.4 }}
+      transition={{ delay: delay * 0.06, duration: 0.35 }}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-bold text-foreground">{label}</span>
-        <motion.span
-          className="text-lg font-black tabular-nums"
-          style={{ color }}
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: delay * 0.08 + 0.3 }}
-        >
-          {value}<span className="text-xs text-muted-foreground font-normal">/{max}</span>
+        <motion.span className="text-base font-black tabular-nums" style={{ color }}
+          initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: delay * 0.06 + 0.2 }}>
+          {value}<span className="text-[10px] text-muted-foreground font-normal">/{max}</span>
         </motion.span>
       </div>
-      <div className="h-2.5 rounded-full bg-muted overflow-hidden mb-2">
-        <motion.div
-          className="h-full rounded-full relative"
-          style={{ backgroundColor: color }}
-          initial={{ width: 0 }}
-          animate={isInView ? { width: `${pct}%` } : { width: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: delay * 0.08 }}
-        >
-          <motion.div className="absolute inset-0 rounded-full" style={{ boxShadow: `0 0 12px ${color}40` }} />
-        </motion.div>
+      <div className="h-2 rounded-full bg-muted overflow-hidden mb-1.5">
+        <motion.div className="h-full rounded-full" style={{ backgroundColor: color }}
+          initial={{ width: 0 }} animate={isInView ? { width: `${pct}%` } : { width: 0 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: delay * 0.06 }} />
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{explanation}</p>
+      <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{explanation}</p>
     </motion.div>
   );
 };
 
 /* ─── Section wrapper ─── */
-const Section = ({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) => (
+const Section = ({ children, delay = 0, className = "", id }: { children: ReactNode; delay?: number; className?: string; id?: string }) => (
   <motion.section
-    initial={{ opacity: 0, y: 24 }}
+    id={id}
+    initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-60px" }}
-    transition={{ delay: delay * 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    viewport={{ once: true, margin: "-40px" }}
+    transition={{ delay: delay * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     className={className}
   >
     {children}
   </motion.section>
 );
 
-const SectionLabel = ({ number, title, subtitle, icon: Icon }: { number: string; title: string; subtitle?: string; icon: React.ElementType }) => (
-  <div className="flex items-start gap-3 mb-5">
-    <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-      <Icon className="h-4.5 w-4.5 text-primary" />
+const SectionLabel = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
+  <div className="flex items-center gap-2.5 mb-4">
+    <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+      <Icon className="h-4 w-4 text-primary" />
     </div>
-    <div>
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Section {number}</span>
-      </div>
-      <h2 className="text-lg md:text-xl font-black font-heading text-foreground tracking-tight leading-tight">{title}</h2>
-      {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-    </div>
+    <h2 className="text-base md:text-lg font-black font-heading text-foreground tracking-tight">{title}</h2>
   </div>
+);
+
+/* ─── Sticky Section Nav ─── */
+const NAV_ITEMS = [
+  { id: "overview", label: "Overview" },
+  { id: "issues", label: "Issues" },
+  { id: "improve", label: "Improve" },
+  { id: "compare", label: "Compare" },
+  { id: "roadmap", label: "Roadmap" },
+];
+
+const StickyNav = ({ activeSection }: { activeSection: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 3 }}
+    className="sticky top-[70px] z-30 -mx-4 px-4 py-2 bg-background/80 backdrop-blur-lg border-b border-border/50"
+  >
+    <div className="flex gap-1 overflow-x-auto no-scrollbar">
+      {NAV_ITEMS.map(item => (
+        <button
+          key={item.id}
+          onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            activeSection === item.id
+              ? "bg-primary/15 text-primary border border-primary/25"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  </motion.div>
+);
+
+/* ─── Floating CTA ─── */
+const FloatingCTA = ({ onClick }: { onClick: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 3.5, type: "spring", stiffness: 200, damping: 20 }}
+    className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-auto z-40"
+  >
+    <motion.button
+      onClick={onClick}
+      className="relative w-full md:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden shadow-lg shadow-accent/20"
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+    >
+      {/* Glow pulse */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl"
+        animate={{ boxShadow: ["0 0 20px hsl(38 92% 50% / 0.2)", "0 0 35px hsl(38 92% 50% / 0.4)", "0 0 20px hsl(38 92% 50% / 0.2)"] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+      />
+      {/* Shimmer */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+      />
+      <span className="relative flex items-center justify-center gap-2">
+        <Rocket className="h-4 w-4" />
+        Make This Track Viral
+        <ArrowRight className="h-4 w-4" />
+      </span>
+    </motion.button>
+  </motion.div>
 );
 
 /* ─── Critical Issue Card ─── */
