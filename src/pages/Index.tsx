@@ -308,7 +308,7 @@ const Index = () => {
               transition={{ delay: 0.1, duration: 0.5 }}
               className="block"
             >
-              Your Music Has
+              Stop Guessing.
             </motion.span>
             <motion.span
               initial={{ opacity: 0, y: 20 }}
@@ -316,15 +316,15 @@ const Index = () => {
               transition={{ delay: 0.25, duration: 0.5 }}
               className="block gradient-text"
             >
-              Hit Potential.
+              Start Charting.
             </motion.span>
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="block text-muted-foreground text-[0.65em]"
+              className="block text-muted-foreground text-[0.6em] mt-1"
             >
-              Let's Prove It.
+              Turn streams into income.
             </motion.span>
           </motion.h1>
         </div>
@@ -335,7 +335,7 @@ const Index = () => {
           transition={{ delay: 0.7, duration: 0.5 }}
           className="relative mt-6 text-base sm:text-lg md:text-xl font-medium text-muted-foreground max-w-xl leading-relaxed px-2"
         >
-          We scan your track against real Spotify, Apple Music & YouTube hit patterns — and show you exactly how to improve it.
+          We reveal exactly why some tracks blow up and yours doesn't — yet. Fix it before you release.
         </motion.p>
 
         {/* Platform row */}
