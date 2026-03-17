@@ -378,21 +378,49 @@ const Analyze = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-8 max-w-md w-full"
+          className="flex flex-col items-center gap-6 max-w-lg w-full"
         >
           <div className="relative">
             <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
             <LoadingWaveform />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold font-heading text-white">
+            <p className="text-lg font-bold font-heading text-foreground">
               Analyzing your song...
             </p>
-            <p className="mt-2 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
+            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
+          </div>
+
+          {/* Platform badges */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold"
+            >
+              <SpotifyIcon /> Spotify
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold"
+            >
+              <AppleMusicIcon /> Apple Music
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.1 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold"
+            >
+              📊 500K+ Songs
+            </motion.div>
           </div>
 
           {/* Step progress */}
-          <div className="w-full space-y-3">
+          <div className="w-full space-y-2">
             {analysisSteps.map((step, i) => {
               const isCompleted = completedSteps.includes(i);
               const isCurrent = currentStep === i && !isCompleted;
@@ -401,18 +429,18 @@ const Analyze = () => {
                   key={step.key}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: i * 0.08 }}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl border transition-all",
+                    "flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all",
                     isCompleted
                       ? "border-green-500/30 bg-green-500/10"
                       : isCurrent
                         ? "border-primary/30 bg-primary/10"
-                        : "border-white/5 bg-white/[0.02] opacity-50"
+                        : "border-white/5 bg-white/[0.02] opacity-40"
                   )}
                 >
                   <div className={cn(
-                    "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
+                    "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs",
                     isCompleted
                       ? "bg-green-500"
                       : isCurrent
@@ -421,21 +449,21 @@ const Analyze = () => {
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
-                        <Check className="h-4 w-4 text-white" />
+                        <Check className="h-3.5 w-3.5 text-white" />
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
-                        className="w-2 h-2 rounded-full bg-primary"
+                        className="w-1.5 h-1.5 rounded-full bg-primary"
                         animate={{ scale: [1, 1.5, 1] }}
                         transition={{ repeat: Infinity, duration: 1 }}
                       />
                     ) : (
-                      <span className="text-xs text-muted-foreground">{i + 1}</span>
+                      <span className="text-[10px] text-muted-foreground">{step.icon}</span>
                     )}
                   </div>
                   <span className={cn(
                     "text-sm font-medium",
-                    isCompleted ? "text-green-400" : isCurrent ? "text-white" : "text-muted-foreground"
+                    isCompleted ? "text-green-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {step.label}
                     {isCompleted && " ✓"}
@@ -445,6 +473,24 @@ const Analyze = () => {
               );
             })}
           </div>
+
+          {/* Live data feed */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="w-full rounded-xl border border-white/5 bg-white/[0.02] p-4"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <motion.div
+                className="w-2 h-2 rounded-full bg-green-400"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Live Data Feed</span>
+            </div>
+            <LiveDataFeed elapsedSeconds={elapsedSeconds} />
+          </motion.div>
         </motion.div>
       </div>
     );
