@@ -195,30 +195,53 @@ const ScoreGauge = ({ score }: { score: number }) => {
   );
 };
 
-/* ─── Viral Meter ─── */
+/* ─── Viral Meter (cinematic) ─── */
 const ViralMeter = ({ score, danceability, valence }: { score: number; danceability?: number; valence?: number }) => {
   const viral = Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)));
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between mb-3">
+    <div className="rounded-xl border border-border bg-card p-5 relative overflow-hidden">
+      {/* Ambient glow */}
+      <motion.div
+        className="absolute top-0 right-0 w-32 h-32 rounded-full bg-accent/10 blur-[60px]"
+        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+      />
+      <div className="flex items-center justify-between mb-3 relative z-10">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
+          <motion.div
+            className="h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center"
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          >
             <TrendingUp className="h-4 w-4 text-accent" />
-          </div>
+          </motion.div>
           <div>
             <span className="text-sm font-bold text-foreground uppercase tracking-wider">Viral Potential</span>
             <p className="text-[10px] text-muted-foreground">Cross-platform algorithm analysis</p>
           </div>
         </div>
-        <span className="text-2xl font-black text-accent tabular-nums">{viral}%</span>
+        <motion.span
+          className="text-2xl font-black text-accent tabular-nums"
+          initial={{ scale: 0 }}
+          animate={{ scale: [0, 1.2, 1] }}
+          transition={{ duration: 0.6, delay: 1 }}
+        >
+          {viral}%
+        </motion.span>
       </div>
-      <div className="relative h-2.5 rounded-full bg-muted overflow-hidden">
+      <div className="relative h-3 rounded-full bg-muted overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300"
+          className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300 relative"
           initial={{ width: 0 }}
           animate={{ width: `${viral}%` }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-        />
+          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+        >
+          <motion.div
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-accent shadow-[0_0_12px] shadow-accent/60"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+        </motion.div>
       </div>
       <div className="flex justify-between mt-2 text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
         <span>Low</span><span>Moderate</span><span>High</span><span>Viral</span>
