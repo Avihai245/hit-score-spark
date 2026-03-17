@@ -297,47 +297,34 @@ const Index = () => {
           </span>
         </motion.div>
 
-        {/* Headline — word-by-word reveal */}
-        <div className="relative max-w-5xl">
+        {/* Headline */}
+        <div className="relative max-w-4xl">
           <motion.h1
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-heading tracking-tight text-foreground leading-[1.05]"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-heading tracking-tight text-foreground leading-[1.1]"
           >
-            {["Turn", "Your", "Track", "Into a"].map((word, i) => (
-              <motion.span
-                key={word}
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.07, duration: 0.5 }}
-                className="inline-block mr-[0.3em]"
-              >
-                {word}
-              </motion.span>
-            ))}
-            <br />
             <motion.span
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="gradient-text inline-block"
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="block"
             >
-              Viral Hit
+              Your Music Has
             </motion.span>
             <motion.span
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="inline-block ml-[0.3em]"
+              transition={{ delay: 0.25, duration: 0.5 }}
+              className="block gradient-text"
             >
-              Using
+              Hit Potential.
             </motion.span>
-            <br />
             <motion.span
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-              className="brand-gradient-text inline-block"
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="block text-muted-foreground text-[0.65em]"
             >
-              Global Music Data
+              Let's Prove It.
             </motion.span>
           </motion.h1>
         </div>
@@ -345,17 +332,17 @@ const Index = () => {
         <motion.p
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="relative mt-6 text-lg md:text-xl font-medium text-muted-foreground max-w-2xl leading-relaxed"
+          transition={{ delay: 0.7, duration: 0.5 }}
+          className="relative mt-6 text-base sm:text-lg md:text-xl font-medium text-muted-foreground max-w-xl leading-relaxed px-2"
         >
-          Analyze your music against real-world hit patterns, identify what's holding it back, and optimize it for algorithmic success.
+          We scan your track against real Spotify, Apple Music & YouTube hit patterns — and show you exactly how to improve it.
         </motion.p>
 
-        {/* Platform row — static opacity, no infinite animations */}
+        {/* Platform row */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
+          transition={{ delay: 0.9 }}
           className="relative mt-5 flex items-center justify-center gap-5 flex-wrap"
         >
           {platforms.map((p) => (
@@ -373,18 +360,18 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1, duration: 0.5 }}
-          className="relative mt-10 flex flex-col sm:flex-row items-center gap-4"
+          transition={{ delay: 1, duration: 0.5 }}
+          className="relative mt-8 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-4 sm:px-0"
         >
-          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
             <Button
               asChild
               size="lg"
-              className="relative gradient-purple text-primary-foreground px-10 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden"
+              className="relative w-full sm:w-auto gradient-purple text-primary-foreground px-10 py-6 text-base sm:text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden rounded-full"
             >
-              <Link to="/analyze" className="flex items-center gap-2">
-                <span>Analyze Your Track</span>
-                <span>🔥</span>
+              <Link to="/analyze" className="flex items-center justify-center gap-2">
+                <Zap className="h-5 w-5" />
+                <span>Analyze Your Track — Free</span>
               </Link>
             </Button>
           </motion.div>
@@ -392,13 +379,23 @@ const Index = () => {
             asChild
             size="lg"
             variant="outline"
-            className="px-8 py-7 text-base font-semibold border-border/50 hover:bg-secondary hover:border-muted-foreground/30 transition-all backdrop-blur-sm"
+            className="w-full sm:w-auto px-8 py-6 text-sm sm:text-base font-semibold border-border/50 hover:bg-secondary hover:border-muted-foreground/30 transition-all backdrop-blur-sm rounded-full"
           >
-            <Link to="/results" className="flex items-center gap-2">
-              See How It Works <ArrowRight className="h-4 w-4" />
+            <Link to="/results" className="flex items-center justify-center gap-2">
+              See Example Report <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </motion.div>
+
+        {/* Social proof line */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="relative mt-4 text-xs text-muted-foreground/60 font-medium"
+        >
+          No signup required · Results in 30 seconds · 100% free first scan
+        </motion.p>
 
         {/* Live counter */}
         <div className="relative mt-14">
