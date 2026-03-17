@@ -232,7 +232,7 @@ const StickyNav = ({ activeSection }: { activeSection: string }) => (
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 1.5 }}
-    className="sticky top-[72px] z-30 -mx-4 px-4 py-2 bg-background/90 backdrop-blur-lg border-b border-border/50"
+    className="sticky top-[88px] md:top-[96px] z-30 -mx-4 px-4 py-2 bg-background/90 backdrop-blur-lg border-b border-border/50"
   >
     <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-2xl mx-auto">
       {NAV_ITEMS.map(item => (
@@ -1002,7 +1002,7 @@ const Results = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-32 bg-background relative">
+    <div className="min-h-screen px-4 pt-28 pb-32 bg-background relative">
       {/* Sticky Mini Nav */}
       <StickyNav activeSection={activeSection} />
 
