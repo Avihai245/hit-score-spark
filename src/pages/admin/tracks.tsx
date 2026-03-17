@@ -32,7 +32,7 @@ export default function AdminTracks() {
     <AdminGuard>
       <div className="flex min-h-screen bg-background text-foreground">
         <AdminNav />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6 ml-0 md:ml-56">
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold">Track Management</h1>

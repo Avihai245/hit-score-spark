@@ -94,7 +94,7 @@ export default function AdminUsers() {
     <AdminGuard>
       <div className="flex min-h-screen bg-[#0a0a0a] text-white">
         <AdminNav />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6 ml-0 md:ml-56">
           {/* Header */}
           <div className="flex flex-wrap items-center gap-4 mb-8">
             <div>
