@@ -703,13 +703,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
       {status === "lyrics" && <LyricsEditor analysisData={analysisData} onLyricsReady={(lyrics) => { setFinalLyrics(lyrics); startRemix(lyrics); }} />}
 
       {(status === "uploading" || status === "processing") && (
-        <div className="flex flex-col items-center gap-5 py-6">
-          <ProcessingWaveform />
-          <div className="text-center">
-            <p className="text-base font-bold text-foreground">{remixMessages(elapsed)}</p>
-            <p className="text-sm text-muted-foreground tabular-nums mt-1">{elapsed}s</p>
-          </div>
-        </div>
+        <RemixProcessingUI elapsed={elapsed} />
       )}
 
       {status === "error" && (
