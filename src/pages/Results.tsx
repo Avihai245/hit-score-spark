@@ -483,439 +483,432 @@ const Results = () => {
   ));
 
   return (
-    <div className="min-h-screen px-4 pt-20 pb-16 bg-background">
-      <div className="container max-w-4xl">
+    <div className="min-h-screen px-3 sm:px-4 pt-20 pb-16 bg-background">
+      <div className="container max-w-5xl space-y-4">
 
-        {/* ═══ HERO — Score + Verdict + Key Stats ═══ */}
+        {/* ═══ HERO — Score + Verdict + Stats ═══ */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="rounded-2xl border border-border bg-card p-6 md:p-8 mb-6"
+          className="rounded-2xl border border-border bg-card p-4 sm:p-6"
         >
-          <div className="flex flex-col md:flex-row md:items-center gap-6">
-            {/* Left: Score */}
-            <div className="flex flex-col items-center md:items-center flex-shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            {/* Score */}
+            <div className="flex flex-row sm:flex-col items-center gap-3 sm:gap-2 flex-shrink-0">
               <ScoreGauge score={score} />
-              <motion.span
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.6 }}
-                className={`mt-3 px-3 py-1 rounded-full text-[10px] font-bold border tracking-widest ${badge.cls}`}
-              >
-                {badge.label}
-              </motion.span>
+              <div className="sm:hidden flex-1 min-w-0">
+                <p className="text-[11px] text-muted-foreground truncate mb-0.5">"{title}"</p>
+                <h1 className="text-sm font-bold font-heading text-foreground leading-snug">{verdict}</h1>
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.6 }}
+                  className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-[9px] font-bold border tracking-widest ${badge.cls}`}
+                >
+                  {badge.label}
+                </motion.span>
+              </div>
             </div>
 
-            {/* Right: Info */}
-            <div className="flex-1 min-w-0 text-center md:text-left">
-              <p className="text-xs text-muted-foreground mb-1 truncate">"{title}"</p>
-              <h1 className="text-lg md:text-xl font-bold font-heading text-foreground leading-snug mb-4">
-                {verdict}
-              </h1>
-
-              {/* Quick stats row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            {/* Desktop info */}
+            <div className="flex-1 min-w-0 hidden sm:block">
+              <div className="flex items-center gap-3 mb-1">
+                <p className="text-xs text-muted-foreground truncate">"{title}"</p>
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.6 }}
+                  className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold border tracking-widest ${badge.cls}`}
+                >
+                  {badge.label}
+                </motion.span>
+              </div>
+              <h1 className="text-base md:text-lg font-bold font-heading text-foreground leading-snug mb-3">{verdict}</h1>
+              
+              {/* Stats inline */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {profileStats.map(stat => (
                   <StatPill key={stat.label} icon={stat.icon} label={stat.label} value={stat.value} />
                 ))}
               </div>
-
+              
               {/* Viral bar */}
-              <div className="rounded-lg bg-muted/30 border border-border p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-3.5 w-3.5 text-accent" />
-                    <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Viral Potential</span>
-                  </div>
-                  <span className="text-sm font-black text-accent tabular-nums">{viral}%</span>
+              <div className="flex items-center gap-3 rounded-lg bg-muted/30 border border-border px-3 py-2">
+                <div className="flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-accent" />
+                  <span className="text-[9px] font-bold text-foreground uppercase tracking-wider">Viral</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                   <motion.div className="h-full rounded-full bg-gradient-to-r from-accent to-yellow-300"
                     initial={{ width: 0 }} animate={{ width: `${viral}%` }}
                     transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
                   />
                 </div>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <SpotifyLogo size={12} />
-                  <AppleMusicLogo size={12} />
-                  <TikTokLogo size={12} />
-                  <span className="text-[8px] text-muted-foreground ml-0.5">Cross-platform analysis</span>
+                <span className="text-xs font-black text-accent tabular-nums">{viral}%</span>
+                <div className="flex items-center gap-1 ml-1">
+                  <SpotifyLogo size={11} /><AppleMusicLogo size={11} /><TikTokLogo size={11} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Share buttons row */}
-          <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t border-border">
-            <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1.5">
-              <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
-                <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                Share Score
-              </a>
-            </Button>
-            <Button asChild size="sm" className="h-8 text-xs gap-1.5 gradient-purple text-primary-foreground font-semibold">
-              <Link to="/analyze">Analyze Another</Link>
-            </Button>
+          {/* Mobile: stats + viral below */}
+          <div className="sm:hidden mt-3 space-y-2">
+            <div className="grid grid-cols-2 gap-1.5">
+              {profileStats.map(stat => (
+                <StatPill key={stat.label} icon={stat.icon} label={stat.label} value={stat.value} />
+              ))}
+            </div>
+            <div className="flex items-center gap-2.5 rounded-lg bg-muted/30 border border-border px-3 py-2">
+              <TrendingUp className="h-3 w-3 text-accent" />
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <motion.div className="h-full rounded-full bg-gradient-to-r from-accent to-yellow-300"
+                  initial={{ width: 0 }} animate={{ width: `${viral}%` }}
+                  transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                />
+              </div>
+              <span className="text-xs font-black text-accent tabular-nums">{viral}%</span>
+              <SpotifyLogo size={10} /><AppleMusicLogo size={10} /><TikTokLogo size={10} />
+            </div>
           </div>
         </motion.div>
 
-        {/* ═══ THE ONE CHANGE — High impact callout ═══ */}
+        {/* ═══ ONE CHANGE — Prominent callout ═══ */}
         {oneChange && (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
-            className="rounded-xl border border-accent/20 bg-gradient-to-r from-accent/[0.06] to-transparent p-4 md:p-5 mb-6 flex items-start gap-3"
+            transition={{ delay: 0.25 }}
+            className="rounded-xl border border-accent/20 bg-gradient-to-r from-accent/[0.06] to-transparent p-3.5 sm:p-4 flex items-start gap-3"
           >
-            <div className="flex-shrink-0 h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
-              <Target className="h-4 w-4 text-accent" />
+            <div className="flex-shrink-0 h-7 w-7 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
+              <Target className="h-3.5 w-3.5 text-accent" />
             </div>
             <div className="min-w-0">
-              <p className="text-[9px] text-accent font-bold uppercase tracking-[0.2em] mb-1">The One Change Before Releasing</p>
-              <p className="text-sm font-semibold text-foreground leading-relaxed">{oneChange}</p>
+              <p className="text-[8px] text-accent font-bold uppercase tracking-[0.2em] mb-0.5">The One Change Before Releasing</p>
+              <p className="text-xs sm:text-sm font-semibold text-foreground leading-relaxed">{oneChange}</p>
             </div>
           </motion.div>
         )}
 
-        {/* ═══ TABBED SECTIONS ═══ */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.4 }}
-        >
-          <Tabs defaultValue="intelligence" className="w-full">
-            <TabsList className="w-full h-10 bg-muted/50 border border-border rounded-xl p-1 grid grid-cols-4 mb-5">
-              <TabsTrigger value="intelligence" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-1.5">
-                <BarChart3 className="h-3.5 w-3.5 hidden sm:block" /> Intelligence
-              </TabsTrigger>
-              <TabsTrigger value="strategy" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-1.5">
-                <Target className="h-3.5 w-3.5 hidden sm:block" /> Strategy
-              </TabsTrigger>
-              <TabsTrigger value="audience" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-1.5">
-                <User className="h-3.5 w-3.5 hidden sm:block" /> Audience
-              </TabsTrigger>
-              <TabsTrigger value="remix" className="rounded-lg text-xs font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm gap-1.5">
-                <Headphones className="h-3.5 w-3.5 hidden sm:block" /> Remix
-              </TabsTrigger>
-            </TabsList>
+        {/* ═══ MAIN CONTENT — 2 Column Grid on Desktop ═══ */}
+        <div className="grid gap-4 lg:grid-cols-5">
 
-            {/* ─── TAB: Intelligence ─── */}
-            <TabsContent value="intelligence" className="space-y-4 mt-0">
-              <SourceRow />
+          {/* ─── LEFT COLUMN (3/5) — Analysis ─── */}
+          <div className="lg:col-span-3 space-y-4">
 
-              {/* Honest Truth + Hook Analysis side by side */}
-              <div className="grid gap-4 md:grid-cols-2">
-                {viralPotential && (
-                  <div className="rounded-xl border border-border bg-card p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Eye className="h-4 w-4 text-primary" />
-                      <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider">The Honest Truth</h3>
-                    </div>
-                    <p className="text-sm text-foreground/80 leading-relaxed">{viralPotential}</p>
+            {/* Honest Truth + Hook side by side */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="grid gap-3 sm:grid-cols-2">
+              {viralPotential && (
+                <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Eye className="h-3.5 w-3.5 text-primary" />
+                    <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider">The Honest Truth</h3>
+                  </div>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{viralPotential}</p>
+                </div>
+              )}
+              {hookAnalysis && (
+                <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-3.5 sm:p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider">Hook Analysis</h3>
+                  </div>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{hookAnalysis}</p>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Algorithm Scores */}
+            {(competitorMatch || valence != null || danceability != null) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+                className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
+                    <BarChart3 className="h-3.5 w-3.5 text-primary" /> Algorithm Scores
+                  </h3>
+                  <div className="flex items-center gap-1"><SpotifyLogo size={11} /><AppleMusicLogo size={11} /></div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {competitorMatch != null && <MetricBar label="Genre Match" value={competitorMatch} max={10} color="hsl(38 92% 50%)" />}
+                  {valence != null && <MetricBar label="Valence" value={valence} max={10} color="hsl(142 71% 45%)" />}
+                  {danceability != null && <MetricBar label="Danceability" value={danceability} max={10} color="hsl(258 90% 66%)" />}
+                </div>
+                {(saveRatePrediction || skipRiskMoment) && (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {saveRatePrediction && (
+                      <div className="rounded-lg bg-primary/5 border border-primary/10 p-2.5">
+                        <p className="text-[8px] text-primary font-bold uppercase tracking-[0.15em] mb-0.5">Save Rate</p>
+                        <p className="text-xs font-bold text-foreground">{saveRatePrediction}</p>
+                      </div>
+                    )}
+                    {skipRiskMoment && (
+                      <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-2.5">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <AlertTriangle className="h-3 w-3 text-red-400" />
+                          <p className="text-[8px] text-red-400 font-bold uppercase tracking-[0.15em]">Skip Risk</p>
+                        </div>
+                        <p className="text-[11px] font-medium text-foreground/70">{skipRiskMoment}</p>
+                      </div>
+                    )}
                   </div>
                 )}
-                {hookAnalysis && (
-                  <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Zap className="h-4 w-4 text-primary" />
-                      <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider">Hook Analysis</h3>
+              </motion.div>
+            )}
+
+            {/* Lyric Intelligence */}
+            {(lyricWeakness || lyricFix || hasViralLine) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-2.5">
+                <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
+                  <FileText className="h-3.5 w-3.5 text-primary" /> Lyric Intelligence
+                </h3>
+                {lyricWeakness && lyricFix && (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-2.5">
+                      <p className="text-[8px] text-red-400 font-bold uppercase tracking-[0.15em] mb-0.5">Weakness</p>
+                      <p className="text-[11px] text-foreground/60 italic leading-relaxed">"{lyricWeakness}"</p>
                     </div>
-                    <p className="text-sm text-foreground/80 leading-relaxed">{hookAnalysis}</p>
+                    <div className="rounded-lg bg-green-500/5 border border-green-500/10 p-2.5">
+                      <p className="text-[8px] text-green-400 font-bold uppercase tracking-[0.15em] mb-0.5">Fix</p>
+                      <p className="text-[11px] text-green-300/80 italic leading-relaxed">"{lyricFix}"</p>
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {/* Algorithm Metrics */}
-              {(competitorMatch || valence != null || danceability != null) && (
-                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                  <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-primary" /> Algorithm Scores
-                  </h3>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {competitorMatch && (
-                      <MetricBar label="Genre Match" value={competitorMatch} max={10} color="hsl(38 92% 50%)" sublabel="vs. top tracks" />
-                    )}
-                    {valence != null && (
-                      <MetricBar label="Valence" value={valence} max={10} color="hsl(142 71% 45%)" />
-                    )}
-                    {danceability != null && (
-                      <MetricBar label="Danceability" value={danceability} max={10} color="hsl(258 90% 66%)" />
-                    )}
+                {hasViralLine && (
+                  <div className="rounded-lg bg-accent/5 border border-accent/15 p-2.5">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <Award className="h-3 w-3 text-accent" />
+                      <p className="text-[8px] text-accent font-bold uppercase tracking-[0.15em]">Most Viral Line</p>
+                    </div>
+                    <p className="text-xs font-semibold text-foreground italic">"{viralLine}"</p>
                   </div>
-                  {(saveRatePrediction || skipRiskMoment) && (
-                    <div className="grid gap-2 sm:grid-cols-2 pt-1">
-                      {saveRatePrediction && (
-                        <div className="rounded-lg bg-primary/5 border border-primary/10 p-3">
-                          <p className="text-[9px] text-primary font-bold uppercase tracking-[0.15em] mb-0.5">Save Rate</p>
-                          <p className="text-sm font-bold text-foreground">{saveRatePrediction}</p>
-                        </div>
-                      )}
-                      {skipRiskMoment && (
-                        <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-3">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <AlertTriangle className="h-3 w-3 text-red-400" />
-                            <p className="text-[9px] text-red-400 font-bold uppercase tracking-[0.15em]">Skip Risk</p>
-                          </div>
-                          <p className="text-xs font-medium text-foreground/70">{skipRiskMoment}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
+              </motion.div>
+            )}
 
-              {/* Lyric Intelligence */}
-              {(lyricWeakness || lyricFix || hasViralLine) && (
-                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                  <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-primary" /> Lyric Intelligence
-                  </h3>
-                  {lyricWeakness && lyricFix && (
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      <div className="rounded-lg bg-red-500/5 border border-red-500/10 p-3">
-                        <p className="text-[8px] text-red-400 font-bold uppercase tracking-[0.15em] mb-1">Weakness</p>
-                        <p className="text-xs text-foreground/60 italic leading-relaxed">"{lyricWeakness}"</p>
-                      </div>
-                      <div className="rounded-lg bg-green-500/5 border border-green-500/10 p-3">
-                        <p className="text-[8px] text-green-400 font-bold uppercase tracking-[0.15em] mb-1">Fix</p>
-                        <p className="text-xs text-green-300/80 italic leading-relaxed">"{lyricFix}"</p>
-                      </div>
+            {/* Strengths / Improvements */}
+            {(strengths?.length > 0 || improvements?.length > 0) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+                className="grid gap-3 sm:grid-cols-2">
+                {strengths?.length > 0 && (
+                  <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-5 w-5 rounded bg-green-500/10 flex items-center justify-center"><Check className="h-3 w-3 text-green-400" /></div>
+                      <h3 className="text-[10px] font-bold font-heading text-foreground">What's Working</h3>
                     </div>
-                  )}
-                  {hasViralLine && (
-                    <div className="rounded-lg bg-accent/5 border border-accent/15 p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Award className="h-3.5 w-3.5 text-accent" />
-                        <p className="text-[8px] text-accent font-bold uppercase tracking-[0.15em]">Most Viral Line</p>
-                      </div>
-                      <p className="text-sm font-semibold text-foreground italic">"{viralLine}"</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Strengths / Improvements */}
-              {(strengths?.length > 0 || improvements?.length > 0) && (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {strengths?.length > 0 && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="h-5 w-5 rounded bg-green-500/10 flex items-center justify-center"><Check className="h-3 w-3 text-green-400" /></div>
-                        <h3 className="text-xs font-bold font-heading text-foreground">What's Working</h3>
-                      </div>
-                      <div className="space-y-2">
-                        {strengths.map((s: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <div className="mt-1.5 flex-shrink-0 h-1 w-1 rounded-full bg-green-400" />
-                            <span className="text-xs text-foreground/75 leading-relaxed">{s}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {improvements?.length > 0 && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="h-5 w-5 rounded bg-red-500/10 flex items-center justify-center"><X className="h-3 w-3 text-red-400" /></div>
-                        <h3 className="text-xs font-bold font-heading text-foreground">What to Fix</h3>
-                      </div>
-                      <div className="space-y-2">
-                        {improvements.map((s: string, i: number) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <div className="mt-1.5 flex-shrink-0 h-1 w-1 rounded-full bg-red-400" />
-                            <span className="text-xs text-foreground/75 leading-relaxed">{s}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* ─── TAB: Strategy ─── */}
-            <TabsContent value="strategy" className="space-y-4 mt-0">
-              {/* Genre Comparison */}
-              {similarSongs?.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-primary" />
-                    <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider">Genre Comparison</h3>
-                    <div className="flex items-center gap-1 ml-auto">
-                      <SpotifyLogo size={12} />
-                      <AppleMusicLogo size={12} />
-                    </div>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {similarSongs.slice(0, 3).map((song: any, i: number) => (
-                      <div key={i} className="rounded-xl border border-border bg-card p-4 hover:border-accent/25 transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <SpotifyLogo size={16} />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-foreground text-xs truncate">{song.title}</p>
-                            <p className="text-[10px] text-muted-foreground">{song.artist}</p>
-                          </div>
-                        </div>
-                        {song.streams && <p className="text-base font-black text-accent tabular-nums mb-1.5">{song.streams}</p>}
-                        {song.whatTheyHaveThatYouDont && (
-                          <div className="pt-2 border-t border-border">
-                            <p className="text-[8px] text-accent/60 font-bold uppercase tracking-[0.15em] mb-0.5">Edge</p>
-                            <p className="text-[11px] text-foreground/60 leading-relaxed">{song.whatTheyHaveThatYouDont}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Playlist Targets */}
-              {(playlistStrategy || matchedPlaylists?.length > 0) && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <ListMusic className="h-4 w-4 text-primary" />
-                    <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider">Playlist Targets</h3>
-                    <SpotifyLogo size={12} />
-                  </div>
-                  {playlistStrategy && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-start gap-2">
-                        <Lightbulb className="h-3.5 w-3.5 text-primary flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-foreground/80 leading-relaxed">{playlistStrategy}</p>
-                      </div>
-                    </div>
-                  )}
-                  {matchedPlaylists?.length > 0 && (
-                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                      {matchedPlaylists.slice(0, 6).map((pl: any, i: number) => (
-                        <div key={i} className="rounded-lg border border-border bg-card py-2.5 px-3">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <SpotifyLogo size={12} />
-                            <span className="font-semibold text-xs text-foreground truncate">{pl.name}</span>
-                          </div>
-                          {pl.followers && <p className="text-[10px] text-muted-foreground">{pl.followers} followers</p>}
-                          {pl.reason && <p className="text-[10px] text-primary/60">{pl.reason}</p>}
+                    <div className="space-y-1.5">
+                      {strengths.map((s: string, i: number) => (
+                        <div key={i} className="flex items-start gap-1.5">
+                          <div className="mt-1.5 flex-shrink-0 h-1 w-1 rounded-full bg-green-400" />
+                          <span className="text-[11px] text-foreground/75 leading-relaxed">{s}</span>
                         </div>
                       ))}
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* 30-Day Roadmap */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <h3 className="text-xs font-bold font-heading text-foreground uppercase tracking-wider">30-Day Roadmap</h3>
-                </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {roadmap.map((item, i) => (
-                    <div key={item.week} className="rounded-lg border border-border bg-card p-3 flex items-start gap-2.5">
-                      <div className={`mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full ${statusColors[item.status]}`} />
-                      <div>
-                        <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{item.week}</span>
-                        <p className="text-xs text-foreground/75 mt-0.5 leading-relaxed">{item.action}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* ─── TAB: Audience ─── */}
-            <TabsContent value="audience" className="space-y-4 mt-0">
-              {(targetAudience || listeningMoment || tikTokFit) && (
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {targetAudience && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <User className="h-4 w-4 text-primary mb-2" />
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-1">Who They Are</p>
-                      <p className="text-xs text-foreground leading-relaxed">{targetAudience}</p>
-                    </div>
-                  )}
-                  {listeningMoment && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <MapPin className="h-4 w-4 text-primary mb-2" />
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-1">When They Listen</p>
-                      <p className="text-xs text-foreground leading-relaxed">{listeningMoment}</p>
-                    </div>
-                  )}
-                  {tikTokFit && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <TikTokLogo size={16} />
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-1 mt-2">TikTok Fit</p>
-                      <p className="text-xs text-foreground leading-relaxed">{tikTokFit}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Theme / Emotional Core */}
-              {(songTheme || emotionalCore) && (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {songTheme && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-1">Theme</p>
-                      <p className="text-sm font-medium text-foreground leading-relaxed">{songTheme}</p>
-                    </div>
-                  )}
-                  {emotionalCore && (
-                    <div className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-1">Emotional Core</p>
-                      <p className="text-sm font-medium text-foreground leading-relaxed">{emotionalCore}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {!targetAudience && !listeningMoment && !tikTokFit && !songTheme && !emotionalCore && (
-                <div className="text-center py-10 text-muted-foreground text-sm">
-                  No audience data available for this analysis.
-                </div>
-              )}
-            </TabsContent>
-
-            {/* ─── TAB: Remix ─── */}
-            <TabsContent value="remix" className="mt-0">
-              <div className="rounded-xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-5 md:p-6">
-                <div className="text-center mb-5">
-                  <Headphones className="h-7 w-7 text-accent mx-auto mb-2" />
-                  <h2 className="text-lg font-black font-heading text-foreground">AI Remix</h2>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">Enhanced production with stronger hooks and viral energy</p>
-                </div>
-                {canRemix ? (
-                  <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
-                ) : (
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-4">Score: <strong className="text-accent">{score}/100</strong></p>
-                    <Button onClick={() => setShowRemixPaywall(true)} className="bg-gradient-to-r from-accent to-yellow-400 text-black font-bold gap-2">
-                      <Sparkles className="h-4 w-4" /> Unlock AI Remix
-                    </Button>
-                    <p className="text-[10px] text-muted-foreground mt-2">Pro $19/mo or $7 one-time</p>
                   </div>
                 )}
+                {improvements?.length > 0 && (
+                  <div className="rounded-xl border border-border bg-card p-3.5 sm:p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-5 w-5 rounded bg-red-500/10 flex items-center justify-center"><X className="h-3 w-3 text-red-400" /></div>
+                      <h3 className="text-[10px] font-bold font-heading text-foreground">What to Fix</h3>
+                    </div>
+                    <div className="space-y-1.5">
+                      {improvements.map((s: string, i: number) => (
+                        <div key={i} className="flex items-start gap-1.5">
+                          <div className="mt-1.5 flex-shrink-0 h-1 w-1 rounded-full bg-red-400" />
+                          <span className="text-[11px] text-foreground/75 leading-relaxed">{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </div>
+
+          {/* ─── RIGHT COLUMN (2/5) — Strategy + Remix ─── */}
+          <div className="lg:col-span-2 space-y-4">
+
+            {/* Audience */}
+            {(targetAudience || listeningMoment || tikTokFit) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-2.5">
+                <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
+                  <User className="h-3.5 w-3.5 text-primary" /> Audience
+                </h3>
+                {targetAudience && (
+                  <div className="flex items-start gap-2">
+                    <User className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <p className="text-[11px] text-foreground/80 leading-relaxed">{targetAudience}</p>
+                  </div>
+                )}
+                {listeningMoment && (
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    <p className="text-[11px] text-foreground/80 leading-relaxed">{listeningMoment}</p>
+                  </div>
+                )}
+                {tikTokFit && (
+                  <div className="flex items-start gap-2">
+                    <TikTokLogo size={12} />
+                    <p className="text-[11px] text-foreground/80 leading-relaxed">{tikTokFit}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Theme / Emotional */}
+            {(songTheme || emotionalCore) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+                className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-2">
+                {songTheme && (
+                  <div>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-0.5">Theme</p>
+                    <p className="text-xs font-medium text-foreground">{songTheme}</p>
+                  </div>
+                )}
+                {emotionalCore && (
+                  <div>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-[0.15em] font-semibold mb-0.5">Emotional Core</p>
+                    <p className="text-xs font-medium text-foreground">{emotionalCore}</p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Genre Comparison */}
+            {similarSongs?.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
+                    <Award className="h-3.5 w-3.5 text-primary" /> Genre Comparison
+                  </h3>
+                  <div className="flex items-center gap-1"><SpotifyLogo size={11} /><AppleMusicLogo size={11} /></div>
+                </div>
+                {similarSongs.slice(0, 3).map((song: any, i: number) => (
+                  <div key={i} className="rounded-lg bg-muted/30 border border-border p-2.5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <SpotifyLogo size={14} />
+                      <span className="font-semibold text-[11px] text-foreground truncate flex-1">{song.title}</span>
+                      {song.streams && <span className="text-[10px] font-black text-accent tabular-nums">{song.streams}</span>}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{song.artist}</p>
+                    {song.whatTheyHaveThatYouDont && (
+                      <p className="text-[10px] text-foreground/50 mt-1 leading-relaxed">{song.whatTheyHaveThatYouDont}</p>
+                    )}
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            {/* Playlist Targets */}
+            {(playlistStrategy || matchedPlaylists?.length > 0) && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+                className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-2.5">
+                <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
+                  <ListMusic className="h-3.5 w-3.5 text-primary" /> Playlist Targets
+                  <SpotifyLogo size={11} />
+                </h3>
+                {playlistStrategy && (
+                  <p className="text-[11px] text-foreground/80 leading-relaxed">{playlistStrategy}</p>
+                )}
+                {matchedPlaylists?.length > 0 && (
+                  <div className="space-y-1.5">
+                    {matchedPlaylists.slice(0, 4).map((pl: any, i: number) => (
+                      <div key={i} className="flex items-center gap-2 rounded-lg bg-muted/30 border border-border px-2.5 py-1.5">
+                        <SpotifyLogo size={12} />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-semibold text-[11px] text-foreground truncate block">{pl.name}</span>
+                          {pl.followers && <span className="text-[9px] text-muted-foreground">{pl.followers}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* 30-Day Roadmap */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+              className="rounded-xl border border-border bg-card p-3.5 sm:p-4 space-y-2">
+              <h3 className="text-[10px] font-bold font-heading text-foreground uppercase tracking-wider flex items-center gap-2">
+                <Calendar className="h-3.5 w-3.5 text-primary" /> 30-Day Roadmap
+              </h3>
+              {roadmap.map((item) => (
+                <div key={item.week} className="flex items-start gap-2 py-1">
+                  <div className={`mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full ${statusColors[item.status]}`} />
+                  <div>
+                    <span className="text-[9px] font-bold text-primary uppercase tracking-wider">{item.week}</span>
+                    <p className="text-[11px] text-foreground/75 leading-relaxed">{item.action}</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* ═══ AI REMIX — Full width, prominent ═══ */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55 }}
+          className="rounded-xl border border-accent/20 bg-gradient-to-r from-accent/[0.04] via-transparent to-primary/[0.03] p-4 sm:p-6"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-3 sm:flex-col sm:items-center sm:text-center sm:min-w-[140px]">
+              <Headphones className="h-7 w-7 text-accent flex-shrink-0" />
+              <div>
+                <h2 className="text-base sm:text-lg font-black font-heading text-foreground">AI Remix</h2>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Enhanced production with viral energy</p>
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+            <div className="flex-1">
+              {canRemix ? (
+                <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
+              ) : (
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <p className="text-xs text-muted-foreground">Score: <strong className="text-accent">{score}/100</strong></p>
+                  <Button onClick={() => setShowRemixPaywall(true)} className="bg-gradient-to-r from-accent to-yellow-400 text-black font-bold gap-2 h-10">
+                    <Sparkles className="h-4 w-4" /> Unlock AI Remix <ArrowRight className="h-3.5 w-3.5" />
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground">Pro $19/mo or $7 one-time</p>
+                </div>
+              )}
+            </div>
+          </div>
         </motion.div>
 
-        {/* ═══ Bottom CTA ═══ */}
+        {/* ═══ Bottom Actions ═══ */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2"
+        >
+          <Button asChild size="sm" className="h-9 text-xs gap-1.5 gradient-purple text-primary-foreground font-bold px-6">
+            <Link to="/analyze">Analyze Another Song</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="h-9 text-xs gap-1.5">
+            <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              Share on X
+            </a>
+          </Button>
+        </motion.div>
+
         {hasExhaustedFreeAnalysis && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-6 rounded-xl border border-accent/20 bg-card text-center p-5"
-          >
-            <Zap className="h-6 w-6 text-accent mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-foreground mb-1">Free analysis used</h3>
-            <p className="text-xs text-muted-foreground mb-4">Upgrade for unlimited analyses + AI remixes</p>
+          <div className="rounded-xl border border-accent/20 bg-card text-center p-4">
+            <Zap className="h-5 w-5 text-accent mx-auto mb-1.5" />
+            <h3 className="text-xs font-bold text-foreground mb-1">Free analysis used</h3>
+            <p className="text-[11px] text-muted-foreground mb-3">Upgrade for unlimited analyses + AI remixes</p>
             <div className="flex flex-col sm:flex-row justify-center gap-2">
-              <Button asChild className="bg-gradient-to-r from-accent to-yellow-400 text-black font-bold text-xs"><Link to="/billing">Upgrade to Pro — $19/mo</Link></Button>
-              <Button asChild variant="outline" className="text-xs"><Link to="/billing">Single Analysis — $3</Link></Button>
+              <Button asChild size="sm" className="bg-gradient-to-r from-accent to-yellow-400 text-black font-bold text-xs"><Link to="/billing">Upgrade to Pro — $19/mo</Link></Button>
+              <Button asChild size="sm" variant="outline" className="text-xs"><Link to="/billing">Single Analysis — $3</Link></Button>
             </div>
-          </motion.div>
+          </div>
         )}
 
         <AnimatePresence>
@@ -923,8 +916,8 @@ const Results = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShowRemixPaywall(false)}>
               <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="max-w-sm w-full rounded-xl border border-border bg-card p-6 text-center" onClick={e => e.stopPropagation()}>
                 <Headphones className="h-7 w-7 text-primary mx-auto mb-3" />
-                <h3 className="text-lg font-bold text-foreground mb-1">AI Remix — Pro Feature</h3>
-                <p className="text-xs text-muted-foreground mb-4">"{title}" scored <strong className="text-accent">{score}/100</strong>. Create an enhanced remix.</p>
+                <h3 className="text-base font-bold text-foreground mb-1">AI Remix — Pro Feature</h3>
+                <p className="text-xs text-muted-foreground mb-4">"{title}" scored <strong className="text-accent">{score}/100</strong></p>
                 <div className="space-y-2">
                   <Button asChild className="w-full bg-gradient-to-r from-accent to-yellow-400 text-black font-bold"><Link to="/billing">Upgrade to Pro — $19/mo</Link></Button>
                   <Button asChild variant="outline" className="w-full"><Link to="/billing">Single Remix — $7</Link></Button>
