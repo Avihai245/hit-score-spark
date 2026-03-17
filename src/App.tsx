@@ -14,11 +14,24 @@ import Analyze from "./pages/Analyze";
 import Results from "./pages/Results";
 import Pricing from "./pages/Pricing";
 import Billing from "./pages/Billing";
-import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
 import SongDetail from "./pages/SongDetail";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+
+// Client Dashboard pages
+import DashboardHome from "./pages/dashboard/index";
+import DashboardTracks from "./pages/dashboard/Tracks";
+import DashboardUploads from "./pages/dashboard/Uploads";
+import DashboardInsights from "./pages/dashboard/Insights";
+import DashboardCredits from "./pages/dashboard/Credits";
+import DashboardBilling from "./pages/dashboard/Billing";
+import DashboardNotifications from "./pages/dashboard/Notifications";
+import DashboardSupport from "./pages/dashboard/Support";
+import DashboardProfile from "./pages/dashboard/Profile";
+import DashboardSettings from "./pages/dashboard/Settings";
+import DashboardRecommendations from "./pages/dashboard/Recommendations";
+import DashboardCompare from "./pages/dashboard/Compare";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/index";
@@ -26,6 +39,15 @@ import AdminUsers from "./pages/admin/users";
 import AdminAnalytics from "./pages/admin/analytics";
 import AdminRevenue from "./pages/admin/revenue";
 import AdminContent from "./pages/admin/content";
+import AdminTracks from "./pages/admin/tracks";
+import AdminMonitoring from "./pages/admin/monitoring";
+import AdminSupport from "./pages/admin/support";
+import AdminLifecycle from "./pages/admin/lifecycle";
+import AdminCoupons from "./pages/admin/coupons";
+import AdminPermissions from "./pages/admin/permissions";
+import AdminAudit from "./pages/admin/audit";
+import AdminSystem from "./pages/admin/system";
+import AdminNotifications from "./pages/admin/notifications";
 
 const queryClient = new QueryClient();
 
@@ -38,8 +60,9 @@ const pageVariants = {
 const AnimatedRoutes = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isDashboardRoute = location.pathname.startsWith('/dashboard');
 
-  // Admin routes: no Navbar, no animation wrapper
+  // Admin routes: no Navbar, no animation
   if (isAdminRoute) {
     return (
       <Routes location={location}>
@@ -48,6 +71,35 @@ const AnimatedRoutes = () => {
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/admin/revenue" element={<AdminRevenue />} />
         <Route path="/admin/content" element={<AdminContent />} />
+        <Route path="/admin/tracks" element={<AdminTracks />} />
+        <Route path="/admin/monitoring" element={<AdminMonitoring />} />
+        <Route path="/admin/support" element={<AdminSupport />} />
+        <Route path="/admin/lifecycle" element={<AdminLifecycle />} />
+        <Route path="/admin/coupons" element={<AdminCoupons />} />
+        <Route path="/admin/permissions" element={<AdminPermissions />} />
+        <Route path="/admin/audit" element={<AdminAudit />} />
+        <Route path="/admin/system" element={<AdminSystem />} />
+        <Route path="/admin/notifications" element={<AdminNotifications />} />
+      </Routes>
+    );
+  }
+
+  // Dashboard routes: own layout, no Navbar
+  if (isDashboardRoute) {
+    return (
+      <Routes location={location}>
+        <Route path="/dashboard" element={<DashboardHome />} />
+        <Route path="/dashboard/tracks" element={<DashboardTracks />} />
+        <Route path="/dashboard/uploads" element={<DashboardUploads />} />
+        <Route path="/dashboard/insights" element={<DashboardInsights />} />
+        <Route path="/dashboard/credits" element={<DashboardCredits />} />
+        <Route path="/dashboard/billing" element={<DashboardBilling />} />
+        <Route path="/dashboard/notifications" element={<DashboardNotifications />} />
+        <Route path="/dashboard/support" element={<DashboardSupport />} />
+        <Route path="/dashboard/profile" element={<DashboardProfile />} />
+        <Route path="/dashboard/settings" element={<DashboardSettings />} />
+        <Route path="/dashboard/recommendations" element={<DashboardRecommendations />} />
+        <Route path="/dashboard/compare" element={<DashboardCompare />} />
       </Routes>
     );
   }
@@ -61,7 +113,6 @@ const AnimatedRoutes = () => {
           <Route path="/results" element={<Results />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/billing" element={<Billing />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/library" element={<Library />} />
           <Route path="/song/:id" element={<SongDetail />} />
           <Route path="/settings" element={<Settings />} />
@@ -75,12 +126,13 @@ const AnimatedRoutes = () => {
 const AppContent = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isDashboardRoute = location.pathname.startsWith('/dashboard');
 
   return (
     <>
-      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && !isDashboardRoute && <Navbar />}
       <AnimatedRoutes />
-      {!isAdminRoute && <AudioPlayer />}
+      {!isAdminRoute && !isDashboardRoute && <AudioPlayer />}
     </>
   );
 };
