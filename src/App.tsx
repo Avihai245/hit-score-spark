@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import AudioPlayer from "@/components/AudioPlayer";
 import Navbar from "@/components/Navbar";
+import GlobalDataStrip from "@/components/GlobalDataStrip";
 import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
 import Results from "./pages/Results";
@@ -62,7 +63,6 @@ const AnimatedRoutes = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isDashboardRoute = location.pathname.startsWith('/dashboard');
 
-  // Admin routes: no Navbar, no animation
   if (isAdminRoute) {
     return (
       <Routes location={location}>
@@ -84,7 +84,6 @@ const AnimatedRoutes = () => {
     );
   }
 
-  // Dashboard routes: own layout, no Navbar
   if (isDashboardRoute) {
     return (
       <Routes location={location}>
@@ -130,6 +129,7 @@ const AppContent = () => {
 
   return (
     <>
+      {!isAdminRoute && !isDashboardRoute && <GlobalDataStrip />}
       {!isAdminRoute && !isDashboardRoute && <Navbar />}
       <AnimatedRoutes />
       {!isAdminRoute && !isDashboardRoute && <AudioPlayer />}
