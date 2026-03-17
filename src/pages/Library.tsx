@@ -386,7 +386,7 @@ export default function Library() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-16 pb-24">
+    <div className="min-h-screen bg-background text-foreground pt-24 pb-24">
       <div className="flex">
         {/* ── Left Sidebar (desktop) ── */}
         <aside className="hidden lg:flex flex-col w-56 fixed left-0 top-16 bottom-0 border-r border-white/5 bg-[#0a0a0a] pt-8 px-4 z-30">
