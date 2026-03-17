@@ -19,10 +19,35 @@ const goals = [
 ];
 
 const analysisSteps = [
-  { label: "Uploading your song", key: "upload" },
-  { label: "AI Listening to your track", key: "listen" },
-  { label: "Comparing to 500+ hits", key: "compare" },
-  { label: "Generating your report", key: "report" },
+  { label: "Uploading your song", key: "upload", icon: "📤" },
+  { label: "AI listening to your track", key: "listen", icon: "🎧" },
+  { label: "Scanning Spotify catalog data", key: "spotify", icon: "🟢" },
+  { label: "Scanning Apple Music trends", key: "apple", icon: "🍎" },
+  { label: "Cross-referencing 500K+ hit songs", key: "compare", icon: "📊" },
+  { label: "Analyzing audio frequencies & BPM", key: "audio", icon: "🔊" },
+  { label: "Generating your viral report", key: "report", icon: "📋" },
+];
+
+/* ─── Live Data Feed Messages ─── */
+const dataFeedMessages = [
+  "Extracting audio fingerprint…",
+  "Matching BPM: detecting tempo…",
+  "Spotify API — fetching genre benchmarks…",
+  "Apple Music — loading chart data…",
+  "Analyzing hook timing at 0:00–0:15…",
+  "Spotify — comparing to 847 similar tracks…",
+  "Measuring danceability index…",
+  "Apple Music — checking playlist fit…",
+  "Calculating valence score…",
+  "Spotify — evaluating save rate prediction…",
+  "Analyzing frequency spectrum…",
+  "Apple Music — genre trend analysis…",
+  "Computing skip risk probability…",
+  "Spotify — editorial playlist match…",
+  "Evaluating lyrical sentiment…",
+  "Cross-referencing TikTok viral patterns…",
+  "Building audience demographic profile…",
+  "Finalizing hit potential score…",
 ];
 
 /* ─── Fake Waveform Preview ─── */
