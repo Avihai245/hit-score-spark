@@ -896,8 +896,8 @@ const Results = () => {
 
               {isRealAudio && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold border border-green-500/20 bg-green-500/10 text-green-400 uppercase tracking-wider">
-                  <Headphones className="h-3 w-3" /> Real Audio Analysis
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 uppercase tracking-wider">
+                  <Headphones className="h-3 w-3" /> Real Audio Pattern Analysis
                 </motion.div>
               )}
 
