@@ -1121,6 +1121,7 @@ const Results = () => {
         {(themeFields.length > 0 || profileStats.length > 0) && (
           <Section delay={0.15}>
             <SectionTitle emoji="🎵" title="SONG PROFILE" />
+            <div className="flex gap-2 mb-4"><SourceTag platform="ai" /><SourceTag platform="spotify" /></div>
             <div className="glass-card p-6">
               {themeFields.length > 0 && (
                 <div className="grid gap-4 sm:grid-cols-2 mb-6">
