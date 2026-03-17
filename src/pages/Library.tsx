@@ -389,7 +389,7 @@ export default function Library() {
     <div className="min-h-screen bg-background text-foreground pt-24 pb-24">
       <div className="flex">
         {/* ── Left Sidebar (desktop) ── */}
-        <aside className="hidden lg:flex flex-col w-56 fixed left-0 top-16 bottom-0 border-r border-white/5 bg-[#0a0a0a] pt-8 px-4 z-30">
+        <aside className="hidden lg:flex flex-col w-56 fixed left-0 top-24 bottom-0 border-r border-border bg-background pt-8 px-4 z-30">
           <div className="mb-8">
             <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold px-3 mb-2">Library</p>
             {tabs.map(t => (
