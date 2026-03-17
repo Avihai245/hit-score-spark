@@ -153,7 +153,7 @@ export default function SongDetail() {
 
   if (loading || (!analysis && pageLoading)) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 text-primary animate-spin" />
       </div>
     );
@@ -161,9 +161,9 @@ export default function SongDetail() {
 
   if (error || !analysis) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
-        <p className="text-white/50">{error || 'Analysis not found'}</p>
-        <Button asChild variant="outline" className="border-white/20">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground">{error || 'Analysis not found'}</p>
+        <Button asChild variant="outline" className="border-border">
           <Link to="/library">← Back to Library</Link>
         </Button>
       </div>
@@ -193,7 +193,7 @@ export default function SongDetail() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-20 pb-32">
+    <div className="min-h-screen bg-background text-foreground pt-28 pb-32">
       <div className="container max-w-4xl mx-auto px-4">
 
         {/* Back + breadcrumb */}

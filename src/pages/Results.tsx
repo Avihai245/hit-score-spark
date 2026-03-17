@@ -870,7 +870,7 @@ const Results = () => {
   ].filter((f) => f.value);
 
   return (
-    <div className="min-h-screen px-4 pt-20 pb-16 bg-background">
+    <div className="min-h-screen px-4 pt-28 pb-16 bg-background">
       <div className="container max-w-4xl space-y-10">
 
         {/* ═══ 1. HERO: SCORE + VERDICT ═══ */}
@@ -896,14 +896,15 @@ const Results = () => {
 
               {isRealAudio && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold border border-green-500/20 bg-green-500/10 text-green-400 uppercase tracking-wider">
-                  <Headphones className="h-3 w-3" /> Real Audio Analysis
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 uppercase tracking-wider">
+                  <Headphones className="h-3 w-3" /> Real Audio Pattern Analysis
                 </motion.div>
               )}
 
-              {/* Platform data sources */}
+              {/* Data intelligence sources */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2 }}
                 className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                <span className="text-[9px] text-muted-foreground/50 mr-1 uppercase tracking-wider">Data sources:</span>
                 <PlatformBadge platform="spotify" size="md" />
                 <PlatformBadge platform="apple" size="md" />
                 <PlatformBadge platform="youtube" size="md" />

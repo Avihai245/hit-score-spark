@@ -78,7 +78,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-20 pb-16">
+    <div className="min-h-screen bg-background text-foreground pt-28 pb-16">
       <div className="container max-w-5xl mx-auto px-4">
         <h1 className="text-3xl font-bold font-heading mb-8">Settings</h1>
 

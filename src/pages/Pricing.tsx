@@ -138,7 +138,7 @@ const Pricing = () => {
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-background px-4 pt-24 pb-20 overflow-hidden">
+    <div className="min-h-screen bg-background px-4 pt-32 pb-20 overflow-hidden">
       <div className="container max-w-7xl">
 
         {/* ─── Header ─── */}

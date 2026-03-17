@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Upload, Music, X, Check } from "lucide-react";
+import { Lock, Upload, Music, X, Check, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -19,35 +19,36 @@ const goals = [
 ];
 
 const analysisSteps = [
-  { label: "Uploading your song", key: "upload", icon: "📤" },
-  { label: "AI listening to your track", key: "listen", icon: "🎧" },
-  { label: "Scanning Spotify catalog data", key: "spotify", icon: "🟢" },
-  { label: "Scanning Apple Music trends", key: "apple", icon: "🍎" },
-  { label: "Cross-referencing 500K+ hit songs", key: "compare", icon: "📊" },
-  { label: "Analyzing audio frequencies & BPM", key: "audio", icon: "🔊" },
-  { label: "Generating your viral report", key: "report", icon: "📋" },
+  { label: "Uploading audio file", key: "upload", icon: "📤" },
+  { label: "Extracting audio patterns", key: "listen", icon: "🎧" },
+  { label: "Mapping structure against top-performing tracks", key: "spotify", icon: "🟢" },
+  { label: "Analyzing hook timing & retention signals", key: "apple", icon: "🍎" },
+  { label: "Matching against global benchmarks", key: "compare", icon: "📊" },
+  { label: "Evaluating replay potential & skip risk", key: "audio", icon: "🔊" },
+  { label: "Finalizing data-driven insights", key: "report", icon: "📋" },
 ];
 
 /* ─── Live Data Feed Messages ─── */
 const dataFeedMessages = [
   "Extracting audio fingerprint…",
-  "Matching BPM: detecting tempo…",
-  "Spotify API — fetching genre benchmarks…",
-  "Apple Music — loading chart data…",
+  "Detecting tempo & BPM patterns…",
+  "Fetching genre benchmarks from hit data…",
+  "Loading chart performance data…",
   "Analyzing hook timing at 0:00–0:15…",
-  "Spotify — comparing to 847 similar tracks…",
+  "Comparing to 847 pattern-matched tracks…",
   "Measuring danceability index…",
-  "Apple Music — checking playlist fit…",
+  "Checking algorithmic playlist fit…",
   "Calculating valence score…",
-  "Spotify — evaluating save rate prediction…",
+  "Evaluating save rate prediction…",
   "Analyzing frequency spectrum…",
-  "Apple Music — genre trend analysis…",
+  "Genre trend analysis in progress…",
   "Computing skip risk probability…",
-  "Spotify — editorial playlist match…",
+  "Matching editorial playlist patterns…",
   "Evaluating lyrical sentiment…",
-  "Cross-referencing TikTok viral patterns…",
+  "Cross-referencing viral sound patterns…",
   "Building audience demographic profile…",
-  "Finalizing hit potential score…",
+  "Comparing against thousands of high-performing tracks…",
+  "Finalizing data-driven insights…",
 ];
 
 /* ─── Fake Waveform Preview ─── */
@@ -380,26 +381,27 @@ const Analyze = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center gap-6 max-w-lg w-full"
         >
-          <div className="relative">
+           <div className="relative">
             <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
             <LoadingWaveform />
           </div>
           <div className="text-center">
             <p className="text-lg font-bold font-heading text-foreground">
-              Analyzing your song...
+              Running global pattern analysis...
             </p>
-            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
+            <p className="text-xs text-muted-foreground mt-1">Comparing against thousands of high-performing tracks</p>
+            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
           </div>
 
-          {/* Platform badges */}
+          {/* Platform data sources */}
           <div className="flex items-center gap-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold"
             >
-              <SpotifyIcon /> Spotify
+              <SpotifyIcon /> Hit Patterns
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -407,7 +409,7 @@ const Analyze = () => {
               transition={{ delay: 0.8 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold"
             >
-              <AppleMusicIcon /> Apple Music
+              <AppleMusicIcon /> Chart Data
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -415,7 +417,7 @@ const Analyze = () => {
               transition={{ delay: 1.1 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold"
             >
-              📊 500K+ Songs
+              📊 500K+ Benchmarks
             </motion.div>
           </div>
 
@@ -483,11 +485,12 @@ const Analyze = () => {
           >
             <div className="flex items-center gap-2 mb-3">
               <motion.div
-                className="w-2 h-2 rounded-full bg-green-400"
+                className="w-2 h-2 rounded-full bg-emerald-400"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
               />
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Live Data Feed</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Live Analysis Feed</span>
+              <span className="text-[10px] text-muted-foreground/50 ml-auto">Updated moments ago</span>
             </div>
             <LiveDataFeed elapsedSeconds={elapsedSeconds} />
           </motion.div>
@@ -497,15 +500,18 @@ const Analyze = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-12 bg-background">
+    <div className="min-h-screen px-4 pt-32 pb-12 bg-background">
       <div className="container max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-white">Analyze Your Song</h1>
-          <p className="text-center text-muted-foreground mb-10">
-            Upload your track and get your hit score in 60 seconds
+          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-foreground">Run Your Track Through Our Analysis Engine</h1>
+          <p className="text-center text-muted-foreground mb-3">
+            Upload your track and get data-driven insights in ~90 seconds
+          </p>
+          <p className="text-center text-[11px] text-muted-foreground/60 mb-10">
+            Based on patterns from top-performing tracks across Spotify • Apple Music • TikTok • YouTube
           </p>
         </motion.div>
 
@@ -569,8 +575,9 @@ const Analyze = () => {
                     <Upload className="h-12 w-12 text-primary" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-xl text-white">Drop your song here</p>
+                    <p className="font-bold text-xl text-foreground">Drop your track here</p>
                     <p className="text-sm text-muted-foreground mt-2">MP3 or WAV · max 100 MB</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1.5">Run your track through our global analysis engine</p>
                     <p className="text-xs text-muted-foreground mt-1">or click to browse</p>
                   </div>
                   {dragOver && (
@@ -635,9 +642,9 @@ const Analyze = () => {
               <Button
                 type="submit"
                 disabled={!file}
-                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40"
+                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40 gap-2"
               >
-                Analyze Now →
+                <Zap className="h-5 w-5" /> Analyze Now →
               </Button>
 
               <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
