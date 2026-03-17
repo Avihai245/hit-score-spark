@@ -193,7 +193,7 @@ export default function SongDetail() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-20 pb-32">
+    <div className="min-h-screen bg-background text-foreground pt-28 pb-32">
       <div className="container max-w-4xl mx-auto px-4">
 
         {/* Back + breadcrumb */}
