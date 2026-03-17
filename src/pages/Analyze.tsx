@@ -381,7 +381,7 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 bg-background relative overflow-hidden z-0">
+      <div className="flex min-h-screen items-center justify-center px-4 pt-28 pb-8 bg-background relative overflow-hidden z-0">
         {/* Cinematic background — capped below header */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <ParticleField count={60} color="hsl(258, 90%, 66%)" speed={0.8} />
