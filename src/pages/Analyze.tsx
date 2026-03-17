@@ -19,10 +19,35 @@ const goals = [
 ];
 
 const analysisSteps = [
-  { label: "Uploading your song", key: "upload" },
-  { label: "AI Listening to your track", key: "listen" },
-  { label: "Comparing to 500+ hits", key: "compare" },
-  { label: "Generating your report", key: "report" },
+  { label: "Uploading your song", key: "upload", icon: "📤" },
+  { label: "AI listening to your track", key: "listen", icon: "🎧" },
+  { label: "Scanning Spotify catalog data", key: "spotify", icon: "🟢" },
+  { label: "Scanning Apple Music trends", key: "apple", icon: "🍎" },
+  { label: "Cross-referencing 500K+ hit songs", key: "compare", icon: "📊" },
+  { label: "Analyzing audio frequencies & BPM", key: "audio", icon: "🔊" },
+  { label: "Generating your viral report", key: "report", icon: "📋" },
+];
+
+/* ─── Live Data Feed Messages ─── */
+const dataFeedMessages = [
+  "Extracting audio fingerprint…",
+  "Matching BPM: detecting tempo…",
+  "Spotify API — fetching genre benchmarks…",
+  "Apple Music — loading chart data…",
+  "Analyzing hook timing at 0:00–0:15…",
+  "Spotify — comparing to 847 similar tracks…",
+  "Measuring danceability index…",
+  "Apple Music — checking playlist fit…",
+  "Calculating valence score…",
+  "Spotify — evaluating save rate prediction…",
+  "Analyzing frequency spectrum…",
+  "Apple Music — genre trend analysis…",
+  "Computing skip risk probability…",
+  "Spotify — editorial playlist match…",
+  "Evaluating lyrical sentiment…",
+  "Cross-referencing TikTok viral patterns…",
+  "Building audience demographic profile…",
+  "Finalizing hit potential score…",
 ];
 
 /* ─── Fake Waveform Preview ─── */
@@ -66,6 +91,59 @@ const LoadingWaveform = () => (
     ))}
   </div>
 );
+
+/* ─── Platform Logos ─── */
+const SpotifyIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+  </svg>
+);
+
+const AppleMusicIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.8.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03c.525 0 1.048-.034 1.57-.1.823-.106 1.597-.35 2.296-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.862.37-1.314.1-.6.15-1.206.154-1.814V6.124zM17.884 18.63c-.026.504-.1.98-.345 1.424-.385.698-1.003 1.078-1.79 1.15-.19.02-.38.024-.57.012-.657-.04-1.284-.21-1.89-.45-.755-.3-1.474-.686-2.196-1.066a7.27 7.27 0 01-.387-.216c-.228-.136-.432-.298-.61-.492-.256-.28-.378-.608-.383-.98V8.873c0-.12.01-.24.03-.36.06-.37.23-.67.53-.9.26-.2.56-.32.88-.41.28-.08.57-.12.86-.15.27-.03.55-.04.82-.03.3.01.59.05.87.13.39.11.74.3 1.04.57.23.21.38.46.43.77.03.17.04.34.04.52v9.12c0 .04 0 .08-.01.12-.03.33-.17.6-.42.82-.22.2-.49.32-.78.39-.16.04-.32.06-.49.07-.33.02-.66 0-.98-.07z"/>
+  </svg>
+);
+
+/* ─── Live Data Feed ─── */
+const LiveDataFeed = ({ elapsedSeconds }: { elapsedSeconds: number }) => {
+  const [visibleMessages, setVisibleMessages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const idx = Math.min(Math.floor(elapsedSeconds / 2), dataFeedMessages.length - 1);
+    const msgs = dataFeedMessages.slice(0, idx + 1).reverse().slice(0, 5);
+    setVisibleMessages(msgs);
+  }, [elapsedSeconds]);
+
+  return (
+    <div className="w-full space-y-1 max-h-[120px] overflow-hidden">
+      <AnimatePresence mode="popLayout">
+        {visibleMessages.map((msg, i) => (
+          <motion.div
+            key={msg}
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: i === 0 ? 1 : 0.4 - i * 0.08, y: 0, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex items-center gap-2 text-xs font-mono"
+          >
+            {msg.includes("Spotify") ? (
+              <span className="text-green-400"><SpotifyIcon /></span>
+            ) : msg.includes("Apple") ? (
+              <span className="text-pink-400"><AppleMusicIcon /></span>
+            ) : (
+              <motion.span
+                className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 0.8 }}
+              />
+            )}
+            <span className={i === 0 ? "text-white/80" : "text-white/30"}>{msg}</span>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+};
 
 const saveAnalysisToSupabase = async (userId: string, data: {
   title: string;
@@ -238,8 +316,11 @@ const Analyze = () => {
         }
 
         pollCount++;
-        // Progress step markers based on poll count
-        if (pollCount >= 2 && !completedSteps.includes(2)) markStep(2);
+        // Progressive step markers for platform scanning
+        if (pollCount >= 1 && !completedSteps.includes(2)) markStep(2); // Spotify
+        if (pollCount >= 2 && !completedSteps.includes(3)) markStep(3); // Apple Music
+        if (pollCount >= 3 && !completedSteps.includes(4)) markStep(4); // Cross-ref
+        if (pollCount >= 4 && !completedSteps.includes(5)) markStep(5); // Audio analysis
 
         try {
           const res = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
@@ -250,7 +331,7 @@ const Analyze = () => {
           const data = await res.json();
 
           if (data.status === "complete") {
-            markStep(3);
+            markStep(6); // Report generated
             // Save to Supabase if logged in
             let analysisId: string | null = null;
             if (user) {
@@ -297,21 +378,49 @@ const Analyze = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-8 max-w-md w-full"
+          className="flex flex-col items-center gap-6 max-w-lg w-full"
         >
           <div className="relative">
             <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
             <LoadingWaveform />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold font-heading text-white">
+            <p className="text-lg font-bold font-heading text-foreground">
               Analyzing your song...
             </p>
-            <p className="mt-2 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
+            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
+          </div>
+
+          {/* Platform badges */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold"
+            >
+              <SpotifyIcon /> Spotify
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold"
+            >
+              <AppleMusicIcon /> Apple Music
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.1 }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold"
+            >
+              📊 500K+ Songs
+            </motion.div>
           </div>
 
           {/* Step progress */}
-          <div className="w-full space-y-3">
+          <div className="w-full space-y-2">
             {analysisSteps.map((step, i) => {
               const isCompleted = completedSteps.includes(i);
               const isCurrent = currentStep === i && !isCompleted;
@@ -320,18 +429,18 @@ const Analyze = () => {
                   key={step.key}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: i * 0.08 }}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl border transition-all",
+                    "flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all",
                     isCompleted
                       ? "border-green-500/30 bg-green-500/10"
                       : isCurrent
                         ? "border-primary/30 bg-primary/10"
-                        : "border-white/5 bg-white/[0.02] opacity-50"
+                        : "border-white/5 bg-white/[0.02] opacity-40"
                   )}
                 >
                   <div className={cn(
-                    "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
+                    "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs",
                     isCompleted
                       ? "bg-green-500"
                       : isCurrent
@@ -340,21 +449,21 @@ const Analyze = () => {
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
-                        <Check className="h-4 w-4 text-white" />
+                        <Check className="h-3.5 w-3.5 text-white" />
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
-                        className="w-2 h-2 rounded-full bg-primary"
+                        className="w-1.5 h-1.5 rounded-full bg-primary"
                         animate={{ scale: [1, 1.5, 1] }}
                         transition={{ repeat: Infinity, duration: 1 }}
                       />
                     ) : (
-                      <span className="text-xs text-muted-foreground">{i + 1}</span>
+                      <span className="text-[10px] text-muted-foreground">{step.icon}</span>
                     )}
                   </div>
                   <span className={cn(
                     "text-sm font-medium",
-                    isCompleted ? "text-green-400" : isCurrent ? "text-white" : "text-muted-foreground"
+                    isCompleted ? "text-green-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {step.label}
                     {isCompleted && " ✓"}
@@ -364,6 +473,24 @@ const Analyze = () => {
               );
             })}
           </div>
+
+          {/* Live data feed */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2 }}
+            className="w-full rounded-xl border border-white/5 bg-white/[0.02] p-4"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <motion.div
+                className="w-2 h-2 rounded-full bg-green-400"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              />
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Live Data Feed</span>
+            </div>
+            <LiveDataFeed elapsedSeconds={elapsedSeconds} />
+          </motion.div>
         </motion.div>
       </div>
     );
