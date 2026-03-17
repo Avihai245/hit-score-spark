@@ -29,7 +29,7 @@ export default function AdminMonitoring() {
     <AdminGuard>
       <div className="flex min-h-screen bg-background text-foreground">
         <AdminNav />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6 ml-0 md:ml-56">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">AI Analysis Monitoring</h1>
             <p className="text-xs text-muted-foreground">Processing pipeline health & performance</p>

@@ -9,9 +9,9 @@ import {
 import { LogoIcon } from '@/components/ViralizeLogo';
 
 const NAV_ITEMS = [
-  { href: '/analyze', label: 'Analyze', icon: Search, description: 'Scan a new track' },
-  { href: '/dashboard', label: 'My Tracks', icon: Music2, description: 'Your analyzed songs', exact: true },
-  { href: '/dashboard/viral', label: 'Make Viral', icon: Rocket, description: 'Generate hit versions' },
+  { href: '/analyze', label: 'Analyze Song', icon: Search, description: 'Upload & scan a track' },
+  { href: '/dashboard', label: 'My Songs', icon: Music2, description: 'Your song library', exact: true },
+  { href: '/dashboard/viral', label: 'Make it a Hit', icon: Rocket, description: 'AI-powered improvements' },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, description: 'Plans & payments' },
 ];
 

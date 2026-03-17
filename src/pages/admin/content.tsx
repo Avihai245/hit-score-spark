@@ -110,7 +110,7 @@ export default function AdminContent() {
     <AdminGuard>
       <div className="flex min-h-screen bg-[#0a0a0a] text-white">
         <AdminNav />
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6 ml-0 md:ml-56">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-white">Content Management</h1>
             <p className="text-xs text-white/40 mt-1">Platform settings and configuration</p>
