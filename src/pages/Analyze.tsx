@@ -377,22 +377,68 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 bg-background">
+      <div className="flex min-h-screen items-center justify-center px-4 bg-background relative overflow-hidden">
+        {/* Cinematic background */}
+        <ParticleField count={60} color="hsl(258, 90%, 66%)" speed={0.8} />
+        <DataStream columns={10} />
+        <ScanLine />
+
+        {/* Radial glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-6 max-w-lg w-full"
+          className="flex flex-col items-center gap-6 max-w-lg w-full relative z-10"
         >
            <div className="relative">
-            <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
+            <motion.div
+              className="absolute inset-0 w-36 h-36 mx-auto rounded-full bg-primary/20 blur-[80px]"
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            />
             <LoadingWaveform />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold font-heading text-foreground">
+            <motion.p
+              className="text-xl font-black font-heading text-foreground"
+              animate={{ opacity: [1, 0.7, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            >
               Running global pattern analysis...
-            </p>
+            </motion.p>
             <p className="text-xs text-muted-foreground mt-1">Comparing against thousands of high-performing tracks</p>
-            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <motion.div
+                className="w-2 h-2 rounded-full bg-emerald-400"
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2 }}
+              />
+              <p className="text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
+            </div>
+          </div>
+
+          {/* Overall progress bar */}
+          <div className="w-full max-w-sm">
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-primary via-accent to-primary"
+                style={{ backgroundSize: '200% 100%' }}
+                animate={{ width: `${Math.min(95, (completedSteps.length / analysisSteps.length) * 100)}%`, backgroundPosition: ['0% 0%', '100% 0%'] }}
+                transition={{ width: { duration: 0.5 }, backgroundPosition: { repeat: Infinity, duration: 2, ease: 'linear' } }}
+              />
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+              />
+            </div>
           </div>
 
           {/* Platform data sources */}
@@ -437,29 +483,29 @@ const Analyze = () => {
                   className={cn(
                     "flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all",
                     isCompleted
-                      ? "border-green-500/30 bg-green-500/10"
+                      ? "border-emerald-500/30 bg-emerald-500/10"
                       : isCurrent
-                        ? "border-primary/30 bg-primary/10"
-                        : "border-white/5 bg-white/[0.02] opacity-40"
+                        ? "border-primary/30 bg-primary/10 shadow-[0_0_20px_-5px] shadow-primary/20"
+                        : "border-border/30 bg-card/30 opacity-40"
                   )}
                 >
                   <div className={cn(
                     "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs",
                     isCompleted
-                      ? "bg-green-500"
+                      ? "bg-emerald-500"
                       : isCurrent
                         ? "bg-primary/30 border-2 border-primary"
-                        : "bg-white/10"
+                        : "bg-muted"
                   )}>
                     {isCompleted ? (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
+                      <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500 }}>
                         <Check className="h-3.5 w-3.5 text-white" />
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
                         className="w-1.5 h-1.5 rounded-full bg-primary"
-                        animate={{ scale: [1, 1.5, 1] }}
-                        transition={{ repeat: Infinity, duration: 1 }}
+                        animate={{ scale: [1, 1.8, 1], opacity: [1, 0.4, 1] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
                       />
                     ) : (
                       <span className="text-[10px] text-muted-foreground">{step.icon}</span>
@@ -467,7 +513,7 @@ const Analyze = () => {
                   </div>
                   <span className={cn(
                     "text-sm font-medium",
-                    isCompleted ? "text-green-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
+                    isCompleted ? "text-emerald-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {step.label}
                     {isCompleted && " ✓"}
@@ -483,11 +529,12 @@ const Analyze = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}
-            className="w-full rounded-xl border border-white/5 bg-white/[0.02] p-4"
+            className="w-full rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 relative overflow-hidden"
           >
+            <ScanLine />
             <div className="flex items-center gap-2 mb-3">
               <motion.div
-                className="w-2 h-2 rounded-full bg-emerald-400"
+                className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px] shadow-emerald-400/50"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
               />
