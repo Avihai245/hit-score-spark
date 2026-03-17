@@ -1,7 +1,6 @@
 import { useLocation, Link, Navigate, useNavigate } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, AnimatePresence, useInView } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { ParticleField } from "@/components/ParticleField";
 import { useAuth } from "@/contexts/AuthContext";
 import { PLAN_LIMITS } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -111,23 +110,17 @@ const ScoreGauge = ({ score }: { score: number }) => {
   const rounded = useTransform(count, (v) => Math.round(v));
 
   useEffect(() => {
-    const ctrl = animate(count, score, { duration: 2.5, ease: [0.16, 1, 0.3, 1] });
+    const ctrl = animate(count, score, { duration: 2, ease: [0.16, 1, 0.3, 1] });
     return ctrl.stop;
   }, [count, score]);
 
   return (
     <motion.div
       className="relative flex items-center justify-center w-[180px] h-[180px] md:w-[220px] md:h-[220px]"
-      initial={{ scale: 0.5, opacity: 0 }}
+      initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+      transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
     >
-      <motion.div
-        className="absolute w-48 h-48 rounded-full blur-[80px] opacity-0"
-        style={{ backgroundColor: color }}
-        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.3, 0.12] }}
-        transition={{ duration: 2.5, ease: "easeOut" }}
-      />
       <svg width="100%" height="100%" viewBox="0 0 180 180" className="-rotate-90">
         <circle cx="90" cy="90" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="5" strokeOpacity="0.2" />
         <motion.circle
@@ -138,38 +131,22 @@ const ScoreGauge = ({ score }: { score: number }) => {
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-        />
-        <motion.circle
-          cx="90" cy="90" r={r} fill="none"
-          stroke="url(#scoreGradV2)"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          initial={{ strokeDashoffset: circ }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-          filter="url(#glowV2)"
-          opacity={0.4}
+          transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
         />
         <defs>
           <linearGradient id="scoreGradV2" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
-          <filter id="glowV2">
-            <feGaussianBlur stdDeviation="4" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
         </defs>
       </svg>
       <div className="absolute text-center">
         <motion.div
           className="text-5xl md:text-6xl font-black tabular-nums font-heading"
           style={{ color }}
-          initial={{ scale: 0.5 }}
-          animate={{ scale: [0.5, 1.1, 1] }}
-          transition={{ duration: 0.6, delay: 2, ease: [0.34, 1.56, 0.64, 1] }}
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.4, delay: 1.5 }}
         >
           {rounded}
         </motion.div>
@@ -177,7 +154,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
           className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-[0.2em]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2.5 }}
+          transition={{ delay: 2 }}
         >
           Viral Score
         </motion.div>
@@ -198,33 +175,34 @@ const DNABar = ({ label, value, max, explanation, delay = 0 }: { label: string; 
       className="p-3.5 rounded-xl border border-border bg-card/50"
       initial={{ opacity: 0, y: 10 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: delay * 0.06, duration: 0.35 }}
+      transition={{ delay: delay * 0.05, duration: 0.3 }}
     >
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-bold text-foreground">{label}</span>
         <motion.span className="text-base font-black tabular-nums" style={{ color }}
-          initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: delay * 0.06 + 0.2 }}>
+          initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: delay * 0.05 + 0.15 }}>
           {value}<span className="text-[10px] text-muted-foreground font-normal">/{max}</span>
         </motion.span>
       </div>
       <div className="h-2 rounded-full bg-muted overflow-hidden mb-1.5">
-        <motion.div className="h-full rounded-full" style={{ backgroundColor: color }}
-          initial={{ width: 0 }} animate={isInView ? { width: `${pct}%` } : { width: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: delay * 0.06 }} />
+        <motion.div className="h-full rounded-full will-change-transform" style={{ backgroundColor: color }}
+          initial={{ scaleX: 0 }} animate={isInView ? { scaleX: pct / 100 } : { scaleX: 0 }}
+          style={{ backgroundColor: color, transformOrigin: "left" }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: delay * 0.05 }} />
       </div>
       <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{explanation}</p>
     </motion.div>
   );
 };
 
-/* ─── Section wrapper ─── */
+/* ─── Section wrapper (reduced delays) ─── */
 const Section = ({ children, delay = 0, className = "", id }: { children: ReactNode; delay?: number; className?: string; id?: string }) => (
   <motion.section
     id={id}
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 15 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: "-40px" }}
-    transition={{ delay: delay * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+    transition={{ delay: Math.min(delay * 0.05, 0.3), duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     className={className}
   >
     {children}
@@ -253,10 +231,10 @@ const StickyNav = ({ activeSection }: { activeSection: string }) => (
   <motion.div
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 3 }}
-    className="sticky top-[70px] z-30 -mx-4 px-4 py-2 bg-background/80 backdrop-blur-lg border-b border-border/50"
+    transition={{ delay: 1.5 }}
+    className="sticky top-[72px] z-30 -mx-4 px-4 py-2 bg-background/90 backdrop-blur-lg border-b border-border/50"
   >
-    <div className="flex gap-1 overflow-x-auto no-scrollbar">
+    <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-2xl mx-auto">
       {NAV_ITEMS.map(item => (
         <button
           key={item.id}
@@ -274,32 +252,20 @@ const StickyNav = ({ activeSection }: { activeSection: string }) => (
   </motion.div>
 );
 
-/* ─── Floating CTA ─── */
+/* ─── Floating CTA (proper spacing, no overlap) ─── */
 const FloatingCTA = ({ onClick }: { onClick: () => void }) => (
   <motion.div
-    initial={{ opacity: 0, y: 40 }}
+    initial={{ opacity: 0, y: 30 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 3.5, type: "spring", stiffness: 200, damping: 20 }}
-    className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-auto z-40"
+    transition={{ delay: 2, type: "spring", stiffness: 200, damping: 25 }}
+    className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-auto z-40 md:bottom-8"
   >
     <motion.button
       onClick={onClick}
       className="relative w-full md:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden shadow-lg shadow-accent/20"
-      whileHover={{ scale: 1.03 }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.97 }}
     >
-      {/* Glow pulse */}
-      <motion.div
-        className="absolute inset-0 rounded-2xl"
-        animate={{ boxShadow: ["0 0 20px hsl(38 92% 50% / 0.2)", "0 0 35px hsl(38 92% 50% / 0.4)", "0 0 20px hsl(38 92% 50% / 0.2)"] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-      />
-      {/* Shimmer */}
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-        animate={{ x: ["-100%", "200%"] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-      />
       <span className="relative flex items-center justify-center gap-2">
         <Rocket className="h-4 w-4" />
         Make This Track Viral
@@ -312,10 +278,10 @@ const FloatingCTA = ({ onClick }: { onClick: () => void }) => (
 /* ─── Critical Issue Card ─── */
 const CriticalIssueCard = ({ title, why, fix, impact, index }: { title: string; why: string; fix: string; impact: string; index: number }) => (
   <motion.div
-    initial={{ opacity: 0, x: -12 }}
+    initial={{ opacity: 0, x: -10 }}
     whileInView={{ opacity: 1, x: 0 }}
     viewport={{ once: true }}
-    transition={{ delay: index * 0.08, duration: 0.4 }}
+    transition={{ delay: index * 0.06, duration: 0.35 }}
     className="rounded-xl border border-red-500/15 bg-gradient-to-br from-red-500/[0.03] to-transparent p-5 space-y-3 hover:border-red-500/25 transition-colors"
   >
     <div className="flex items-start gap-3">
@@ -361,7 +327,7 @@ const OpportunityCard = ({ label, description, priority, impact, icon: Icon, col
   </div>
 );
 
-/* ─── Benchmark Bar ─── */
+/* ─── Benchmark Bar (GPU-friendly) ─── */
 const BenchmarkBar = ({ label, yours, benchmark, delay = 0 }: { label: string; yours: number; benchmark: number; delay?: number }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-40px" });
@@ -378,14 +344,14 @@ const BenchmarkBar = ({ label, yours, benchmark, delay = 0 }: { label: string; y
         <div className="flex items-center gap-2">
           <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0">You</span>
           <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
-            <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={isInView ? { width: `${yours}%` } : {}} transition={{ duration: 1, delay: delay * 0.1 }} />
+            <motion.div className="h-full rounded-full bg-primary will-change-transform" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={isInView ? { scaleX: yours / 100 } : {}} transition={{ duration: 0.8, delay: delay * 0.08 }} />
           </div>
           <span className="text-xs font-bold text-foreground tabular-nums w-8 text-right">{yours}%</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0">Top Tracks</span>
           <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
-            <motion.div className="h-full rounded-full bg-accent/60" initial={{ width: 0 }} animate={isInView ? { width: `${benchmark}%` } : {}} transition={{ duration: 1, delay: delay * 0.1 + 0.15 }} />
+            <motion.div className="h-full rounded-full bg-accent/60 will-change-transform" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={isInView ? { scaleX: benchmark / 100 } : {}} transition={{ duration: 0.8, delay: delay * 0.08 + 0.1 }} />
           </div>
           <span className="text-xs font-bold text-accent tabular-nums w-8 text-right">{benchmark}%</span>
         </div>
@@ -432,7 +398,7 @@ const downloadTrack = async (url: string, filename: string) => {
 const ProcessingWaveform = () => (
   <div className="flex items-end justify-center gap-1 h-10">
     {Array.from({ length: 12 }).map((_, i) => (
-      <motion.div key={i} className="w-1 rounded-full bg-gradient-to-t from-accent to-yellow-300"
+      <motion.div key={i} className="w-1 rounded-full bg-gradient-to-t from-accent to-yellow-300 will-change-transform"
         animate={{ scaleY: [0.15, 1, 0.15] }}
         transition={{ repeat: Infinity, duration: 0.6 + Math.random() * 0.4, delay: i * 0.08, ease: "easeInOut" }}
         style={{ height: "100%", transformOrigin: "bottom" }}
@@ -517,7 +483,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
       <div className="max-w-sm mx-auto space-y-1.5">
         <div className="flex justify-between text-[10px] text-muted-foreground font-medium tabular-nums"><span>{elapsed}s elapsed</span><span>{progress}%</span></div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-          <motion.div className="h-full rounded-full bg-gradient-to-r from-accent via-yellow-400 to-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.5 }} />
+          <motion.div className="h-full rounded-full bg-gradient-to-r from-accent via-yellow-400 to-primary will-change-transform" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={{ scaleX: progress / 100 }} transition={{ duration: 0.5 }} />
         </div>
       </div>
       <div className="max-w-md mx-auto space-y-1">
@@ -533,7 +499,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
               <span className={`flex-1 ${isCurrent ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                 {step.platform && <span className="font-semibold">{step.platform} — </span>}{step.label}
               </span>
-              {isCurrent && <motion.div className="w-1.5 h-1.5 rounded-full bg-accent" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }} />}
+              {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
             </motion.div>
           );
         })}
@@ -553,7 +519,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
               <span className="text-emerald-400/70">▸</span> {line}
             </motion.div>
           ))}
-          <motion.span className="text-accent inline-block" animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }}>_</motion.span>
+          <span className="text-accent inline-block animate-pulse">_</span>
         </div>
       </div>
     </div>
@@ -648,7 +614,6 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
       <motion.button onClick={() => onLyricsReady(buildFinalLyrics())}
         className="relative w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden"
         whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-        <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" animate={{ x: ["-100%", "200%"] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} />
         <span className="relative flex items-center justify-center gap-2"><Sparkles className="h-4 w-4" /> Create AI Remix with These Lyrics <ArrowRight className="h-4 w-4" /></span>
       </motion.button>
     </div>
@@ -669,135 +634,181 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const togglePlay = useCallback((idx: number) => {
-    const audio = audioRefs.current[idx];
-    if (!audio) return;
-    if (playing === idx) { audio.pause(); setPlaying(null); }
-    else { audioRefs.current.forEach((a, i) => { if (a && i !== idx) a.pause(); }); audio.play(); setPlaying(idx); }
-  }, [playing]);
-
-  const startRemix = async (customLyrics?: string) => {
-    if (!file) return;
-    setStatus("uploading"); setError(""); setElapsed(0);
-    try {
-      const urlRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "get-upload-url", fileName: file.name }),
-      });
-      if (!urlRes.ok) throw new Error("Failed to get upload URL");
-      const { uploadUrl, s3Key } = await urlRes.json();
-      await fetch(uploadUrl, { method: "PUT", body: file });
-      setStatus("processing");
-      timerRef.current = setInterval(() => setElapsed((p) => p + 1), 1000);
-      const coverRes = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: 'suno-cover', s3Key, title: songTitle, genre: songGenre, style, analysisData: { ...(analysisData || {}), customLyrics: customLyrics || finalLyrics } }),
-      });
-      if (!coverRes.ok) throw new Error("Failed to start remix");
-      const coverData = await coverRes.json();
-      if (!coverData.taskId) throw new Error(coverData.error || "Failed to start remix");
-      const { taskId } = coverData;
-      const poll = async () => {
-        try {
-          const res = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: 'suno-cover', taskId }),
-          });
-          const data = await res.json();
-          if (data.status === "complete") {
-            clearInterval(timerRef.current); setResult(data); setStatus("complete");
-            if (user) {
-              const tracks = data.tracks || (data.audioUrl ? [{ audioUrl: data.audioUrl, imageUrl: data.imageUrl }] : []);
-              const firstTrack = tracks[0];
-              const audioUrl = firstTrack?.url || firstTrack?.audioUrl || data.audioUrl || '';
-              const imageUrl = firstTrack?.image_url || firstTrack?.imageUrl || data.imageUrl || '';
-              if (audioUrl) {
-                supabase.from('viralize_remixes').insert({ user_id: user.id, title: songTitle || 'AI Remix', audio_url: audioUrl, image_url: imageUrl || null, style, genre: songGenre || null, suno_task_id: taskId, analysis_id: analysisId || null }).then(({ error: e }) => { if (e) console.warn('Failed to save remix:', e); });
-              }
-            }
-          } else if (data.status === "failed") { clearInterval(timerRef.current); setError(data.message || "Remix failed."); setStatus("error"); }
-          else { setTimeout(poll, 3000); }
-        } catch { clearInterval(timerRef.current); setError("Connection lost."); setStatus("error"); }
-      };
-      setTimeout(poll, 8000);
-    } catch (err: any) { clearInterval(timerRef.current); setError(err?.message || "Something went wrong."); setStatus("error"); }
+  const handleLyricsReady = (lyrics: string) => {
+    setFinalLyrics(lyrics);
+    setStatus("idle");
   };
 
-  useEffect(() => () => { clearInterval(timerRef.current); }, []);
-  const tracks = (result?.tracks || (result?.audioUrl ? [{ audioUrl: result.audioUrl, imageUrl: result.imageUrl, title: "AI Remix" }] : [])).map((t: any) => ({ ...t, url: t.url || t.audioUrl }));
+  const startRemix = async () => {
+    if (!user) { toast.error("Sign in to create remixes"); return; }
+    if (!file) { toast.error("No audio file found. Please re-upload."); return; }
+
+    setStatus("uploading");
+    setElapsed(0);
+    setError("");
+
+    try {
+      const ext = file.name.split('.').pop() || 'mp3';
+      const path = `remixes/${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('audio').upload(path, file);
+      if (upErr) throw upErr;
+      const { data: { publicUrl } } = supabase.storage.from('audio').getPublicUrl(path);
+
+      setStatus("processing");
+      timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
+
+      const res = await fetch("https://hitcheck-api.vercel.app/api/remix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          audioUrl: publicUrl,
+          title: songTitle,
+          genre: songGenre || "pop",
+          style,
+          lyrics: finalLyrics || undefined,
+          userId: user.id,
+          analysisId,
+        }),
+      });
+
+      clearInterval(timerRef.current);
+      if (!res.ok) throw new Error(await res.text());
+
+      const data = await res.json();
+      setResult(data);
+      setStatus("complete");
+    } catch (e: any) {
+      clearInterval(timerRef.current);
+      setError(e.message || "Remix failed");
+      setStatus("error");
+    }
+  };
+
+  const togglePlay = (index: number) => {
+    const audio = audioRefs.current[index];
+    if (!audio) return;
+    if (playing === index) { audio.pause(); setPlaying(null); }
+    else {
+      audioRefs.current.forEach(a => { if (a) a.pause(); });
+      audio.play(); setPlaying(index);
+    }
+  };
+
+  useEffect(() => { return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
 
   return (
-    <div className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.03] to-transparent p-6 md:p-8 space-y-5 relative overflow-hidden">
-      <div className="relative text-center space-y-1.5">
-        <div className="h-10 w-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
-          <Headphones className="h-5 w-5 text-accent" />
+    <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-5 md:p-6 relative overflow-hidden scroll-mt-24">
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="h-9 w-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
+          <Rocket className="h-4 w-4 text-accent" />
         </div>
-        <h2 className="text-xl md:text-2xl font-black font-heading text-foreground">Make This Track Viral</h2>
-        <p className="text-sm text-muted-foreground max-w-md mx-auto">Automatically optimize your track using global hit patterns and algorithmic insights</p>
+        <div>
+          <h2 className="text-lg font-black font-heading text-foreground">Make This Track Viral</h2>
+          <p className="text-xs text-muted-foreground">Apply proven patterns from high-performing tracks</p>
+        </div>
       </div>
 
       {status === "idle" && (
-        <div className="flex flex-col items-center gap-4">
+        <div className="space-y-4">
           {!file && (
-            <div className="w-full max-w-sm">
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Upload your song file</label>
-              <input type="file" accept=".mp3,.wav,audio/mpeg,audio/wav" onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
-                className="w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-primary/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-primary hover:file:bg-primary/30 cursor-pointer" />
+            <div className="border-2 border-dashed border-border rounded-xl p-4 text-center">
+              <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground mb-2">Re-upload your audio file</p>
+              <label className="inline-block cursor-pointer">
+                <span className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 transition-colors">Choose File</span>
+                <input type="file" accept="audio/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setFile(e.target.files[0]); }} />
+              </label>
             </div>
           )}
-          <div className="w-full max-w-xs">
+
+          {file && (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
+              <Music className="h-4 w-4 text-accent flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+              </div>
+              <button onClick={() => setFile(null)} className="text-xs text-muted-foreground hover:text-foreground">Change</button>
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-bold text-foreground mb-1.5 block">Remix Style</label>
             <Select value={style} onValueChange={setStyle}>
-              <SelectTrigger className="h-10 border-accent/30"><SelectValue /></SelectTrigger>
-              <SelectContent>{remixStyles.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+              <SelectTrigger className="bg-card border-border"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {remixStyles.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
             </Select>
           </div>
-          <motion.button onClick={() => setStatus("lyrics")} disabled={!file}
-            className="relative px-10 py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base disabled:opacity-40 overflow-hidden"
-            whileHover={{ scale: 1.03, boxShadow: "0 0 40px hsl(38 92% 50% / 0.3)" }} whileTap={{ scale: 0.98 }}>
-            <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ["-100%", "200%"] }} transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }} />
-            <span className="relative flex items-center gap-2"><Sparkles className="h-5 w-5" /> Make This Track Viral <ArrowRight className="h-5 w-5" /></span>
-          </motion.button>
+
+          <div className="flex gap-2">
+            <motion.button
+              onClick={() => setStatus("lyrics")}
+              className="flex-1 py-3 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-secondary transition-colors flex items-center justify-center gap-2"
+              whileTap={{ scale: 0.98 }}
+            >
+              <Mic2 className="h-4 w-4" /> Edit Lyrics First
+            </motion.button>
+            <motion.button
+              onClick={startRemix}
+              disabled={!file}
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+            >
+              <Rocket className="h-4 w-4" /> Create Remix
+            </motion.button>
+          </div>
         </div>
       )}
 
-      {status === "lyrics" && <LyricsEditor analysisData={analysisData} onLyricsReady={(lyrics) => { setFinalLyrics(lyrics); startRemix(lyrics); }} />}
-      {(status === "uploading" || status === "processing") && <RemixProcessingUI elapsed={elapsed} />}
-      {status === "error" && (
-        <div className="flex flex-col items-center gap-3 py-4">
-          <p className="text-red-400 font-medium text-sm">{error}</p>
-          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10">Try Again</Button>
+      {status === "lyrics" && (
+        <LyricsEditor analysisData={analysisData} onLyricsReady={handleLyricsReady} />
+      )}
+
+      {status === "uploading" && (
+        <div className="text-center py-8">
+          <Loader2 className="h-8 w-8 text-accent mx-auto animate-spin mb-3" />
+          <p className="text-sm font-medium text-foreground">Uploading your track...</p>
         </div>
       )}
-      {status === "complete" && tracks.length > 0 && (
-        <motion.div className="space-y-5" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
-          {tracks.map((track: any, idx: number) => (
-            <motion.div key={idx} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + idx * 0.1 }}
-              className="rounded-xl bg-card border border-border p-4 flex items-center gap-3">
-              <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 border border-border flex items-center justify-center">
-                {track.imageUrl ? <img src={track.imageUrl} alt="" className="w-full h-full rounded-lg object-cover" /> : <Music className="h-5 w-5 text-primary" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground truncate">{tracks.length > 1 ? `Version ${idx + 1}` : "AI Remix"}</p>
-                <div className="flex items-end gap-[2px] h-3 mt-1.5">
-                  {Array.from({ length: 20 }).map((_, i) => (
-                    <motion.div key={i} className="w-[2px] rounded-full bg-primary/40"
-                      animate={playing === idx ? { scaleY: [0.3, 1, 0.3] } : {}}
-                      transition={playing === idx ? { repeat: Infinity, duration: 0.5 + Math.random() * 0.3, delay: i * 0.03 } : {}}
-                      style={{ height: "100%", transformOrigin: "bottom", transform: playing !== idx ? `scaleY(${0.2 + Math.random() * 0.6})` : undefined }} />
-                  ))}
+
+      {status === "processing" && <RemixProcessingUI elapsed={elapsed} />}
+
+      {status === "error" && (
+        <div className="text-center py-6 space-y-3">
+          <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
+          <p className="text-sm text-destructive font-medium">{error}</p>
+          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="gap-2 border-border">Try Again</Button>
+        </div>
+      )}
+
+      {status === "complete" && result && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="text-center py-3">
+            <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
+            <h3 className="text-lg font-black text-foreground">Your Viral Remix is Ready!</h3>
+          </div>
+
+          <div className="space-y-3">
+            {(result.tracks || [result]).map((track: any, i: number) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <button onClick={() => togglePlay(i)} className="h-10 w-10 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+                    {playing === i ? <Pause className="h-4 w-4 text-accent" /> : <Play className="h-4 w-4 text-accent ml-0.5" />}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-foreground truncate">{track.title || `Remix ${i + 1}`}</p>
+                    <p className="text-xs text-muted-foreground">{track.style || style} version</p>
+                  </div>
+                </div>
+                <audio ref={el => { audioRefs.current[i] = el; }} src={track.audio_url || track.audioUrl} onEnded={() => setPlaying(null)} preload="none" />
+                <div className="flex gap-2">
+                  <Button onClick={() => downloadTrack(track.audio_url || track.audioUrl, `${songTitle}_remix_${i + 1}.mp3`)} variant="outline" size="sm" className="flex-1 gap-1.5 text-xs border-border">
+                    <Download className="h-3 w-3" /> Download MP3
+                  </Button>
                 </div>
               </div>
-              <motion.button onClick={() => togglePlay(idx)} className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center hover:bg-primary/30 transition-colors border border-primary/20" whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}>
-                {playing === idx ? <Pause className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary ml-0.5" />}
-              </motion.button>
-              <audio ref={(el) => { audioRefs.current[idx] = el; }} src={track.url} onEnded={() => setPlaying(null)} />
-            </motion.div>
-          ))}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
-            {tracks.map((track: any, idx: number) => (
-              <Button key={idx} onClick={() => downloadTrack(track.url, `${songTitle || 'remix'}-v${idx + 1}.mp3`)} className="gap-2 bg-accent/20 text-accent hover:bg-accent/30 border border-accent/20">
-                <Download className="h-4 w-4" /> Download {tracks.length > 1 ? `V${idx + 1}` : "Remix"}
-              </Button>
             ))}
           </div>
           <div className="flex justify-center">
@@ -811,14 +822,13 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
 
 /* ─── Paywall ─── */
 const PaywallBanner = ({ score }: { score: number }) => (
-  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
     className="w-full rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-6 text-center">
     <div className="h-10 w-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto mb-3"><Zap className="h-5 w-5 text-orange-400" /></div>
     <h3 className="text-lg font-black text-foreground mb-1.5">You've used your free analysis</h3>
     <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">Upgrade to Pro for unlimited analyses + 10 AI remixes/month. Your song scored <strong className="text-foreground">{score}/100</strong>.</p>
     <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
       <Link to="/billing"><motion.button className="relative px-7 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-        <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
         <span className="relative">Upgrade to Pro — $19/month</span>
       </motion.button></Link>
       <Link to="/billing"><button className="px-5 py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Analysis — $3</button></Link>
@@ -829,7 +839,7 @@ const PaywallBanner = ({ score }: { score: number }) => (
 const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songTitle: string; onClose: () => void }) => (
   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
     className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
-    <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+    <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
       className="relative max-w-md w-full rounded-2xl border border-accent/30 bg-card p-7 text-center" onClick={(e) => e.stopPropagation()}>
       <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3"><Headphones className="h-5 w-5 text-primary" /></div>
       <h3 className="text-xl font-black text-foreground mb-1.5">AI Remix — Pro Feature</h3>
@@ -837,7 +847,6 @@ const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songT
       <p className="text-sm text-muted-foreground mb-6">Create an AI remix with stronger hooks and viral energy.</p>
       <div className="flex flex-col gap-2.5">
         <Link to="/billing" onClick={onClose}><motion.button className="relative w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
           <span className="relative">Upgrade to Pro — $19/month</span>
         </motion.button></Link>
         <Link to="/billing" onClick={onClose}><button className="w-full py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Remix — $7</button></Link>
@@ -848,7 +857,7 @@ const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songT
 );
 
 /* ═══════════════════════════════════════════════
-   MAIN RESULTS PAGE — FULL REDESIGN
+   MAIN RESULTS PAGE
    ═══════════════════════════════════════════════ */
 const Results = () => {
   const location = useLocation();
@@ -883,13 +892,12 @@ const Results = () => {
   const confidence = confidenceFromScore(score);
   const percentile = percentileFromScore(score);
   const hasViralLine = viralLine && viralLine !== "none yet";
-  const viral = Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)));
 
   const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     `My song "${title}" scored ${score}/100 on Viralize!\n\nCheck yours → viralize.app`
   )}`;
 
-  // Derive HIT DNA scores from available data
+  // Derive HIT DNA scores
   const hookStrength = hookAnalysis ? Math.min(10, Math.round(score * 0.1 + (competitorMatch || 5) * 0.3 + 2)) : Math.round(score / 10);
   const replayValue = Math.min(10, Math.round((danceability || 5) * 0.5 + (valence || 5) * 0.3 + score * 0.02));
   const emotionalImpact = Math.min(10, Math.round((valence || 5) * 0.6 + (emotionalCore ? 3 : 0) + score * 0.02));
@@ -897,7 +905,7 @@ const Results = () => {
   const marketFit = competitorMatch || Math.min(10, Math.round(score * 0.09 + 1));
   const algorithmCompat = Math.min(10, Math.round((danceability || 5) * 0.3 + (valence || 5) * 0.2 + score * 0.04));
 
-  // Derive critical issues from improvements
+  // Critical issues
   const criticalIssues = (improvements || []).slice(0, 4).map((imp: string, i: number) => {
     const isHook = imp.toLowerCase().includes('hook');
     const isEnergy = imp.toLowerCase().includes('energy') || imp.toLowerCase().includes('dynamic');
@@ -915,7 +923,7 @@ const Results = () => {
     };
   });
 
-  // Derive opportunity zones
+  // Opportunities
   const opportunities = [
     ...(strengths || []).slice(0, 2).map((s: string) => ({
       label: "Quick Win",
@@ -945,7 +953,7 @@ const Results = () => {
     });
   }
 
-  // Benchmark comparisons
+  // Benchmarks
   const benchmarks = [
     { label: "Hook Timing", yours: Math.round(hookStrength * 10), benchmark: 82 },
     { label: "Replay Rate", yours: Math.round(replayValue * 10), benchmark: 75 },
@@ -969,7 +977,7 @@ const Results = () => {
   const strongest = sorted[0];
   const weakest = sorted[sorted.length - 1];
 
-  // Track active section for nav
+  // Active section tracking
   const [activeSection, setActiveSection] = useState("overview");
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -985,7 +993,7 @@ const Results = () => {
         const el = document.getElementById(item.id);
         if (el) observer.observe(el);
       });
-    }, 1000);
+    }, 500);
     return () => { clearTimeout(timer); observer.disconnect(); };
   }, []);
 
@@ -994,30 +1002,27 @@ const Results = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-28 bg-background relative overflow-hidden">
-      <ParticleField count={20} color="hsl(258, 90%, 66%)" speed={0.2} />
-
-      {/* ─── Sticky Mini Nav ─── */}
+    <div className="min-h-screen px-4 pt-24 pb-32 bg-background relative">
+      {/* Sticky Mini Nav */}
       <StickyNav activeSection={activeSection} />
 
-      {/* ─── Floating CTA ─── */}
+      {/* Floating CTA */}
       <FloatingCTA onClick={scrollToViral} />
 
-      <div className="max-w-2xl mx-auto space-y-8 relative z-10">
+      <div className="max-w-2xl mx-auto space-y-6 relative z-10">
 
         {/* ═══ 1. HERO — Score + Verdict ═══ */}
         <Section delay={0} id="overview">
           <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-            {/* Score centered on mobile */}
             <div className="flex flex-col items-center text-center">
               <ScoreGauge score={score} />
 
               <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.5, type: "spring" }}
+                transition={{ delay: 1.2, type: "spring" }}
                 className={`mt-3 inline-block px-4 py-1.5 rounded-full text-[11px] font-black border uppercase tracking-[0.12em] ${badge.cls}`}
               >
                 {badge.label}
@@ -1026,7 +1031,7 @@ const Results = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.8 }}
+                transition={{ delay: 1.5 }}
                 className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"
               >
                 <span>Confidence: <strong className="text-foreground">{confidence}%</strong></span>
@@ -1037,7 +1042,7 @@ const Results = () => {
               <motion.p
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 2 }}
+                transition={{ delay: 1.7 }}
                 className="text-base md:text-lg font-bold text-foreground leading-snug mt-4 max-w-md"
               >
                 {verdict || (score >= 80
@@ -1052,7 +1057,7 @@ const Results = () => {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 2.3 }}
+                transition={{ delay: 1.9 }}
                 className="text-xs text-muted-foreground mt-2"
               >
                 "{title}" {songGenre ? `• ${songGenre}` : ''}
@@ -1062,7 +1067,7 @@ const Results = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 2.5 }}
+                transition={{ delay: 2.1 }}
                 className="flex gap-2 mt-4"
               >
                 <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
@@ -1091,21 +1096,19 @@ const Results = () => {
 
         {/* ═══ Paywall ═══ */}
         {user && hasExhaustedFreeAnalysis && (
-          <Section delay={0.5}><PaywallBanner score={score} /></Section>
+          <Section delay={1}><PaywallBanner score={score} /></Section>
         )}
 
-        {/* ═══ 2. SNAPSHOT — Percentile + Best/Worst ═══ */}
-        <Section delay={1}>
-          {/* Percentile card */}
+        {/* ═══ 2. SNAPSHOT ═══ */}
+        <Section delay={2}>
           <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4 text-center mb-3">
             <motion.p className="text-3xl font-black text-primary tabular-nums"
-              initial={{ opacity: 0, scale: 0.5 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring" }}>
+              initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring" }}>
               Top {100 - percentile}%
             </motion.p>
             <p className="text-sm text-foreground mt-0.5">You outperform <strong>{percentile}%</strong> of analyzed tracks</p>
           </div>
 
-          {/* Best / Worst row */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-green-500/20 bg-green-500/[0.03] p-3.5">
               <div className="flex items-center gap-1.5 mb-1.5">
@@ -1126,8 +1129,8 @@ const Results = () => {
           </div>
         </Section>
 
-        {/* ═══ 3. HIT DNA — Short bars ═══ */}
-        <Section delay={2}>
+        {/* ═══ 3. HIT DNA ═══ */}
+        <Section delay={3}>
           <SectionLabel title="Hit DNA Breakdown" icon={Layers} />
           <div className="space-y-2.5">
             <DNABar label="Hook Strength" value={hookStrength} max={10} explanation={hookAnalysis || "How catchy and memorable your hook is."} delay={0} />
@@ -1141,7 +1144,7 @@ const Results = () => {
 
         {/* ═══ 4. CRITICAL ISSUES ═══ */}
         {criticalIssues.length > 0 && (
-          <Section delay={3} id="issues">
+          <Section delay={4} id="issues">
             <SectionLabel title="What's Holding You Back" icon={Crosshair} />
             <div className="space-y-3">
               {criticalIssues.map((issue, i) => (
@@ -1167,11 +1170,11 @@ const Results = () => {
 
         {/* ═══ 5. OPPORTUNITIES ═══ */}
         {opportunities.length > 0 && (
-          <Section delay={4} id="improve">
+          <Section delay={5} id="improve">
             <SectionLabel title="Opportunities" icon={Flame} />
             <div className="space-y-2.5">
               {opportunities.map((opp, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
                   <OpportunityCard {...opp} />
                 </motion.div>
               ))}
@@ -1180,7 +1183,7 @@ const Results = () => {
         )}
 
         {/* ═══ 6. COMPARISON ═══ */}
-        <Section delay={5} id="compare">
+        <Section delay={6} id="compare">
           <SectionLabel title="You vs Top Tracks" icon={BarChart3} />
           <div className="rounded-xl border border-border bg-card/50 p-4 space-y-4">
             {benchmarks.slice(0, 4).map((b, i) => (
@@ -1190,7 +1193,7 @@ const Results = () => {
           {similarSongs?.length > 0 && (
             <div className="mt-3 space-y-2.5">
               {similarSongs.slice(0, 3).map((song: any, i: number) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                   className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
                     <SpotifyLogo className="h-3.5 w-3.5" />
@@ -1207,11 +1210,11 @@ const Results = () => {
         </Section>
 
         {/* ═══ 7. ROADMAP ═══ */}
-        <Section delay={6} id="roadmap">
+        <Section delay={7} id="roadmap">
           <SectionLabel title="Your Action Plan" icon={CheckCircle2} />
           <div className="space-y-2">
             {roadmap.map((item, i) => (
-              <motion.div key={i} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+              <motion.div key={i} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                 className="flex items-start gap-3 rounded-xl border border-border bg-card p-3.5">
                 <div className="mt-0.5 flex-shrink-0 h-6 w-6 rounded-full border-2 border-primary/40 flex items-center justify-center">
                   <span className="text-[10px] font-bold text-primary">{i + 1}</span>
@@ -1223,11 +1226,11 @@ const Results = () => {
         </Section>
 
         {/* ═══ 8. VIRAL CTA ═══ */}
-        <Section delay={7} id="viral-cta">
+        <Section delay={8}>
           {canRemix ? (
             <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
           ) : (
-            <div className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 text-center relative overflow-hidden">
+            <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 text-center relative overflow-hidden scroll-mt-24">
               <div className="h-11 w-11 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
                 <Rocket className="h-5 w-5 text-accent" />
               </div>
@@ -1239,7 +1242,6 @@ const Results = () => {
               <motion.button onClick={() => setShowRemixPaywall(true)}
                 className="relative w-full max-w-xs mx-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden"
                 whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-                <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
                 <span className="relative flex items-center justify-center gap-2">
                   <Rocket className="h-4 w-4" /> Make This Track Viral <ArrowRight className="h-4 w-4" />
                 </span>
@@ -1254,7 +1256,7 @@ const Results = () => {
         </AnimatePresence>
 
         {/* ═══ 9. TRUST LAYER ═══ */}
-        <Section delay={8}>
+        <Section delay={9}>
           <div className="rounded-xl border border-border bg-card/30 p-4 text-center space-y-2">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Based on patterns from top-performing tracks across major platforms.
@@ -1270,7 +1272,7 @@ const Results = () => {
         </Section>
 
         {/* ═══ Bottom Actions ═══ */}
-        <Section delay={9} className="pb-8">
+        <Section delay={10} className="pb-8">
           <div className="flex flex-col items-center gap-3">
             <Button asChild size="lg" className="gradient-purple text-primary-foreground font-bold glow-purple w-full max-w-xs h-11 text-sm">
               <Link to="/analyze">Analyze Another Track</Link>
