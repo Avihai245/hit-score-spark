@@ -112,23 +112,23 @@ const FloatingCTA = () => {
       initial={false}
       animate={{ y: visible ? 0 : 100, opacity: visible ? 1 : 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-8 z-40"
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
       style={{ pointerEvents: visible ? "auto" : "none" }}
     >
       <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
         <Button
           asChild
           size="lg"
-          className="relative gradient-purple text-primary-foreground px-6 py-5 text-sm font-bold shadow-xl shadow-primary/20 overflow-hidden"
+          className="relative gradient-purple text-primary-foreground px-8 py-5 text-sm font-bold shadow-xl shadow-primary/20 overflow-hidden rounded-full"
         >
           <Link to="/analyze" className="flex items-center gap-2">
-            <Rocket className="h-4 w-4" />
-            <span>Scan Your Track 🚀</span>
+            <Zap className="h-4 w-4" />
+            <span>Analyze Your Track — Free</span>
           </Link>
         </Button>
       </motion.div>
       <p className="text-[10px] text-muted-foreground text-center mt-1.5 font-medium">
-        See its viral potential
+        No signup required · Results in 30 seconds
       </p>
     </motion.div>
   );
