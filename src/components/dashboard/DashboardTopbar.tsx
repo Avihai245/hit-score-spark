@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PLAN_LIMITS, Plan } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import {
-  ChevronDown, LogOut, Settings, User, Shield,
+  ChevronDown, LogOut, Settings, Shield, Coins,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -29,9 +29,23 @@ export const DashboardTopbar = ({ sidebarCollapsed, onMobileMenuToggle }: Dashbo
 
   return (
     <header className="h-14 border-b border-border/30 bg-[#0a0a0a] flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-      {/* Left — page context */}
-      <div className="flex items-center gap-3 flex-1">
-        <span className="text-sm font-semibold text-foreground">Dashboard</span>
+      {/* Left — plan info strip */}
+      <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-3">
+          <Badge className={`${PLAN_BADGE[plan]} border text-[10px] px-2 py-0.5`}>
+            {PLAN_LIMITS[plan].label}
+          </Badge>
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Coins className="w-3 h-3" />
+            <span className="font-medium text-foreground">{profile?.credits ?? 0}</span>
+            <span>credits</span>
+          </div>
+          {profile?.plan_expires_at && (
+            <span className="hidden lg:block text-[11px] text-muted-foreground">
+              · Renews {new Date(profile.plan_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Right — profile */}
@@ -45,9 +59,6 @@ export const DashboardTopbar = ({ sidebarCollapsed, onMobileMenuToggle }: Dashbo
               <span className="text-xs font-medium text-foreground max-w-[100px] truncate">
                 {profile?.display_name || user?.email?.split('@')[0]}
               </span>
-              <Badge className={`${PLAN_BADGE[plan]} border text-[9px] px-1.5 py-0`}>
-                {PLAN_LIMITS[plan].label}
-              </Badge>
               <ChevronDown className="w-3 h-3 text-muted-foreground" />
             </div>
           </DropdownMenuTrigger>

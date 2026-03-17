@@ -132,7 +132,7 @@ const AppContent = () => {
       {!isAdminRoute && !isDashboardRoute && <GlobalDataStrip />}
       {!isAdminRoute && !isDashboardRoute && <Navbar />}
       <AnimatedRoutes />
-      {!isAdminRoute && !isDashboardRoute && <AudioPlayer />}
+      {!isAdminRoute && <AudioPlayer />}
     </>
   );
 };

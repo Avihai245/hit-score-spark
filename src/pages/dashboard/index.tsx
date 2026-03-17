@@ -18,6 +18,7 @@ interface Analysis {
   score: number;
   created_at: string;
   audio_url?: string;
+  thumbnail_url?: string;
 }
 
 const scoreColor = (s: number) => {
@@ -25,6 +26,22 @@ const scoreColor = (s: number) => {
   if (s >= 65) return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
   if (s >= 40) return 'bg-accent/20 text-accent border-accent/30';
   return 'bg-destructive/20 text-destructive border-destructive/30';
+};
+
+// Generate a consistent gradient from song id
+const artGradient = (id: string) => {
+  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const hues = [
+    'from-purple-600 to-blue-500',
+    'from-rose-500 to-orange-400',
+    'from-emerald-500 to-teal-400',
+    'from-indigo-500 to-violet-500',
+    'from-amber-500 to-red-500',
+    'from-cyan-500 to-blue-600',
+    'from-pink-500 to-purple-600',
+    'from-lime-500 to-emerald-500',
+  ];
+  return hues[hash % hues.length];
 };
 
 export default function DashboardHome() {
@@ -76,7 +93,7 @@ export default function DashboardHome() {
                   <div>
                     <h2 className="text-lg font-bold text-foreground">Analyze a Song</h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Upload a track and get your viral score with AI insights in seconds
+                      Upload a track and get your viral score with AI insights
                     </p>
                   </div>
                 </div>
@@ -95,7 +112,7 @@ export default function DashboardHome() {
                   <div>
                     <h2 className="text-lg font-bold text-foreground">Make it a Hit</h2>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Let our AI transform your song into a viral-ready version
+                      Let AI transform your song into a viral-ready version
                     </p>
                   </div>
                 </div>
@@ -117,9 +134,9 @@ export default function DashboardHome() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-28 rounded-xl bg-muted/50 animate-pulse" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="aspect-square rounded-xl bg-muted/50 animate-pulse" />
               ))}
             </div>
           ) : songs.length === 0 ? (
@@ -134,52 +151,69 @@ export default function DashboardHome() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {songs.map((song, i) => (
-                <motion.div
-                  key={song.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  className="group rounded-xl border border-border bg-card hover:border-border/80 hover:bg-muted/30 transition-all duration-150 overflow-hidden"
-                >
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-foreground truncate">{song.title || 'Untitled'}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{song.genre || 'Unknown genre'}</p>
-                      </div>
-                      <Badge className={`${scoreColor(song.score)} border text-xs font-bold shrink-0`}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {songs.map((song, i) => {
+                const isCurrentPlaying = currentTrack?.id === song.id && isPlaying;
+                return (
+                  <motion.div
+                    key={song.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="group"
+                  >
+                    {/* Album art */}
+                    <div className="relative aspect-square rounded-xl overflow-hidden mb-2">
+                      {song.thumbnail_url ? (
+                        <img src={song.thumbnail_url} alt={song.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className={`w-full h-full bg-gradient-to-br ${artGradient(song.id)} flex items-center justify-center`}>
+                          <Music2 className="w-8 h-8 text-white/40" />
+                        </div>
+                      )}
+
+                      {/* Score badge */}
+                      <Badge className={`${scoreColor(song.score)} border text-[11px] font-bold absolute top-2 right-2`}>
                         {song.score}
                       </Badge>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
+                      {/* Play overlay */}
                       {song.audio_url && (
                         <button
                           onClick={() => playTrack({ id: song.id, title: song.title, audioUrl: song.audio_url! })}
-                          className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary hover:bg-primary/20 transition-colors"
+                          className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-all"
                         >
-                          {currentTrack?.id === song.id && isPlaying
-                            ? <Pause className="h-3.5 w-3.5" />
-                            : <Play className="h-3.5 w-3.5 ml-0.5" />}
+                          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all shadow-lg">
+                            {isCurrentPlaying
+                              ? <Pause className="h-5 w-5 text-black" />
+                              : <Play className="h-5 w-5 text-black ml-0.5" />}
+                          </div>
                         </button>
                       )}
-                      <Button asChild variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1">
-                        <Link to={`/song/${song.id}`}>
-                          <Eye className="w-3.5 h-3.5" /> Report
-                        </Link>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm" className="h-8 text-xs text-accent hover:text-accent hover:bg-accent/10 gap-1 ml-auto">
-                        <Link to="/dashboard/viral">
-                          <Zap className="w-3.5 h-3.5" /> Improve
-                        </Link>
-                      </Button>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* Song info */}
+                    <div className="px-0.5">
+                      <p className="text-sm font-semibold text-foreground truncate">{song.title || 'Untitled'}</p>
+                      <p className="text-xs text-muted-foreground truncate">{song.genre || 'Unknown genre'}</p>
+
+                      {/* Quick actions */}
+                      <div className="flex items-center gap-1 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground hover:text-foreground gap-1 px-2">
+                          <Link to={`/song/${song.id}`}>
+                            <Eye className="w-3 h-3" /> Report
+                          </Link>
+                        </Button>
+                        <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] text-accent hover:text-accent hover:bg-accent/10 gap-1 px-2">
+                          <Link to="/dashboard/viral">
+                            <Zap className="w-3 h-3" /> Improve
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
