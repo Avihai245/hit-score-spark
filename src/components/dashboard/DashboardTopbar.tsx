@@ -2,9 +2,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { PLAN_LIMITS, Plan } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
-  Bell, Search, Plus, ChevronDown, LogOut, Settings, User, Shield, Menu,
+  ChevronDown, LogOut, Settings, User, Shield,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -29,45 +28,17 @@ export const DashboardTopbar = ({ sidebarCollapsed, onMobileMenuToggle }: Dashbo
   };
 
   return (
-    <header className="h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-      {/* Mobile hamburger + Search */}
-      <div className="flex items-center gap-3 flex-1 max-w-md">
-        <button
-          onClick={onMobileMenuToggle}
-          className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-        <div className="relative flex-1 hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            placeholder="Search songs, analyses..."
-            className="w-full pl-9 pr-3 py-1.5 bg-muted/50 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
-          />
-        </div>
+    <header className="h-14 border-b border-border/30 bg-[#0a0a0a] flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      {/* Left — page context */}
+      <div className="flex items-center gap-3 flex-1">
+        <span className="text-sm font-semibold text-foreground">Dashboard</span>
       </div>
 
-      {/* Actions */}
+      {/* Right — profile */}
       <div className="flex items-center gap-2">
-        <Button asChild size="sm" className="h-8 gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-lg hidden sm:flex">
-          <Link to="/analyze">
-            <Plus className="w-3.5 h-3.5" />
-            New Analysis
-          </Link>
-        </Button>
-
-        <Link
-          to="/dashboard/notifications"
-          className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-        </Link>
-
-        {/* Profile dropdown */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[11px] font-bold text-primary-foreground">
+          <DropdownMenuTrigger className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[11px] font-bold text-primary-foreground">
               {initials}
             </div>
             <div className="hidden md:flex items-center gap-1.5">
@@ -81,11 +52,6 @@ export const DashboardTopbar = ({ sidebarCollapsed, onMobileMenuToggle }: Dashbo
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 bg-popover border-border">
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard/profile" className="flex items-center gap-2 text-sm">
-                <User className="w-3.5 h-3.5" /> Profile
-              </Link>
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link to="/dashboard/settings" className="flex items-center gap-2 text-sm">
                 <Settings className="w-3.5 h-3.5" /> Settings
