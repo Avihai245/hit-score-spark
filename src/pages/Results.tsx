@@ -1194,6 +1194,7 @@ const Results = () => {
         {(valence != null || danceability != null || saveRatePrediction || skipRiskMoment) && (
           <Section delay={0.3}>
             <SectionTitle emoji="📊" title="ALGORITHM SCORES" />
+            <div className="flex gap-2 mb-4"><SourceTag platform="spotify" /><SourceTag platform="apple" /></div>
             <div className="glass-card p-6 space-y-6">
               {valence != null && (
                 <AnimatedBar label="Valence (Sad → Happy)" value={valence} max={10} color="hsl(142 71% 45%)" />
