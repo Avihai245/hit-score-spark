@@ -12,7 +12,7 @@ export const PLAN_LIMITS = {
   pro:       { analyses: 999, remixes: 4,    label: 'Pro',       price: 19 },
   studio:    { analyses: 999, remixes: 10,   label: 'Studio',    price: 29 },
   business:  { analyses: 999, remixes: 20,   label: 'Business',  price: 49 },
-  unlimited: { analyses: 999, remixes: 999,  label: 'Unlimited', price: 89 },
+  unlimited: { analyses: 999, remixes: 999,  label: 'Unlimited', price: 79 },
 };
 
 // Credit costs
