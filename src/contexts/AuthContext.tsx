@@ -14,6 +14,7 @@ export interface ViralizeProfile {
   credits: number;
   api_key: string | null;
   created_at: string;
+  is_admin: boolean | null;
   // Stripe billing fields
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
