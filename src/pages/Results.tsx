@@ -1365,6 +1365,7 @@ const Results = () => {
         {(playlistStrategy || matchedPlaylists?.length > 0) && (
           <Section delay={0.65}>
             <SectionTitle emoji="📋" title="PLAYLIST TARGETS" />
+            <div className="flex gap-2 mb-4"><SourceTag platform="spotify" /></div>
             {playlistStrategy && (
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 mb-6">
                 <div className="flex items-start gap-3">
