@@ -11,7 +11,7 @@ import {
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin,
   ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles, Shield,
   BarChart3, TrendingUp, Radio, Mic2, FileText, Calendar, Award, Eye, CheckCircle2,
-  Flame, ArrowUpRight, Crosshair, Layers, Gauge, CircleDot, ChevronDown, Star
+  Flame, ArrowUpRight, Crosshair, Layers, Gauge, CircleDot, ChevronDown, Star, Rocket
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
