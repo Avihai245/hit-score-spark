@@ -24,9 +24,11 @@ const TABS = [
 ];
 
 const PLANS: { id: Plan; name: string; price: string; features: string[] }[] = [
-  { id: 'free', name: 'Free', price: '$0', features: ['1 analysis/month', 'No remixes', 'Basic results'] },
-  { id: 'pro', name: 'Pro', price: '$19/mo', features: ['Unlimited analyses', '10 remixes/month', 'Priority processing', 'Advanced insights'] },
-  { id: 'studio', name: 'Studio', price: '$29/mo', features: ['Everything in Pro', 'Unlimited remixes', 'Team seats', 'Priority support'] },
+  { id: 'free', name: 'Free', price: '$0', features: ['1 analysis/month', 'No viral songs', 'Basic results'] },
+  { id: 'pro', name: 'Pro', price: '$19/mo', features: ['Unlimited analyses', '4 viral songs/month', 'Priority processing'] },
+  { id: 'studio', name: 'Studio', price: '$29/mo', features: ['Everything in Pro', '10 viral songs/month'] },
+  { id: 'business', name: 'Business', price: '$49/mo', features: ['Everything in Studio', '20 viral songs/month'] },
+  { id: 'unlimited', name: 'Unlimited', price: '$89/mo', features: ['Everything', 'Unlimited viral songs'] },
 ];
 
 export default function Settings() {
