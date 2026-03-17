@@ -185,7 +185,7 @@ const DNABar = ({ label, value, max, explanation, delay = 0 }: { label: string; 
         </motion.span>
       </div>
       <div className="h-2 rounded-full bg-muted overflow-hidden mb-1.5">
-        <motion.div className="h-full rounded-full will-change-transform" style={{ backgroundColor: color }}
+      <motion.div className="h-full rounded-full will-change-transform"
           initial={{ scaleX: 0 }} animate={isInView ? { scaleX: pct / 100 } : { scaleX: 0 }}
           style={{ backgroundColor: color, transformOrigin: "left" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: delay * 0.05 }} />
