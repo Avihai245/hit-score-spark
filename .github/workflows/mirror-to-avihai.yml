@@ -12,9 +12,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Push to Avihai245/hit-score-spark
+      - name: Push mirror to Avihai245/hit-score-spark
         run: |
-          git remote add avihai "https://x-access-token:${{ secrets.SYNC_TO_AVIHAI_TOKEN }}@github.com/Avihai245/hit-score-spark.git"
-          git push avihai main --force
-          echo "✅ Synced to Avihai245/hit-score-spark"
+          git config user.email "sync@viralize.ai"
+          git config user.name "Viralize Sync"
+          git remote add avihai "https://nolanpiercemusic-star:${{ secrets.SYNC_TO_AVIHAI_TOKEN }}@github.com/Avihai245/hit-score-spark.git"
+          git push avihai HEAD:main --force
+          echo "✅ Mirrored to Avihai245/hit-score-spark"
