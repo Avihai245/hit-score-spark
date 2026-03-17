@@ -335,7 +335,7 @@ const Index = () => {
           transition={{ delay: 0.7, duration: 0.5 }}
           className="relative mt-6 text-base sm:text-lg md:text-xl font-medium text-muted-foreground max-w-xl leading-relaxed px-2"
         >
-          We scan your track against real Spotify, Apple Music & YouTube hit patterns — and show you exactly how to improve it.
+          We reveal exactly why some tracks blow up and yours doesn't — yet. Fix it before you release.
         </motion.p>
 
         {/* Platform row */}
