@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { ParticleField } from "@/components/ParticleField";
+import { DataStream, ScanLine } from "@/components/DataStream";
 
 const genres = ["Pop", "Hip Hop", "R&B", "Indie Pop", "Melodic House", "EDM", "Rock", "Latin", "Afrobeats", "Other"];
 const goals = [
@@ -53,20 +55,20 @@ const dataFeedMessages = [
 
 /* ─── Fake Waveform Preview ─── */
 const WaveformPreview = () => {
-  const bars = useRef(Array.from({ length: 40 }, () => 15 + Math.random() * 75));
+  const bars = useRef(Array.from({ length: 60 }, () => 15 + Math.random() * 75));
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex items-end justify-center gap-[2px] h-16 mt-4"
+      className="flex items-end justify-center gap-[2px] h-20 mt-4"
     >
       {bars.current.map((h, i) => (
         <motion.div
           key={i}
-          className="w-[4px] rounded-full bg-gradient-to-t from-primary/60 to-primary"
+          className="w-[3px] rounded-full bg-gradient-to-t from-primary/40 via-primary to-accent"
           initial={{ height: 0 }}
           animate={{ height: `${h}%` }}
-          transition={{ delay: i * 0.02, duration: 0.4, ease: "easeOut" }}
+          transition={{ delay: i * 0.015, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
         />
       ))}
     </motion.div>
@@ -75,16 +77,16 @@ const WaveformPreview = () => {
 
 /* ─── Bouncing Waveform for Loading ─── */
 const LoadingWaveform = () => (
-  <div className="flex items-end justify-center gap-2 h-24">
-    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+  <div className="flex items-end justify-center gap-1.5 h-28">
+    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
       <motion.div
         key={i}
-        className="w-3 rounded-full gradient-purple"
-        animate={{ scaleY: [0.3, 1, 0.3] }}
+        className="w-2.5 rounded-full bg-gradient-to-t from-primary via-primary to-accent"
+        animate={{ scaleY: [0.2, 1, 0.2] }}
         transition={{
           repeat: Infinity,
-          duration: 0.7,
-          delay: i * 0.1,
+          duration: 0.6,
+          delay: i * 0.08,
           ease: "easeInOut",
         }}
         style={{ height: "100%", transformOrigin: "bottom" }}
@@ -375,22 +377,68 @@ const Analyze = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4 bg-background">
+      <div className="flex min-h-screen items-center justify-center px-4 bg-background relative overflow-hidden">
+        {/* Cinematic background */}
+        <ParticleField count={60} color="hsl(258, 90%, 66%)" speed={0.8} />
+        <DataStream columns={10} />
+        <ScanLine />
+
+        {/* Radial glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px]"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-6 max-w-lg w-full"
+          className="flex flex-col items-center gap-6 max-w-lg w-full relative z-10"
         >
            <div className="relative">
-            <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
+            <motion.div
+              className="absolute inset-0 w-36 h-36 mx-auto rounded-full bg-primary/20 blur-[80px]"
+              animate={{ scale: [1, 1.3, 1] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            />
             <LoadingWaveform />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold font-heading text-foreground">
+            <motion.p
+              className="text-xl font-black font-heading text-foreground"
+              animate={{ opacity: [1, 0.7, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+            >
               Running global pattern analysis...
-            </p>
+            </motion.p>
             <p className="text-xs text-muted-foreground mt-1">Comparing against thousands of high-performing tracks</p>
-            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <motion.div
+                className="w-2 h-2 rounded-full bg-emerald-400"
+                animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+                transition={{ repeat: Infinity, duration: 1.2 }}
+              />
+              <p className="text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
+            </div>
+          </div>
+
+          {/* Overall progress bar */}
+          <div className="w-full max-w-sm">
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
+              <motion.div
+                className="h-full rounded-full bg-gradient-to-r from-primary via-accent to-primary"
+                style={{ backgroundSize: '200% 100%' }}
+                animate={{ width: `${Math.min(95, (completedSteps.length / analysisSteps.length) * 100)}%`, backgroundPosition: ['0% 0%', '100% 0%'] }}
+                transition={{ width: { duration: 0.5 }, backgroundPosition: { repeat: Infinity, duration: 2, ease: 'linear' } }}
+              />
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                animate={{ x: ['-100%', '200%'] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+              />
+            </div>
           </div>
 
           {/* Platform data sources */}
@@ -435,29 +483,29 @@ const Analyze = () => {
                   className={cn(
                     "flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all",
                     isCompleted
-                      ? "border-green-500/30 bg-green-500/10"
+                      ? "border-emerald-500/30 bg-emerald-500/10"
                       : isCurrent
-                        ? "border-primary/30 bg-primary/10"
-                        : "border-white/5 bg-white/[0.02] opacity-40"
+                        ? "border-primary/30 bg-primary/10 shadow-[0_0_20px_-5px] shadow-primary/20"
+                        : "border-border/30 bg-card/30 opacity-40"
                   )}
                 >
                   <div className={cn(
                     "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs",
                     isCompleted
-                      ? "bg-green-500"
+                      ? "bg-emerald-500"
                       : isCurrent
                         ? "bg-primary/30 border-2 border-primary"
-                        : "bg-white/10"
+                        : "bg-muted"
                   )}>
                     {isCompleted ? (
-                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500 }}>
+                      <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500 }}>
                         <Check className="h-3.5 w-3.5 text-white" />
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
                         className="w-1.5 h-1.5 rounded-full bg-primary"
-                        animate={{ scale: [1, 1.5, 1] }}
-                        transition={{ repeat: Infinity, duration: 1 }}
+                        animate={{ scale: [1, 1.8, 1], opacity: [1, 0.4, 1] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
                       />
                     ) : (
                       <span className="text-[10px] text-muted-foreground">{step.icon}</span>
@@ -465,7 +513,7 @@ const Analyze = () => {
                   </div>
                   <span className={cn(
                     "text-sm font-medium",
-                    isCompleted ? "text-green-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
+                    isCompleted ? "text-emerald-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
                   )}>
                     {step.label}
                     {isCompleted && " ✓"}
@@ -481,11 +529,12 @@ const Analyze = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}
-            className="w-full rounded-xl border border-white/5 bg-white/[0.02] p-4"
+            className="w-full rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 relative overflow-hidden"
           >
+            <ScanLine />
             <div className="flex items-center gap-2 mb-3">
               <motion.div
-                className="w-2 h-2 rounded-full bg-emerald-400"
+                className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px] shadow-emerald-400/50"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
               />
@@ -535,25 +584,35 @@ const Analyze = () => {
                 inp.click();
               }}
               className={cn(
-                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed min-h-[380px] transition-all relative overflow-hidden",
+                "flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed min-h-[380px] transition-all relative overflow-hidden group",
                 dragOver
-                  ? "border-primary bg-primary/10 scale-[1.02]"
+                  ? "border-primary bg-primary/10 scale-[1.02] shadow-[0_0_40px_-10px] shadow-primary/30"
                   : file
                     ? "border-accent/40 bg-accent/5"
-                    : "border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5 bg-card/30"
+                    : "border-muted-foreground/20 hover:border-primary/40 hover:bg-primary/5 bg-card/30 hover:shadow-[0_0_30px_-10px] hover:shadow-primary/20"
               )}
             >
+              {/* Ambient glow on hover */}
+              <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-primary/5 blur-[80px]" />
+              </div>
               {file ? (
-                <div className="flex flex-col items-center gap-3 p-6 w-full">
+                <div className="flex flex-col items-center gap-3 p-6 w-full relative z-10">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center"
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center relative"
                   >
-                    <Music className="h-10 w-10 text-accent" />
+                    <motion.div
+                      className="absolute inset-0 rounded-full bg-accent/20 blur-xl"
+                      animate={{ scale: [1, 1.3, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                    />
+                    <Music className="h-10 w-10 text-accent relative z-10" />
                   </motion.div>
                   <div className="text-center">
-                    <p className="font-bold text-lg text-white">{file.name}</p>
+                    <p className="font-bold text-lg text-foreground">{file.name}</p>
                     <p className="text-sm text-muted-foreground mt-1">{formatSize(file.size)}</p>
                   </div>
                   {/* Waveform preview */}
@@ -567,11 +626,16 @@ const Analyze = () => {
                   </button>
                 </div>
               ) : (
-                <>
+                <div className="relative z-10 flex flex-col items-center gap-4">
                   <motion.div
-                    animate={dragOver ? { scale: 1.1, y: -5 } : { scale: 1, y: 0 }}
-                    className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center"
+                    animate={dragOver ? { scale: 1.15, y: -8 } : { scale: 1, y: 0 }}
+                    className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center relative"
                   >
+                    <motion.div
+                      className="absolute inset-[-8px] rounded-full border-2 border-dashed border-primary/20"
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+                    />
                     <Upload className="h-12 w-12 text-primary" />
                   </motion.div>
                   <div className="text-center">
@@ -582,14 +646,14 @@ const Analyze = () => {
                   </div>
                   {dragOver && (
                     <motion.p
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
                       className="text-primary font-bold text-lg"
                     >
                       Drop it! 🎵
                     </motion.p>
                   )}
-                </>
+                </div>
               )}
             </div>
 
@@ -639,13 +703,20 @@ const Analyze = () => {
                 </Select>
               </div>
 
-              <Button
-                type="submit"
-                disabled={!file}
-                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40 gap-2"
-              >
-                <Zap className="h-5 w-5" /> Analyze Now →
-              </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  type="submit"
+                  disabled={!file}
+                  className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold hover:opacity-90 transition-all disabled:opacity-40 gap-2 relative overflow-hidden group shadow-[0_0_30px_-5px] shadow-primary/30"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                  />
+                  <Zap className="h-5 w-5 relative z-10" /> <span className="relative z-10">Analyze Now →</span>
+                </Button>
+              </motion.div>
 
               <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                 <Lock className="h-3 w-3" /> Your song is never stored or shared

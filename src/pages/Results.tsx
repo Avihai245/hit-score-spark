@@ -1,6 +1,7 @@
 import { useLocation, Link, Navigate, useNavigate } from "react-router-dom";
-import { motion, useMotionValue, useTransform, animate, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate, AnimatePresence, useInView } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { ParticleField } from "@/components/ParticleField";
 import { useAuth } from "@/contexts/AuthContext";
 import { PLAN_LIMITS } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -100,7 +101,7 @@ const scoreBadge = (s: number) => {
   return { label: "HIT POTENTIAL", cls: "bg-primary/15 text-primary border-primary/30" };
 };
 
-/* ─── Score Gauge ─── */
+/* ─── Score Gauge (cinematic reveal) ─── */
 const ScoreGauge = ({ score }: { score: number }) => {
   const r = 90;
   const circ = 2 * Math.PI * r;
@@ -110,21 +111,33 @@ const ScoreGauge = ({ score }: { score: number }) => {
   const rounded = useTransform(count, (v) => Math.round(v));
 
   useEffect(() => {
-    const ctrl = animate(count, score, { duration: 2, ease: "easeOut" });
+    const ctrl = animate(count, score, { duration: 2.5, ease: [0.16, 1, 0.3, 1] });
     return ctrl.stop;
   }, [count, score]);
 
   return (
-    <div className="relative flex items-center justify-center w-[200px] h-[200px] md:w-[220px] md:h-[220px]">
+    <motion.div
+      className="relative flex items-center justify-center w-[220px] h-[220px] md:w-[250px] md:h-[250px]"
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+    >
+      {/* Outer glow */}
       <motion.div
-        className="absolute w-48 h-48 rounded-full blur-[60px] opacity-25"
+        className="absolute w-56 h-56 rounded-full blur-[80px] opacity-0"
         style={{ backgroundColor: color }}
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.25 }}
-        transition={{ duration: 2, ease: "easeOut" }}
+        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.35, 0.2] }}
+        transition={{ duration: 2.5, ease: "easeOut" }}
+      />
+      {/* Rotating ring accent */}
+      <motion.div
+        className="absolute inset-[-4px] rounded-full border border-dashed opacity-20"
+        style={{ borderColor: color }}
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
       />
       <svg width="100%" height="100%" viewBox="0 0 200 200" className="-rotate-90">
-        <circle cx="100" cy="100" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="10" />
+        <circle cx="100" cy="100" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="8" strokeOpacity="0.3" />
         <motion.circle
           cx="100" cy="100" r={r} fill="none"
           stroke="url(#scoreGrad)"
@@ -133,49 +146,102 @@ const ScoreGauge = ({ score }: { score: number }) => {
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+        />
+        {/* Glow overlay */}
+        <motion.circle
+          cx="100" cy="100" r={r} fill="none"
+          stroke="url(#scoreGrad)"
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+          filter="url(#glow)"
+          opacity={0.5}
         />
         <defs>
           <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
         </defs>
       </svg>
       <div className="absolute text-center">
-        <motion.div className="text-5xl md:text-6xl font-black tabular-nums font-heading" style={{ color }}>
+        <motion.div
+          className="text-5xl md:text-6xl font-black tabular-nums font-heading"
+          style={{ color }}
+          initial={{ scale: 0.5 }}
+          animate={{ scale: [0.5, 1.1, 1] }}
+          transition={{ duration: 0.6, delay: 2, ease: [0.34, 1.56, 0.64, 1] }}
+        >
           {rounded}
         </motion.div>
-        <div className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-[0.2em]">out of 100</div>
+        <motion.div
+          className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-[0.2em]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5 }}
+        >
+          out of 100
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
-/* ─── Viral Meter ─── */
+/* ─── Viral Meter (cinematic) ─── */
 const ViralMeter = ({ score, danceability, valence }: { score: number; danceability?: number; valence?: number }) => {
   const viral = Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)));
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center justify-between mb-3">
+    <div className="rounded-xl border border-border bg-card p-5 relative overflow-hidden">
+      {/* Ambient glow */}
+      <motion.div
+        className="absolute top-0 right-0 w-32 h-32 rounded-full bg-accent/10 blur-[60px]"
+        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+      />
+      <div className="flex items-center justify-between mb-3 relative z-10">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center">
+          <motion.div
+            className="h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center"
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+          >
             <TrendingUp className="h-4 w-4 text-accent" />
-          </div>
+          </motion.div>
           <div>
             <span className="text-sm font-bold text-foreground uppercase tracking-wider">Viral Potential</span>
             <p className="text-[10px] text-muted-foreground">Cross-platform algorithm analysis</p>
           </div>
         </div>
-        <span className="text-2xl font-black text-accent tabular-nums">{viral}%</span>
+        <motion.span
+          className="text-2xl font-black text-accent tabular-nums"
+          initial={{ scale: 0 }}
+          animate={{ scale: [0, 1.2, 1] }}
+          transition={{ duration: 0.6, delay: 1 }}
+        >
+          {viral}%
+        </motion.span>
       </div>
-      <div className="relative h-2.5 rounded-full bg-muted overflow-hidden">
+      <div className="relative h-3 rounded-full bg-muted overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300"
+          className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300 relative"
           initial={{ width: 0 }}
           animate={{ width: `${viral}%` }}
-          transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-        />
+          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+        >
+          <motion.div
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-accent shadow-[0_0_12px] shadow-accent/60"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+        </motion.div>
       </div>
       <div className="flex justify-between mt-2 text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
         <span>Low</span><span>Moderate</span><span>High</span><span>Viral</span>
@@ -190,17 +256,37 @@ const ViralMeter = ({ score, danceability, valence }: { score: number; danceabil
   );
 };
 
-/* ─── Animated Bar ─── */
+/* ─── Animated Bar (with glow) ─── */
 const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; value: number; max: number; color: string; sublabel?: string }) => {
   const pct = Math.min((value / max) * 100, 100);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5" ref={ref}>
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">{label}</span>
-        <span className="text-sm font-bold tabular-nums" style={{ color }}>{value}/{max}</span>
+        <motion.span
+          className="text-sm font-bold tabular-nums"
+          style={{ color }}
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+        >
+          {value}/{max}
+        </motion.span>
       </div>
-      <div className="h-2 rounded-full bg-muted overflow-hidden">
-        <motion.div className="h-full rounded-full" style={{ backgroundColor: color }} initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 1.2, ease: "easeOut" }} />
+      <div className="h-2.5 rounded-full bg-muted overflow-hidden relative">
+        <motion.div
+          className="h-full rounded-full relative"
+          style={{ backgroundColor: color }}
+          initial={{ width: 0 }}
+          animate={isInView ? { width: `${pct}%` } : { width: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <motion.div
+            className="absolute inset-0 rounded-full"
+            style={{ boxShadow: `0 0 12px ${color}40` }}
+          />
+        </motion.div>
       </div>
       {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
     </div>
@@ -870,8 +956,10 @@ const Results = () => {
   ].filter((f) => f.value);
 
   return (
-    <div className="min-h-screen px-4 pt-28 pb-16 bg-background">
-      <div className="container max-w-4xl space-y-10">
+    <div className="min-h-screen px-4 pt-28 pb-16 bg-background relative overflow-hidden">
+      {/* Cinematic background particles */}
+      <ParticleField count={30} color="hsl(258, 90%, 66%)" speed={0.3} />
+      <div className="container max-w-4xl space-y-10 relative z-10">
 
         {/* ═══ 1. HERO: SCORE + VERDICT ═══ */}
         <Section delay={0} className="text-center">

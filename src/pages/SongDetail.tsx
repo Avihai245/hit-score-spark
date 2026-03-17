@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { ParticleField } from '@/components/ParticleField';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -42,15 +43,34 @@ const GENRE_GRADIENTS: Record<string, string> = {
 const getGenreGradient = (genre?: string) =>
   genre && GENRE_GRADIENTS[genre] ? GENRE_GRADIENTS[genre] : 'from-violet-500 to-pink-500';
 
-/* ─── Mini Score Gauge ─── */
+/* ─── Mini Score Gauge (cinematic) ─── */
 const MiniGauge = ({ score }: { score: number }) => {
   const r = 60;
   const circ = 2 * Math.PI * r;
   const color = scoreColor(score);
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v));
+
+  useEffect(() => {
+    const ctrl = animate(count, score, { duration: 2, ease: [0.16, 1, 0.3, 1] });
+    return ctrl.stop;
+  }, [count, score]);
+
   return (
-    <div className="relative flex items-center justify-center">
+    <motion.div
+      className="relative flex items-center justify-center"
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
+    >
+      <motion.div
+        className="absolute w-32 h-32 rounded-full blur-[50px] opacity-20"
+        style={{ backgroundColor: color }}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+      />
       <svg width="160" height="160" className="-rotate-90">
-        <circle cx="80" cy="80" r={r} fill="none" stroke="hsl(0 0% 10%)" strokeWidth="10" />
+        <circle cx="80" cy="80" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="8" strokeOpacity="0.3" />
         <motion.circle
           cx="80" cy="80" r={r} fill="none"
           stroke={color}
@@ -59,14 +79,21 @@ const MiniGauge = ({ score }: { score: number }) => {
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ - (score / 100) * circ }}
-          transition={{ duration: 1.5, ease: 'easeOut' }}
+          transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+          filter="url(#miniGlow)"
         />
+        <defs>
+          <filter id="miniGlow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
       </svg>
       <div className="absolute text-center">
-        <p className="text-4xl font-black" style={{ color }}>{score}</p>
-        <p className="text-xs text-white/40">/ 100</p>
+        <motion.p className="text-4xl font-black" style={{ color }}>{rounded}</motion.p>
+        <p className="text-xs text-muted-foreground">/ 100</p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -193,23 +220,24 @@ export default function SongDetail() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-28 pb-32">
-      <div className="container max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-background text-foreground pt-28 pb-32 relative overflow-hidden">
+      <ParticleField count={25} color="hsl(258, 90%, 66%)" speed={0.3} />
+      <div className="container max-w-4xl mx-auto px-4 relative z-10">
 
         {/* Back + breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-white/40 mb-8">
-          <button onClick={() => navigate('/library')} className="flex items-center gap-1.5 hover:text-white transition-colors">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
+          <button onClick={() => navigate('/library')} className="flex items-center gap-1.5 hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" /> Library
           </button>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-white/60">{analysis.title || 'Song Detail'}</span>
+          <span className="text-foreground/60">{analysis.title || 'Song Detail'}</span>
         </div>
 
         {/* Hero */}
         <div className="flex flex-col md:flex-row gap-8 mb-12">
           {/* Artwork */}
-          <div className={`w-40 h-40 rounded-3xl bg-gradient-to-br ${gradient} flex-shrink-0 flex items-center justify-center border border-white/10`}>
-            <Music className="h-16 w-16 text-white/60" />
+          <div className={`w-40 h-40 rounded-3xl bg-gradient-to-br ${gradient} flex-shrink-0 flex items-center justify-center border border-border`}>
+            <Music className="h-16 w-16 text-primary-foreground/60" />
           </div>
 
           {/* Info */}
@@ -476,27 +504,61 @@ export default function SongDetail() {
         )}
 
         {/* Create Remix CTA */}
-        <div id="remix-section" className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 text-center mt-8">
-          <div className="text-4xl mb-4">🎧</div>
-          <h2 className="text-2xl font-black text-white mb-2">Create AI Remix</h2>
-          <p className="text-white/50 mb-6 max-w-md mx-auto">
+        <motion.div
+          id="remix-section"
+          className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 text-center mt-8 relative overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          {/* Animated light sweep */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
+          />
+          <motion.div
+            className="text-4xl mb-4"
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            🎧
+          </motion.div>
+          <h2 className="text-2xl font-black text-foreground mb-2 relative z-10">Create AI Remix</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto relative z-10">
             {canRemix
               ? 'Upload your audio file to generate an AI-enhanced version with stronger hook and more viral energy.'
               : 'Upgrade to Pro to unlock AI remixes and make your song go viral.'}
           </p>
           {canRemix ? (
-            <Button asChild className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8">
-              <Link to="/analyze">
-                <Sparkles className="h-5 w-5" />
-                Upload & Remix This Song
-              </Link>
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button asChild className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-accent/40">
+                <Link to="/analyze">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                  />
+                  <Sparkles className="h-5 w-5 relative z-10" />
+                  <span className="relative z-10">Upload & Remix This Song</span>
+                </Link>
+              </Button>
+            </motion.div>
           ) : (
-            <Button asChild className="bg-gradient-to-r from-primary to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8">
-              <Link to="/billing">Upgrade to Pro — Unlock Remixes ✨</Link>
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button asChild className="bg-gradient-to-r from-primary to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-primary/40">
+                <Link to="/billing">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                  />
+                  <span className="relative z-10">Upgrade to Pro — Unlock Remixes ✨</span>
+                </Link>
+              </Button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
       </div>
     </div>
