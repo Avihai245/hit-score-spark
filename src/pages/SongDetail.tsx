@@ -153,7 +153,7 @@ export default function SongDetail() {
 
   if (loading || (!analysis && pageLoading)) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 text-primary animate-spin" />
       </div>
     );
