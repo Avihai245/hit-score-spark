@@ -21,13 +21,13 @@ const goals = [
 ];
 
 const analysisSteps = [
-  { label: "Uploading audio file", key: "upload", icon: "📤" },
-  { label: "Extracting audio patterns", key: "listen", icon: "🎧" },
-  { label: "Mapping structure against top-performing tracks", key: "spotify", icon: "🟢" },
-  { label: "Analyzing hook timing & retention signals", key: "apple", icon: "🍎" },
-  { label: "Matching against global benchmarks", key: "compare", icon: "📊" },
-  { label: "Evaluating replay potential & skip risk", key: "audio", icon: "🔊" },
-  { label: "Finalizing data-driven insights", key: "report", icon: "📋" },
+  { label: "Uploading & reading audio file", key: "upload", platform: null, color: "text-muted-foreground" },
+  { label: "Scanning Spotify hit patterns & playlist data", key: "spotify", platform: "spotify", color: "text-emerald-400" },
+  { label: "Analyzing Apple Music chart performance", key: "apple", platform: "apple", color: "text-pink-400" },
+  { label: "Cross-referencing YouTube & TikTok viral trends", key: "compare", platform: "youtube", color: "text-red-400" },
+  { label: "Mapping hook timing & skip-risk signals", key: "audio", platform: null, color: "text-accent" },
+  { label: "Benchmarking against 500K+ top-performing tracks", key: "benchmark", platform: null, color: "text-primary" },
+  { label: "Generating your personalized hit report", key: "report", platform: null, color: "text-foreground" },
 ];
 
 /* ─── Live Data Feed Messages ─── */
