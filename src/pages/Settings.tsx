@@ -176,7 +176,7 @@ export default function Settings() {
                       plan === 'studio' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
                       'bg-blue-500/20 text-blue-400 border-blue-500/30'
                     }`}>
-                      {plan === 'free' ? 'Free' : plan === 'payg' ? 'Pay As You Go' : plan === 'pro' ? '$19/mo' : '$49/mo'}
+                      {plan === 'free' ? 'Free' : plan === 'pro' ? '$19/mo' : '$29/mo'}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-4">
