@@ -19,13 +19,13 @@ const goals = [
 ];
 
 const analysisSteps = [
-  { label: "Uploading your song", key: "upload", icon: "📤" },
-  { label: "AI listening to your track", key: "listen", icon: "🎧" },
-  { label: "Scanning Spotify catalog data", key: "spotify", icon: "🟢" },
-  { label: "Scanning Apple Music trends", key: "apple", icon: "🍎" },
-  { label: "Cross-referencing 500K+ hit songs", key: "compare", icon: "📊" },
-  { label: "Analyzing audio frequencies & BPM", key: "audio", icon: "🔊" },
-  { label: "Generating your viral report", key: "report", icon: "📋" },
+  { label: "Uploading audio file", key: "upload", icon: "📤" },
+  { label: "Extracting audio patterns", key: "listen", icon: "🎧" },
+  { label: "Mapping structure against top-performing tracks", key: "spotify", icon: "🟢" },
+  { label: "Analyzing hook timing & retention signals", key: "apple", icon: "🍎" },
+  { label: "Matching against global benchmarks", key: "compare", icon: "📊" },
+  { label: "Evaluating replay potential & skip risk", key: "audio", icon: "🔊" },
+  { label: "Finalizing data-driven insights", key: "report", icon: "📋" },
 ];
 
 /* ─── Live Data Feed Messages ─── */
