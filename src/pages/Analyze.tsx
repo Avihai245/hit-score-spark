@@ -641,9 +641,9 @@ const Analyze = () => {
               <Button
                 type="submit"
                 disabled={!file}
-                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40"
+                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40 gap-2"
               >
-                Analyze Now →
+                <Zap className="h-5 w-5" /> Analyze Now →
               </Button>
 
               <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
