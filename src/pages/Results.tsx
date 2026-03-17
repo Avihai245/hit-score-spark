@@ -350,15 +350,15 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
   }, [feedLines]);
 
   const PlatformIcon = ({ type }: { type: string }) => {
-    if (type === "spotify") return <SpotifyIcon />;
-    if (type === "apple") return <AppleMusicIcon />;
-    if (type === "tiktok") return <TikTokIcon />;
-    if (type === "youtube") return <YouTubeIcon />;
+    if (type === "spotify") return <SpotifyLogo className="h-4 w-4" />;
+    if (type === "apple") return <AppleMusicLogo className="h-4 w-4" />;
+    if (type === "tiktok") return <TikTokLogo className="h-4 w-4" />;
+    if (type === "youtube") return <YouTubeLogo className="h-4 w-4" />;
     if (type === "upload") return <Upload className="h-4 w-4 text-accent" />;
     if (type === "waveform") return <Activity className="h-4 w-4 text-primary" />;
     if (type === "ai") return <Sparkles className="h-4 w-4 text-primary" />;
     if (type === "mix") return <Headphones className="h-4 w-4 text-accent" />;
-    return <CheckCircle className="h-4 w-4 text-emerald-400" />;
+    return <CheckCircle2 className="h-4 w-4 text-emerald-400" />;
   };
 
   return (
