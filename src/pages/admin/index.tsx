@@ -496,5 +496,3 @@ export default function AdminDashboard() {
     </AdminGuard>
   );
 }
-  );
-}
