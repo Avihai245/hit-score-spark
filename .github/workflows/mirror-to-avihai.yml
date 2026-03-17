@@ -1,0 +1,20 @@
+name: Mirror to Avihai245
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Avihai245/hit-score-spark
+        run: |
+          git remote add avihai "https://x-access-token:${{ secrets.SYNC_TO_AVIHAI_TOKEN }}@github.com/Avihai245/hit-score-spark.git"
+          git push avihai main --force
+          echo "✅ Synced to Avihai245/hit-score-spark"
