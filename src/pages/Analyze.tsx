@@ -410,9 +410,9 @@ const Analyze = () => {
               animate={{ opacity: [1, 0.7, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
             >
-              Running global pattern analysis...
-            </motion.p>
-            <p className="text-xs text-muted-foreground mt-1">Comparing against thousands of high-performing tracks</p>
+               Scanning global hit data...
+             </motion.p>
+             <p className="text-xs text-muted-foreground mt-1">Pulling real patterns from Spotify, Apple Music & YouTube charts</p>
             <div className="flex items-center justify-center gap-2 mt-2">
               <motion.div
                 className="w-2 h-2 rounded-full bg-emerald-400"
