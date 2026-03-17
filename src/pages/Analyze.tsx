@@ -331,7 +331,7 @@ const Analyze = () => {
           const data = await res.json();
 
           if (data.status === "complete") {
-            markStep(3);
+            markStep(6); // Report generated
             // Save to Supabase if logged in
             let analysisId: string | null = null;
             if (user) {
