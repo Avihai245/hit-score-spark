@@ -1002,7 +1002,7 @@ const Results = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-32 bg-background relative">
+    <div className="min-h-screen px-4 pt-28 pb-32 bg-background relative">
       {/* Sticky Mini Nav */}
       <StickyNav activeSection={activeSection} />
 
