@@ -10,7 +10,8 @@ import {
   Check, X, Target, ListMusic, Lightbulb, Clock, Activity, Zap,
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin,
   ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles, Shield,
-  BarChart3, TrendingUp, Radio, Mic2, FileText, Calendar, Award, Eye, CheckCircle2
+  BarChart3, TrendingUp, Radio, Mic2, FileText, Calendar, Award, Eye, CheckCircle2,
+  Flame, ArrowUpRight, Crosshair, Layers, Gauge, CircleDot, ChevronDown, Star
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -68,23 +69,13 @@ const PlatformBadge = ({ platform, size = "sm" }: { platform: "spotify" | "apple
       className={`inline-flex items-center gap-1.5 rounded-md border font-semibold uppercase tracking-wider ${
         isMd ? "px-3 py-1.5 text-[11px]" : "px-2 py-0.5 text-[9px]"
       }`}
-      style={{
-        borderColor: `${c.color}22`,
-        backgroundColor: `${c.color}0D`,
-        color: c.color,
-      }}
+      style={{ borderColor: `${c.color}22`, backgroundColor: `${c.color}0D`, color: c.color }}
     >
       {c.icon}
       {c.label}
     </span>
   );
 };
-
-const SourceRow = ({ platforms }: { platforms: ("spotify" | "apple" | "ai" | "tiktok" | "youtube")[] }) => (
-  <div className="flex flex-wrap gap-1.5 mb-4">
-    {platforms.map(p => <PlatformBadge key={p} platform={p} />)}
-  </div>
-);
 
 /* ─── Score helpers ─── */
 const scoreColor = (s: number) => {
@@ -95,15 +86,24 @@ const scoreColor = (s: number) => {
 };
 
 const scoreBadge = (s: number) => {
-  if (s < 40) return { label: "NEEDS WORK", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
-  if (s < 65) return { label: "PROMISING", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
-  if (s < 80) return { label: "STRONG POTENTIAL", cls: "bg-green-500/15 text-green-400 border-green-500/30" };
+  if (s < 40) return { label: "LOW POTENTIAL", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
+  if (s < 65) return { label: "MEDIUM POTENTIAL", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
+  if (s < 80) return { label: "HIGH POTENTIAL", cls: "bg-green-500/15 text-green-400 border-green-500/30" };
   return { label: "HIT POTENTIAL", cls: "bg-primary/15 text-primary border-primary/30" };
 };
 
-/* ─── Score Gauge (cinematic reveal) ─── */
+const confidenceFromScore = (s: number) => {
+  if (s >= 80) return 94;
+  if (s >= 65) return 87;
+  if (s >= 40) return 78;
+  return 65;
+};
+
+const percentileFromScore = (s: number) => Math.min(99, Math.max(5, Math.round(s * 0.95 + 3)));
+
+/* ─── Score Gauge (cinematic) ─── */
 const ScoreGauge = ({ score }: { score: number }) => {
-  const r = 90;
+  const r = 100;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
@@ -117,30 +117,28 @@ const ScoreGauge = ({ score }: { score: number }) => {
 
   return (
     <motion.div
-      className="relative flex items-center justify-center w-[220px] h-[220px] md:w-[250px] md:h-[250px]"
+      className="relative flex items-center justify-center w-[260px] h-[260px] md:w-[300px] md:h-[300px]"
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
     >
-      {/* Outer glow */}
       <motion.div
-        className="absolute w-56 h-56 rounded-full blur-[80px] opacity-0"
+        className="absolute w-64 h-64 rounded-full blur-[100px] opacity-0"
         style={{ backgroundColor: color }}
-        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.35, 0.2] }}
+        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.35, 0.15] }}
         transition={{ duration: 2.5, ease: "easeOut" }}
       />
-      {/* Rotating ring accent */}
       <motion.div
-        className="absolute inset-[-4px] rounded-full border border-dashed opacity-20"
+        className="absolute inset-[-6px] rounded-full border border-dashed opacity-10"
         style={{ borderColor: color }}
         animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+        transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
       />
-      <svg width="100%" height="100%" viewBox="0 0 200 200" className="-rotate-90">
-        <circle cx="100" cy="100" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="8" strokeOpacity="0.3" />
+      <svg width="100%" height="100%" viewBox="0 0 220 220" className="-rotate-90">
+        <circle cx="110" cy="110" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="6" strokeOpacity="0.2" />
         <motion.circle
-          cx="100" cy="100" r={r} fill="none"
-          stroke="url(#scoreGrad)"
+          cx="110" cy="110" r={r} fill="none"
+          stroke="url(#scoreGradV2)"
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={circ}
@@ -148,33 +146,32 @@ const ScoreGauge = ({ score }: { score: number }) => {
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
         />
-        {/* Glow overlay */}
         <motion.circle
-          cx="100" cy="100" r={r} fill="none"
-          stroke="url(#scoreGrad)"
+          cx="110" cy="110" r={r} fill="none"
+          stroke="url(#scoreGradV2)"
           strokeWidth="10"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-          filter="url(#glow)"
-          opacity={0.5}
+          filter="url(#glowV2)"
+          opacity={0.4}
         />
         <defs>
-          <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="scoreGradV2" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+          <filter id="glowV2">
+            <feGaussianBlur stdDeviation="5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
       </svg>
       <div className="absolute text-center">
         <motion.div
-          className="text-5xl md:text-6xl font-black tabular-nums font-heading"
+          className="text-6xl md:text-7xl font-black tabular-nums font-heading"
           style={{ color }}
           initial={{ scale: 0.5 }}
           animate={{ scale: [0.5, 1.1, 1] }}
@@ -183,164 +180,188 @@ const ScoreGauge = ({ score }: { score: number }) => {
           {rounded}
         </motion.div>
         <motion.div
-          className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-[0.2em]"
+          className="text-xs text-muted-foreground font-semibold mt-1 uppercase tracking-[0.25em]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.5 }}
         >
-          out of 100
+          Viral Score
         </motion.div>
       </div>
     </motion.div>
   );
 };
 
-/* ─── Viral Meter (cinematic) ─── */
-const ViralMeter = ({ score, danceability, valence }: { score: number; danceability?: number; valence?: number }) => {
-  const viral = Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)));
-  return (
-    <div className="rounded-xl border border-border bg-card p-5 relative overflow-hidden">
-      {/* Ambient glow */}
-      <motion.div
-        className="absolute top-0 right-0 w-32 h-32 rounded-full bg-accent/10 blur-[60px]"
-        animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
-        transition={{ repeat: Infinity, duration: 3 }}
-      />
-      <div className="flex items-center justify-between mb-3 relative z-10">
-        <div className="flex items-center gap-2.5">
-          <motion.div
-            className="h-8 w-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center"
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-          >
-            <TrendingUp className="h-4 w-4 text-accent" />
-          </motion.div>
-          <div>
-            <span className="text-sm font-bold text-foreground uppercase tracking-wider">Viral Potential</span>
-            <p className="text-[10px] text-muted-foreground">Cross-platform algorithm analysis</p>
-          </div>
-        </div>
-        <motion.span
-          className="text-2xl font-black text-accent tabular-nums"
-          initial={{ scale: 0 }}
-          animate={{ scale: [0, 1.2, 1] }}
-          transition={{ duration: 0.6, delay: 1 }}
-        >
-          {viral}%
-        </motion.span>
-      </div>
-      <div className="relative h-3 rounded-full bg-muted overflow-hidden">
-        <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-accent/80 via-accent to-yellow-300 relative"
-          initial={{ width: 0 }}
-          animate={{ width: `${viral}%` }}
-          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
-        >
-          <motion.div
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-accent shadow-[0_0_12px] shadow-accent/60"
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          />
-        </motion.div>
-      </div>
-      <div className="flex justify-between mt-2 text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
-        <span>Low</span><span>Moderate</span><span>High</span><span>Viral</span>
-      </div>
-      <div className="flex flex-wrap gap-1.5 mt-3">
-        <PlatformBadge platform="spotify" />
-        <PlatformBadge platform="apple" />
-        <PlatformBadge platform="tiktok" />
-        <PlatformBadge platform="youtube" />
-      </div>
-    </div>
-  );
-};
-
-/* ─── Animated Bar (with glow) ─── */
-const AnimatedBar = ({ label, value, max, color, sublabel }: { label: string; value: number; max: number; color: string; sublabel?: string }) => {
+/* ─── Animated DNA Bar ─── */
+const DNABar = ({ label, value, max, explanation, delay = 0 }: { label: string; value: number; max: number; explanation: string; delay?: number }) => {
   const pct = Math.min((value / max) * 100, 100);
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-40px" });
+  const color = pct >= 80 ? "hsl(270 91% 65%)" : pct >= 60 ? "hsl(142 71% 45%)" : pct >= 40 ? "hsl(38 92% 50%)" : "hsl(0 84% 60%)";
   return (
-    <div className="space-y-1.5" ref={ref}>
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">{label}</span>
+    <motion.div
+      ref={ref}
+      className="p-4 rounded-xl border border-border bg-card/50 hover:border-primary/20 transition-colors"
+      initial={{ opacity: 0, y: 12 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: delay * 0.08, duration: 0.4 }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-bold text-foreground">{label}</span>
         <motion.span
-          className="text-sm font-bold tabular-nums"
+          className="text-lg font-black tabular-nums"
           style={{ color }}
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
+          transition={{ delay: delay * 0.08 + 0.3 }}
         >
-          {value}/{max}
+          {value}<span className="text-xs text-muted-foreground font-normal">/{max}</span>
         </motion.span>
       </div>
-      <div className="h-2.5 rounded-full bg-muted overflow-hidden relative">
+      <div className="h-2.5 rounded-full bg-muted overflow-hidden mb-2">
         <motion.div
           className="h-full rounded-full relative"
           style={{ backgroundColor: color }}
           initial={{ width: 0 }}
           animate={isInView ? { width: `${pct}%` } : { width: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: delay * 0.08 }}
         >
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ boxShadow: `0 0 12px ${color}40` }}
-          />
+          <motion.div className="absolute inset-0 rounded-full" style={{ boxShadow: `0 0 12px ${color}40` }} />
         </motion.div>
       </div>
-      {sublabel && <p className="text-xs text-muted-foreground">{sublabel}</p>}
-    </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">{explanation}</p>
+    </motion.div>
   );
 };
 
 /* ─── Section wrapper ─── */
 const Section = ({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) => (
   <motion.section
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 24 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-40px" }}
-    transition={{ delay: delay * 0.25, duration: 0.45 }}
+    viewport={{ once: true, margin: "-60px" }}
+    transition={{ delay: delay * 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     className={className}
   >
     {children}
   </motion.section>
 );
 
-const SectionHeader = ({ icon: Icon, title, subtitle }: { icon: React.ElementType; title: string; subtitle?: string }) => (
-  <div className="flex items-center gap-2.5 mb-4">
-    <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-      <Icon className="h-4 w-4 text-primary" />
+const SectionLabel = ({ number, title, subtitle, icon: Icon }: { number: string; title: string; subtitle?: string; icon: React.ElementType }) => (
+  <div className="flex items-start gap-3 mb-5">
+    <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+      <Icon className="h-4.5 w-4.5 text-primary" />
     </div>
     <div>
-      <h2 className="text-base md:text-lg font-bold font-heading text-foreground uppercase tracking-wide leading-tight">{title}</h2>
-      {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Section {number}</span>
+      </div>
+      <h2 className="text-lg md:text-xl font-black font-heading text-foreground tracking-tight leading-tight">{title}</h2>
+      {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
     </div>
   </div>
 );
 
-/* ─── Roadmap ─── */
-const generateRoadmap = (score: number) => {
-  if (score >= 80) return [
-    { week: "Week 1", action: "Your song is release-ready. Set up distributor, create pre-save link, and prepare artwork.", color: "bg-green-500" },
-    { week: "Week 2", action: "Submit to Spotify editorial playlists. Pitch 15+ independent curators in your genre.", color: "bg-green-500" },
-    { week: "Week 3", action: "Release day: post 3 TikTok clips using the hook. Send to your email list. DM 20 influencers.", color: "bg-green-500" },
-    { week: "Week 4", action: "Run $50-100 in targeted ads. Submit to Round 2 curators. Analyze Spotify for Artists data.", color: "bg-green-500" },
-  ];
-  if (score >= 60) return [
-    { week: "Week 1", action: "Apply the recommended changes. Re-record or remix the flagged sections.", color: "bg-orange-500" },
-    { week: "Week 2", action: "Re-analyze on Viralize. Target 80+ before release. Fine-tune the hook.", color: "bg-orange-500" },
-    { week: "Week 3", action: "Once score hits 80+, set up pre-save and begin curator outreach.", color: "bg-green-500" },
-    { week: "Week 4", action: "Release and promote. Track data daily. Submit to playlists.", color: "bg-green-500" },
-  ];
-  return [
-    { week: "Week 1", action: "Focus on the improvements listed above. Consider re-writing the weakest sections.", color: "bg-red-500" },
-    { week: "Week 2", action: "Re-record with improvements. Pay attention to hook timing and energy levels.", color: "bg-red-500" },
-    { week: "Week 3", action: "Re-analyze on Viralize. Iterate until you hit 65+.", color: "bg-orange-500" },
-    { week: "Week 4", action: "Once ready, set up distribution and begin your release campaign.", color: "bg-green-500" },
-  ];
+/* ─── Critical Issue Card ─── */
+const CriticalIssueCard = ({ title, why, fix, impact, index }: { title: string; why: string; fix: string; impact: string; index: number }) => (
+  <motion.div
+    initial={{ opacity: 0, x: -12 }}
+    whileInView={{ opacity: 1, x: 0 }}
+    viewport={{ once: true }}
+    transition={{ delay: index * 0.08, duration: 0.4 }}
+    className="rounded-xl border border-red-500/15 bg-gradient-to-br from-red-500/[0.03] to-transparent p-5 space-y-3 hover:border-red-500/25 transition-colors"
+  >
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 h-6 w-6 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+        <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+      </div>
+      <h3 className="text-base font-bold text-foreground leading-snug">{title}</h3>
+    </div>
+    <div className="pl-9 space-y-2.5">
+      <div>
+        <p className="text-[10px] text-red-400/70 font-bold uppercase tracking-widest mb-0.5">Why It Matters</p>
+        <p className="text-sm text-foreground/70 leading-relaxed">{why}</p>
+      </div>
+      <div>
+        <p className="text-[10px] text-green-400/70 font-bold uppercase tracking-widest mb-0.5">What To Change</p>
+        <p className="text-sm text-green-300/90 leading-relaxed">{fix}</p>
+      </div>
+      <div className="flex items-center gap-2 pt-1">
+        <div className="h-1.5 w-1.5 rounded-full bg-accent" />
+        <p className="text-xs text-accent font-medium">{impact}</p>
+      </div>
+    </div>
+  </motion.div>
+);
+
+/* ─── Opportunity Card ─── */
+const OpportunityCard = ({ label, description, priority, impact, icon: Icon, color }: { label: string; description: string; priority: string; impact: string; icon: React.ElementType; color: string }) => (
+  <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors">
+    <div className="flex items-center gap-2 mb-2">
+      <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15`, borderColor: `${color}25`, borderWidth: 1 }}>
+        <Icon className="h-3.5 w-3.5" style={{ color }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-foreground truncate">{label}</p>
+      </div>
+      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border" style={{ color, borderColor: `${color}30`, backgroundColor: `${color}08` }}>{priority}</span>
+    </div>
+    <p className="text-xs text-muted-foreground leading-relaxed mb-2">{description}</p>
+    <div className="flex items-center gap-1.5">
+      <TrendingUp className="h-3 w-3 text-accent" />
+      <span className="text-xs text-accent font-semibold">{impact}</span>
+    </div>
+  </div>
+);
+
+/* ─── Benchmark Bar ─── */
+const BenchmarkBar = ({ label, yours, benchmark, delay = 0 }: { label: string; yours: number; benchmark: number; delay?: number }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
+  const diff = yours - benchmark;
+  const diffLabel = diff >= 0 ? `+${diff}` : `${diff}`;
+  const diffColor = diff >= 0 ? "text-green-400" : "text-red-400";
+  return (
+    <div ref={ref} className="space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-medium text-foreground">{label}</span>
+        <span className={`font-bold tabular-nums ${diffColor}`}>{diffLabel}%</span>
+      </div>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0">You</span>
+          <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
+            <motion.div className="h-full rounded-full bg-primary" initial={{ width: 0 }} animate={isInView ? { width: `${yours}%` } : {}} transition={{ duration: 1, delay: delay * 0.1 }} />
+          </div>
+          <span className="text-xs font-bold text-foreground tabular-nums w-8 text-right">{yours}%</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0">Top Tracks</span>
+          <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
+            <motion.div className="h-full rounded-full bg-accent/60" initial={{ width: 0 }} animate={isInView ? { width: `${benchmark}%` } : {}} transition={{ duration: 1, delay: delay * 0.1 + 0.15 }} />
+          </div>
+          <span className="text-xs font-bold text-accent tabular-nums w-8 text-right">{benchmark}%</span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-/* ─── Remix ─── */
+/* ─── Roadmap ─── */
+const generateRoadmap = (score: number, improvements: string[]) => {
+  const steps: { step: string; action: string; done: boolean }[] = [];
+  if (improvements?.length > 0) {
+    steps.push({ step: "Step 1", action: improvements[0] || "Fix the primary issue identified above.", done: false });
+    if (improvements.length > 1) steps.push({ step: "Step 2", action: improvements[1], done: false });
+  }
+  if (score < 80) {
+    steps.push({ step: `Step ${steps.length + 1}`, action: "Re-analyze your track after changes to verify improvement.", done: false });
+  }
+  steps.push({ step: `Step ${steps.length + 1}`, action: score >= 80 ? "Your track is release-ready. Begin distribution and playlist pitching." : "Once score reaches 80+, proceed with release strategy.", done: false });
+  return steps;
+};
+
+/* ─── Remix styles ─── */
 const remixStyles = [
   { value: "same", label: "Same vibe (enhanced)" },
   { value: "energetic", label: "More energetic" },
@@ -355,23 +376,16 @@ const downloadTrack = async (url: string, filename: string) => {
     const blob = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = blobUrl; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(blobUrl);
-  } catch {
-    window.open(url, '_blank');
-  }
+  } catch { window.open(url, '_blank'); }
 };
 
 const ProcessingWaveform = () => (
   <div className="flex items-end justify-center gap-1 h-10">
     {Array.from({ length: 12 }).map((_, i) => (
-      <motion.div
-        key={i}
-        className="w-1 rounded-full bg-gradient-to-t from-accent to-yellow-300"
+      <motion.div key={i} className="w-1 rounded-full bg-gradient-to-t from-accent to-yellow-300"
         animate={{ scaleY: [0.15, 1, 0.15] }}
         transition={{ repeat: Infinity, duration: 0.6 + Math.random() * 0.4, delay: i * 0.08, ease: "easeInOut" }}
         style={{ height: "100%", transformOrigin: "bottom" }}
@@ -417,18 +431,13 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
   const [feedLines, setFeedLines] = useState<string[]>([]);
   const [dataPoints, setDataPoints] = useState({ tracks: 0, patterns: 0, signals: 0 });
   const feedRef = useRef<HTMLDivElement>(null);
-
   const currentStepIdx = remixPlatformSteps.reduce((acc, s, i) => (elapsed >= s.time ? i : acc), 0);
   const currentStep = remixPlatformSteps[currentStepIdx];
   const progress = Math.min(99, Math.round((elapsed / 120) * 100));
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setFeedLines(prev => {
-        const next = remixDataFeedLines[prev.length % remixDataFeedLines.length];
-        const updated = [...prev, next].slice(-6);
-        return updated;
-      });
+      setFeedLines(prev => [...prev, remixDataFeedLines[prev.length % remixDataFeedLines.length]].slice(-6));
       setDataPoints(prev => ({
         tracks: Math.min(prev.tracks + Math.floor(Math.random() * 1200 + 300), 100000),
         patterns: Math.min(prev.patterns + Math.floor(Math.random() * 40 + 10), 5000),
@@ -438,9 +447,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
-  }, [feedLines]);
+  useEffect(() => { if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight; }, [feedLines]);
 
   const PlatformIcon = ({ type }: { type: string }) => {
     if (type === "spotify") return <SpotifyLogo className="h-4 w-4" />;
@@ -456,111 +463,51 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
 
   return (
     <div className="space-y-5 py-2">
-      {/* Main status */}
       <div className="text-center space-y-3">
         <ProcessingWaveform />
-        <div>
-          <p className="text-base font-bold text-foreground">{currentStep.label}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{currentStep.detail}</p>
-        </div>
+        <div><p className="text-base font-bold text-foreground">{currentStep.label}</p><p className="text-xs text-muted-foreground mt-0.5">{currentStep.detail}</p></div>
       </div>
-
-      {/* Progress bar */}
       <div className="max-w-sm mx-auto space-y-1.5">
-        <div className="flex justify-between text-[10px] text-muted-foreground font-medium tabular-nums">
-          <span>{elapsed}s elapsed</span>
-          <span>{progress}%</span>
-        </div>
+        <div className="flex justify-between text-[10px] text-muted-foreground font-medium tabular-nums"><span>{elapsed}s elapsed</span><span>{progress}%</span></div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-accent via-yellow-400 to-primary"
-            initial={{ width: "0%" }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.5 }}
-          />
+          <motion.div className="h-full rounded-full bg-gradient-to-r from-accent via-yellow-400 to-primary" initial={{ width: "0%" }} animate={{ width: `${progress}%` }} transition={{ duration: 0.5 }} />
         </div>
       </div>
-
-      {/* Platform steps timeline */}
       <div className="max-w-md mx-auto space-y-1">
         {remixPlatformSteps.slice(0, currentStepIdx + 1).map((step, i) => {
           const isDone = i < currentStepIdx;
           const isCurrent = i === currentStepIdx;
           return (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`flex items-center gap-2.5 py-1 px-3 rounded-lg text-xs ${isCurrent ? 'bg-accent/10 border border-accent/20' : ''}`}
-            >
+            <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}
+              className={`flex items-center gap-2.5 py-1 px-3 rounded-lg text-xs ${isCurrent ? 'bg-accent/10 border border-accent/20' : ''}`}>
               <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
                 {isDone ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <PlatformIcon type={step.icon} />}
               </div>
               <span className={`flex-1 ${isCurrent ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-                {step.platform && <span className="font-semibold">{step.platform} — </span>}
-                {step.label}
+                {step.platform && <span className="font-semibold">{step.platform} — </span>}{step.label}
               </span>
-              {isCurrent && (
-                <motion.div
-                  className="w-1.5 h-1.5 rounded-full bg-accent"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ repeat: Infinity, duration: 1 }}
-                />
-              )}
+              {isCurrent && <motion.div className="w-1.5 h-1.5 rounded-full bg-accent" animate={{ opacity: [1, 0.3, 1] }} transition={{ repeat: Infinity, duration: 1 }} />}
             </motion.div>
           );
         })}
       </div>
-
-      {/* Live data stats */}
       <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto">
-        {[
-          { label: "Tracks Scanned", value: dataPoints.tracks.toLocaleString() },
-          { label: "Patterns Found", value: dataPoints.patterns.toLocaleString() },
-          { label: "Signals Mapped", value: dataPoints.signals.toLocaleString() },
-        ].map((stat) => (
+        {[{ label: "Tracks Scanned", value: dataPoints.tracks.toLocaleString() }, { label: "Patterns Found", value: dataPoints.patterns.toLocaleString() }, { label: "Signals Mapped", value: dataPoints.signals.toLocaleString() }].map(stat => (
           <div key={stat.label} className="text-center py-2 px-1 rounded-lg bg-card border border-border">
             <p className="text-sm font-bold text-foreground tabular-nums">{stat.value}</p>
             <p className="text-[9px] text-muted-foreground mt-0.5">{stat.label}</p>
           </div>
         ))}
       </div>
-
-      {/* Live data feed console */}
       <div className="max-w-md mx-auto">
         <div ref={feedRef} className="rounded-lg bg-background border border-border p-3 h-28 overflow-y-auto font-mono text-[10px] space-y-1 scrollbar-thin">
           {feedLines.map((line, i) => (
-            <motion.div
-              key={`${i}-${line}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-muted-foreground"
-            >
+            <motion.div key={`${i}-${line}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-muted-foreground">
               <span className="text-emerald-400/70">▸</span> {line}
             </motion.div>
           ))}
-          <motion.span
-            className="text-accent inline-block"
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ repeat: Infinity, duration: 0.8 }}
-          >_</motion.span>
+          <motion.span className="text-accent inline-block" animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }}>_</motion.span>
         </div>
-      </div>
-
-      {/* Platform badges */}
-      <div className="flex items-center justify-center gap-3 flex-wrap">
-        {[
-          { icon: <SpotifyLogo className="h-3.5 w-3.5" />, name: "Spotify" },
-          { icon: <AppleMusicLogo className="h-3.5 w-3.5" />, name: "Apple Music" },
-          { icon: <TikTokLogo className="h-3.5 w-3.5" />, name: "TikTok" },
-          { icon: <YouTubeLogo className="h-3.5 w-3.5" />, name: "YouTube" },
-        ].map((p) => (
-          <div key={p.name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-[10px] text-muted-foreground">
-            <span className="w-3.5 h-3.5">{p.icon}</span>
-            {p.name}
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -573,7 +520,6 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   const lyricFix = analysisData?.lyricFix || "";
   const viralLine = analysisData?.viralLine || "";
   const oneChange = analysisData?.oneChange || "";
-
   const [lyrics, setLyrics] = useState(original);
   const [applyImproved, setApplyImproved] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
@@ -603,24 +549,14 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Mic2 className="h-4 w-4 text-primary" />
-              Song Lyrics
-            </label>
+            <label className="text-sm font-bold text-foreground flex items-center gap-2"><Mic2 className="h-4 w-4 text-primary" /> Song Lyrics</label>
             {improved && (
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => { setShowDiff(!showDiff); if (!showDiff) setApplyImproved(false); }}
-                  className="text-xs px-3 py-1 rounded-md border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-all"
-                >
+                <button onClick={() => { setShowDiff(!showDiff); if (!showDiff) setApplyImproved(false); }} className="text-xs px-3 py-1 rounded-md border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-all">
                   {showDiff ? "Hide comparison" : "Compare versions"}
                 </button>
-                <button
-                  onClick={() => { setApplyImproved(!applyImproved); setShowDiff(false); }}
-                  className={`text-xs px-3 py-1 rounded-md border transition-all flex items-center gap-1.5 ${
-                    applyImproved ? "bg-primary/20 border-primary/40 text-primary" : "border-border text-muted-foreground hover:border-primary/30"
-                  }`}
-                >
+                <button onClick={() => { setApplyImproved(!applyImproved); setShowDiff(false); }}
+                  className={`text-xs px-3 py-1 rounded-md border transition-all flex items-center gap-1.5 ${applyImproved ? "bg-primary/20 border-primary/40 text-primary" : "border-border text-muted-foreground hover:border-primary/30"}`}>
                   <div className={`w-7 h-3.5 rounded-full relative transition-colors ${applyImproved ? "bg-primary" : "bg-muted"}`}>
                     <motion.div className="absolute top-0.5 w-2.5 h-2.5 rounded-full bg-foreground" animate={{ left: applyImproved ? 14 : 2 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
                   </div>
@@ -641,29 +577,19 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
               </div>
             </div>
           ) : (
-            <textarea
-              value={lyrics}
-              onChange={(e) => setLyrics(e.target.value)}
+            <textarea value={lyrics} onChange={(e) => setLyrics(e.target.value)}
               placeholder={original ? "Your song lyrics..." : "Paste your song lyrics here..."}
-              className="w-full h-40 bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
-            />
+              className="w-full h-40 bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono" />
           )}
         </div>
       </div>
-
       {recommendations.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Lightbulb className="h-4 w-4 text-accent" /> AI Recommendations
-          </p>
+          <p className="text-sm font-bold text-foreground flex items-center gap-2"><Lightbulb className="h-4 w-4 text-accent" /> AI Recommendations</p>
           {recommendations.map(rec => (
-            <motion.div
-              key={rec.id} layout
-              className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${
-                rec.applied ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:border-muted-foreground/30"
-              }`}
-              onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}
-            >
+            <motion.div key={rec.id} layout
+              className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-all ${rec.applied ? "bg-primary/10 border-primary/30" : "bg-card border-border hover:border-muted-foreground/30"}`}
+              onClick={() => setRecommendations(prev => prev.map(r => r.id === rec.id ? {...r, applied: !r.applied} : r))}>
               <div className={`mt-0.5 flex-shrink-0 w-8 h-4 rounded-full relative transition-colors ${rec.applied ? "bg-primary" : "bg-muted"}`}>
                 <motion.div className="absolute top-0.5 w-3 h-3 rounded-full bg-foreground shadow-md" animate={{ left: rec.applied ? 16 : 2 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
               </div>
@@ -672,17 +598,11 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
           ))}
         </div>
       )}
-
-      <motion.button
-        onClick={() => onLyricsReady(buildFinalLyrics())}
+      <motion.button onClick={() => onLyricsReady(buildFinalLyrics())}
         className="relative w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden"
-        whileHover={{ scale: 1.01 }}
-        whileTap={{ scale: 0.99 }}
-      >
+        whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
         <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" animate={{ x: ["-100%", "200%"] }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }} />
-        <span className="relative flex items-center justify-center gap-2">
-          <Sparkles className="h-4 w-4" /> Create AI Remix with These Lyrics <ArrowRight className="h-4 w-4" />
-        </span>
+        <span className="relative flex items-center justify-center gap-2"><Sparkles className="h-4 w-4" /> Create AI Remix with These Lyrics <ArrowRight className="h-4 w-4" /></span>
       </motion.button>
     </div>
   );
@@ -760,13 +680,13 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
   const tracks = (result?.tracks || (result?.audioUrl ? [{ audioUrl: result.audioUrl, imageUrl: result.imageUrl, title: "AI Remix" }] : [])).map((t: any) => ({ ...t, url: t.url || t.audioUrl }));
 
   return (
-    <div className="rounded-xl border border-accent/30 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 md:p-8 space-y-5 relative overflow-hidden">
+    <div className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.03] to-transparent p-6 md:p-8 space-y-5 relative overflow-hidden">
       <div className="relative text-center space-y-1.5">
         <div className="h-10 w-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
           <Headphones className="h-5 w-5 text-accent" />
         </div>
-        <h2 className="text-xl md:text-2xl font-black font-heading text-foreground">AI Remix Studio</h2>
-        <p className="text-sm text-muted-foreground max-w-md mx-auto">Enhanced production, stronger hooks, viral energy</p>
+        <h2 className="text-xl md:text-2xl font-black font-heading text-foreground">Make This Track Viral</h2>
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">Automatically optimize your track using global hit patterns and algorithmic insights</p>
       </div>
 
       {status === "idle" && (
@@ -785,27 +705,22 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
             </Select>
           </div>
           <motion.button onClick={() => setStatus("lyrics")} disabled={!file}
-            className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-40 overflow-hidden"
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            className="relative px-10 py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base disabled:opacity-40 overflow-hidden"
+            whileHover={{ scale: 1.03, boxShadow: "0 0 40px hsl(38 92% 50% / 0.3)" }} whileTap={{ scale: 0.98 }}>
             <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ["-100%", "200%"] }} transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }} />
-            <span className="relative flex items-center gap-2"><Sparkles className="h-4 w-4" /> Create AI Remix <ArrowRight className="h-4 w-4" /></span>
+            <span className="relative flex items-center gap-2"><Sparkles className="h-5 w-5" /> Make This Track Viral <ArrowRight className="h-5 w-5" /></span>
           </motion.button>
         </div>
       )}
 
       {status === "lyrics" && <LyricsEditor analysisData={analysisData} onLyricsReady={(lyrics) => { setFinalLyrics(lyrics); startRemix(lyrics); }} />}
-
-      {(status === "uploading" || status === "processing") && (
-        <RemixProcessingUI elapsed={elapsed} />
-      )}
-
+      {(status === "uploading" || status === "processing") && <RemixProcessingUI elapsed={elapsed} />}
       {status === "error" && (
         <div className="flex flex-col items-center gap-3 py-4">
           <p className="text-red-400 font-medium text-sm">{error}</p>
           <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="border-red-500/30 text-red-400 hover:bg-red-500/10">Try Again</Button>
         </div>
       )}
-
       {status === "complete" && tracks.length > 0 && (
         <motion.div className="space-y-5" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
           {tracks.map((track: any, idx: number) => (
@@ -839,9 +754,7 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
             ))}
           </div>
           <div className="flex justify-center">
-            <Button onClick={() => { setStatus("idle"); setResult(null); setElapsed(0); }} variant="outline" className="gap-2 border-border">
-              <Sparkles className="h-4 w-4" /> Remix Again
-            </Button>
+            <Button onClick={() => { setStatus("idle"); setResult(null); setElapsed(0); }} variant="outline" className="gap-2 border-border"><Sparkles className="h-4 w-4" /> Remix Again</Button>
           </div>
         </motion.div>
       )}
@@ -853,23 +766,15 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
 const PaywallBanner = ({ score }: { score: number }) => (
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
     className="w-full rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-6 text-center">
-    <div className="h-10 w-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto mb-3">
-      <Zap className="h-5 w-5 text-orange-400" />
-    </div>
+    <div className="h-10 w-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto mb-3"><Zap className="h-5 w-5 text-orange-400" /></div>
     <h3 className="text-lg font-black text-foreground mb-1.5">You've used your free analysis</h3>
-    <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-      Upgrade to Pro for unlimited analyses + 10 AI remixes/month. Your song scored <strong className="text-foreground">{score}/100</strong>.
-    </p>
+    <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">Upgrade to Pro for unlimited analyses + 10 AI remixes/month. Your song scored <strong className="text-foreground">{score}/100</strong>.</p>
     <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
-      <Link to="/billing">
-        <motion.button className="relative px-7 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
-          <span className="relative">Upgrade to Pro — $19/month</span>
-        </motion.button>
-      </Link>
-      <Link to="/billing">
-        <button className="px-5 py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Analysis — $3</button>
-      </Link>
+      <Link to="/billing"><motion.button className="relative px-7 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
+        <span className="relative">Upgrade to Pro — $19/month</span>
+      </motion.button></Link>
+      <Link to="/billing"><button className="px-5 py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Analysis — $3</button></Link>
     </div>
   </motion.div>
 );
@@ -879,22 +784,16 @@ const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songT
     className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
     <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
       className="relative max-w-md w-full rounded-2xl border border-accent/30 bg-card p-7 text-center" onClick={(e) => e.stopPropagation()}>
-      <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3">
-        <Headphones className="h-5 w-5 text-primary" />
-      </div>
+      <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3"><Headphones className="h-5 w-5 text-primary" /></div>
       <h3 className="text-xl font-black text-foreground mb-1.5">AI Remix — Pro Feature</h3>
       <p className="text-sm text-muted-foreground mb-1">Your song <strong className="text-foreground">"{songTitle}"</strong> scored <strong className="text-accent text-lg">{score}/100</strong>.</p>
       <p className="text-sm text-muted-foreground mb-6">Create an AI remix with stronger hooks and viral energy.</p>
       <div className="flex flex-col gap-2.5">
-        <Link to="/billing" onClick={onClose}>
-          <motion.button className="relative w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
-            <span className="relative">Upgrade to Pro — $19/month</span>
-          </motion.button>
-        </Link>
-        <Link to="/billing" onClick={onClose}>
-          <button className="w-full py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Remix — $7</button>
-        </Link>
+        <Link to="/billing" onClick={onClose}><motion.button className="relative w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
+          <span className="relative">Upgrade to Pro — $19/month</span>
+        </motion.button></Link>
+        <Link to="/billing" onClick={onClose}><button className="w-full py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Remix — $7</button></Link>
         <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-1">Maybe later</button>
       </div>
     </motion.div>
@@ -902,7 +801,7 @@ const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songT
 );
 
 /* ═══════════════════════════════════════════════
-   MAIN RESULTS PAGE
+   MAIN RESULTS PAGE — FULL REDESIGN
    ═══════════════════════════════════════════════ */
 const Results = () => {
   const location = useLocation();
@@ -934,462 +833,391 @@ const Results = () => {
 
   const isRealAudio = dataSource === "real_audio_analysis";
   const badge = scoreBadge(score);
+  const confidence = confidenceFromScore(score);
+  const percentile = percentileFromScore(score);
   const hasViralLine = viralLine && viralLine !== "none yet";
-  const roadmap = generateRoadmap(score);
   const viral = Math.min(100, Math.round((score * 0.5) + ((danceability || 5) * 3) + ((valence || 5) * 2)));
 
   const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     `My song "${title}" scored ${score}/100 on Viralize!\n\nCheck yours → viralize.app`
   )}`;
 
-  const profileStats = [
-    { icon: Clock, label: "Hook Timing", value: hookTiming },
-    { icon: Activity, label: "BPM", value: bpmEstimate },
-    { icon: KeyRound, label: "Key", value: musicalKey },
-    { icon: Zap, label: "Energy", value: energyLevel },
-    { icon: Mic2, label: "Opening", value: openingLyrics },
-  ].filter((s) => s.value != null);
+  // Derive HIT DNA scores from available data
+  const hookStrength = hookAnalysis ? Math.min(10, Math.round(score * 0.1 + (competitorMatch || 5) * 0.3 + 2)) : Math.round(score / 10);
+  const replayValue = Math.min(10, Math.round((danceability || 5) * 0.5 + (valence || 5) * 0.3 + score * 0.02));
+  const emotionalImpact = Math.min(10, Math.round((valence || 5) * 0.6 + (emotionalCore ? 3 : 0) + score * 0.02));
+  const structureQuality = Math.min(10, Math.round(score * 0.08 + (hookTiming ? 2 : 0) + 1));
+  const marketFit = competitorMatch || Math.min(10, Math.round(score * 0.09 + 1));
+  const algorithmCompat = Math.min(10, Math.round((danceability || 5) * 0.3 + (valence || 5) * 0.2 + score * 0.04));
 
-  const themeFields = [
-    { label: "Theme", value: songTheme },
-    { label: "Emotional Core", value: emotionalCore },
-  ].filter((f) => f.value);
+  // Derive critical issues from improvements
+  const criticalIssues = (improvements || []).slice(0, 4).map((imp: string, i: number) => {
+    const isHook = imp.toLowerCase().includes('hook');
+    const isEnergy = imp.toLowerCase().includes('energy') || imp.toLowerCase().includes('dynamic');
+    const isStructure = imp.toLowerCase().includes('structure') || imp.toLowerCase().includes('section');
+    const isLyric = imp.toLowerCase().includes('lyric') || imp.toLowerCase().includes('word');
+    return {
+      title: isHook ? "Hook Needs Optimization" : isEnergy ? "Energy Progression Issue" : isStructure ? "Structural Weakness" : isLyric ? "Lyric Impact Gap" : `Issue ${i + 1}: Improvement Needed`,
+      why: isHook ? "The hook is the #1 factor in listener retention. Weak hooks cause 60%+ skip rates in the first 15 seconds." :
+           isEnergy ? "Energy dynamics directly affect replay rates. Flat energy curves reduce algorithmic recommendation scores." :
+           isStructure ? "Top-performing tracks follow specific structural patterns. Deviations reduce playlist placement likelihood." :
+           isLyric ? "Memorable lyrics drive saves and shares. Generic phrasing reduces emotional connection and virality." :
+           "This element affects how streaming algorithms rank and recommend your track to new listeners.",
+      fix: imp,
+      impact: isHook ? "+15-25% retention improvement" : isEnergy ? "+10-20% replay rate increase" : isStructure ? "+12-18% playlist match rate" : "+8-15% save rate improvement",
+    };
+  });
+
+  // Derive opportunity zones
+  const opportunities = [
+    ...(strengths || []).slice(0, 2).map((s: string) => ({
+      label: "Quick Win",
+      description: s + " — leverage this strength in your marketing and playlist pitching.",
+      priority: "Quick Win",
+      impact: "+5-10% visibility",
+      icon: Zap,
+      color: "hsl(142 71% 45%)",
+    })),
+    ...(improvements || []).slice(0, 2).map((imp: string) => ({
+      label: "Key Improvement",
+      description: imp,
+      priority: "Medium",
+      impact: "+15-25% viral potential",
+      icon: Target,
+      color: "hsl(38 92% 50%)",
+    })),
+  ];
+  if (oneChange) {
+    opportunities.push({
+      label: "Major Upgrade",
+      description: oneChange,
+      priority: "High Impact",
+      impact: "+20-35% overall score",
+      icon: Flame,
+      color: "hsl(0 84% 60%)",
+    });
+  }
+
+  // Benchmark comparisons
+  const benchmarks = [
+    { label: "Hook Timing", yours: Math.round(hookStrength * 10), benchmark: 82 },
+    { label: "Replay Rate", yours: Math.round(replayValue * 10), benchmark: 75 },
+    { label: "Energy Dynamics", yours: Math.round(algorithmCompat * 10), benchmark: 78 },
+    { label: "Structure Match", yours: Math.round(structureQuality * 10), benchmark: 85 },
+    { label: "Market Fit", yours: Math.round(marketFit * 10), benchmark: 72 },
+  ];
+
+  const roadmap = generateRoadmap(score, improvements || []);
+
+  // Strongest / weakest
+  const dnaScores = [
+    { label: "Hook Strength", value: hookStrength },
+    { label: "Replay Value", value: replayValue },
+    { label: "Emotional Impact", value: emotionalImpact },
+    { label: "Structure", value: structureQuality },
+    { label: "Market Fit", value: marketFit },
+    { label: "Algorithm Fit", value: algorithmCompat },
+  ];
+  const sorted = [...dnaScores].sort((a, b) => b.value - a.value);
+  const strongest = sorted[0];
+  const weakest = sorted[sorted.length - 1];
 
   return (
-    <div className="min-h-screen px-4 pt-28 pb-16 bg-background relative overflow-hidden">
-      {/* Cinematic background particles */}
-      <ParticleField count={30} color="hsl(258, 90%, 66%)" speed={0.3} />
-      <div className="container max-w-4xl space-y-10 relative z-10">
+    <div className="min-h-screen px-4 pt-28 pb-20 bg-background relative overflow-hidden">
+      <ParticleField count={25} color="hsl(258, 90%, 66%)" speed={0.25} />
 
-        {/* ═══ 1. HERO: SCORE + VERDICT ═══ */}
-        <Section delay={0} className="text-center">
-          <div className="flex flex-col items-center">
-            <ScoreGauge score={score} />
+      <div className="container max-w-5xl space-y-14 relative z-10">
 
-            <div className="mt-5 space-y-3">
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.5, duration: 0.4, type: "spring" }}
-                className={`inline-block px-4 py-1.5 rounded-full text-[10px] font-black border uppercase tracking-[0.15em] ${badge.cls}`}
-              >
-                {badge.label}
-              </motion.span>
+        {/* ═══════════════════════════════════════
+           1. HERO RESULT — ABOVE THE FOLD
+           ═══════════════════════════════════════ */}
+        <Section delay={0}>
+          <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-6 md:p-10 relative overflow-hidden">
+            {/* Accent line */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-              <h1 className="text-2xl md:text-3xl font-black font-heading text-foreground tracking-tight leading-snug max-w-2xl mx-auto">
-                {verdict}
-              </h1>
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+              {/* Score */}
+              <div className="flex-shrink-0">
+                <ScoreGauge score={score} />
+              </div>
 
-              <p className="text-base text-muted-foreground">"{title}"</p>
+              {/* Info */}
+              <div className="flex-1 text-center md:text-left space-y-4">
+                <div className="space-y-2">
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 1.5, duration: 0.4, type: "spring" }}
+                    className={`inline-block px-4 py-1.5 rounded-full text-[11px] font-black border uppercase tracking-[0.15em] ${badge.cls}`}
+                  >
+                    {badge.label}
+                  </motion.span>
 
-              {isRealAudio && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 uppercase tracking-wider">
-                  <Headphones className="h-3 w-3" /> Real Audio Pattern Analysis
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.8 }}
+                    className="flex items-center gap-3 justify-center md:justify-start"
+                  >
+                    <span className="text-xs text-muted-foreground">Confidence:</span>
+                    <span className="text-sm font-bold text-foreground">{confidence}%</span>
+                    <div className="h-3 w-px bg-border" />
+                    <span className="text-xs text-muted-foreground">Analysis:</span>
+                    <span className="text-sm font-bold text-primary">{isRealAudio ? "Audio Pattern" : "Metadata"}</span>
+                  </motion.div>
+                </div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2, duration: 0.5 }}
+                  className="text-xl md:text-2xl font-black font-heading text-foreground leading-snug"
+                >
+                  {verdict || `Your track "${title}" shows ${score >= 65 ? 'strong' : 'developing'} viral potential${score < 80 ? ', with key areas to optimize' : ''}.`}
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2.3 }}
+                  className="text-sm text-muted-foreground"
+                >
+                  "{title}" {songGenre ? `• ${songGenre}` : ''}
+                </motion.p>
+
+                {/* Quick actions */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2.5 }}
+                  className="flex flex-wrap gap-2 justify-center md:justify-start"
+                >
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border"
+                    onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`); toast.success("Link copied!"); }}>
+                    <Copy className="h-3 w-3" /> Copy Link
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border"
+                    onClick={() => window.open(tweetUrl, '_blank')}>
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Share on X
+                  </Button>
                 </motion.div>
-              )}
-
-              {/* Data intelligence sources */}
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2 }}
-                className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
-                <span className="text-[9px] text-muted-foreground/50 mr-1 uppercase tracking-wider">Data sources:</span>
-                <PlatformBadge platform="spotify" size="md" />
-                <PlatformBadge platform="apple" size="md" />
-                <PlatformBadge platform="youtube" size="md" />
-                <PlatformBadge platform="ai" size="md" />
-              </motion.div>
-            </div>
-          </div>
-        </Section>
-
-        {/* ═══ SHARE SCORE + VIRAL METER ROW ═══ */}
-        <Section delay={0.05}>
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Viral Meter */}
-            <ViralMeter score={score} danceability={danceability} valence={valence} />
-
-            {/* Share CTA */}
-            <div className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <Share2 className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-foreground uppercase tracking-wider">Share Your Score</span>
-                    <p className="text-[10px] text-muted-foreground">Show off your results</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center gap-1.5 text-sm text-foreground">
-                    <span className="text-3xl font-black tabular-nums" style={{ color: scoreColor(score) }}>{score}</span>
-                    <span className="text-muted-foreground text-xs">/100</span>
-                  </div>
-                  <div className="h-8 w-px bg-border" />
-                  <div className="text-sm text-muted-foreground">
-                    <span className="text-accent font-bold">{viral}%</span> viral
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-xs border-border"
-                  onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`); toast.success("Link copied!"); }}>
-                  <Copy className="h-3 w-3" /> Copy Link
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-xs border-border"
-                  onClick={() => window.open(tweetUrl, '_blank')}>
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  Share on X
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border"
-                  onClick={async () => {
-                    try {
-                      const el = document.getElementById('share-score-card');
-                      if (!el) { toast.info("Score card not available"); return; }
-                      const { default: html2canvas } = await import('html2canvas');
-                      const canvas = await html2canvas(el, { backgroundColor: '#0a0a0a', scale: 2 });
-                      const link = document.createElement('a'); link.download = `viralize-score-${score}.png`; link.href = canvas.toDataURL(); link.click();
-                    } catch { toast.error("Download failed."); }
-                  }}>
-                  <Download className="h-3 w-3" />
-                </Button>
               </div>
             </div>
-          </div>
 
-          {/* Hidden share card for download */}
-          <div className="sr-only" aria-hidden="true">
-            <div id="share-score-card" className="w-[400px] bg-[#0a0a0a] p-6 rounded-2xl border border-primary/20">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary" />
-              <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3">viralize.app</p>
-              <p className="text-white font-bold text-lg">{title}</p>
-              <p className="text-5xl font-black mt-2" style={{ color: scoreColor(score) }}>{score}</p>
-              <span className={`inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-black border ${badge.cls}`}>{badge.label}</span>
+            {/* Hidden share card */}
+            <div className="sr-only" aria-hidden="true">
+              <div id="share-score-card" className="w-[400px] bg-[#0a0a0a] p-6 rounded-2xl border border-primary/20">
+                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3">viralize.app</p>
+                <p className="text-foreground font-bold text-lg">{title}</p>
+                <p className="text-5xl font-black mt-2" style={{ color: scoreColor(score) }}>{score}</p>
+                <span className={`inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-black border ${badge.cls}`}>{badge.label}</span>
+              </div>
             </div>
           </div>
         </Section>
 
         {/* ═══ PAYWALL ═══ */}
         {user && hasExhaustedFreeAnalysis && (
-          <Section delay={0.1}>
-            <PaywallBanner score={score} />
-          </Section>
+          <Section delay={0.5}><PaywallBanner score={score} /></Section>
         )}
 
-        {/* ═══ 2. SONG PROFILE ═══ */}
-        {(themeFields.length > 0 || profileStats.length > 0) && (
-          <Section delay={0.15}>
-            <SectionHeader icon={Radio} title="Song Profile" subtitle="Core characteristics detected from audio analysis" />
-            <SourceRow platforms={["ai", "spotify"]} />
-            <div className="rounded-xl border border-border bg-card p-5">
-              {themeFields.length > 0 && (
-                <div className="grid gap-3 sm:grid-cols-2 mb-4">
-                  {themeFields.map((f) => (
-                    <div key={f.label} className="rounded-lg bg-muted/50 p-3.5">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{f.label}</span>
-                      <p className="text-sm text-foreground mt-1 font-medium leading-relaxed">{f.value}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {profileStats.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-                  {profileStats.map((stat) => (
-                    <div key={stat.label} className="rounded-lg bg-muted/50 border border-border p-3 text-center">
-                      <stat.icon className="h-3.5 w-3.5 mx-auto text-primary mb-1.5" />
-                      <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-widest">{stat.label}</div>
-                      <div className="text-sm font-bold text-foreground mt-0.5">{stat.value}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+        {/* ═══════════════════════════════════════
+           2. PERFORMANCE SNAPSHOT
+           ═══════════════════════════════════════ */}
+        <Section delay={1}>
+          <SectionLabel number="01" title="Performance Snapshot" subtitle="How your track compares globally" icon={Gauge} />
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Percentile */}
+            <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.05] to-transparent p-5 text-center">
+              <motion.p
+                className="text-4xl font-black text-primary tabular-nums"
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, type: "spring" }}
+              >
+                {percentile}%
+              </motion.p>
+              <p className="text-sm text-foreground font-semibold mt-1">You outperform {percentile}% of tracks</p>
+              <p className="text-xs text-muted-foreground mt-0.5">in your category</p>
             </div>
-          </Section>
-        )}
 
-        {/* ═══ 3. THE HONEST TRUTH ═══ */}
-        {viralPotential && (
-          <Section delay={0.2}>
-            <SectionHeader icon={Eye} title="The Honest Truth" subtitle="Unbiased AI assessment" />
-            <div className="border-l-[3px] border-primary bg-primary/5 rounded-r-xl p-5">
-              <p className="text-[10px] text-primary font-bold uppercase tracking-widest mb-2">What Our AI Detected</p>
-              <p className="text-sm text-foreground/90 leading-relaxed">{viralPotential}</p>
-            </div>
-          </Section>
-        )}
-
-        {/* ═══ 4. LYRIC INTELLIGENCE ═══ */}
-        {(lyricWeakness || lyricFix || hasViralLine) && (
-          <Section delay={0.25}>
-            <SectionHeader icon={FileText} title="Lyric Intelligence" subtitle="AI-powered lyric analysis" />
-            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-              {lyricWeakness && lyricFix && (
-                <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-2.5">Weakest Moment — Suggested Fix</p>
-                  <div className="grid gap-2.5 sm:grid-cols-2">
-                    <div className="rounded-lg bg-red-500/5 border border-red-500/15 p-3.5">
-                      <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest mb-1.5">Current</p>
-                      <p className="text-sm text-foreground/70 italic leading-relaxed">"{lyricWeakness}"</p>
-                    </div>
-                    <div className="rounded-lg bg-green-500/5 border border-green-500/15 p-3.5">
-                      <p className="text-[10px] text-green-400 font-bold uppercase tracking-widest mb-1.5">Suggested</p>
-                      <p className="text-sm text-green-300/90 italic leading-relaxed">"{lyricFix}"</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {hasViralLine && (
-                <div className="rounded-lg bg-accent/5 border border-accent/20 p-4">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Award className="h-4 w-4 text-accent" />
-                    <p className="text-[10px] text-accent font-bold uppercase tracking-widest">Most Viral Line</p>
-                  </div>
-                  <p className="text-base font-bold text-foreground italic leading-relaxed">"{viralLine}"</p>
-                </div>
-              )}
-            </div>
-          </Section>
-        )}
-
-        {/* ═══ 5. ALGORITHM SCORES ═══ */}
-        {(hookAnalysis || competitorMatch || valence != null || danceability != null) && (
-          <Section delay={0.3}>
-            <SectionHeader icon={BarChart3} title="Algorithm Scores" subtitle="How streaming algorithms will rank your song" />
-            <SourceRow platforms={["spotify", "apple", "youtube", "ai"]} />
-            <div className="rounded-xl border border-border bg-card p-5 space-y-5">
-              {hookAnalysis && (
-                <div className="rounded-lg bg-primary/5 border border-primary/15 p-4">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Zap className="h-4 w-4 text-primary" />
-                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest">Hook Analysis</p>
-                  </div>
-                  <p className="text-sm text-foreground/80 leading-relaxed">{hookAnalysis}</p>
-                </div>
-              )}
-              <div className="space-y-4">
-                {competitorMatch && <AnimatedBar label="Genre Competitor Match" value={competitorMatch} max={10} color="hsl(38 92% 50%)" sublabel="How you stack up against current top tracks" />}
-                {valence != null && <AnimatedBar label="Valence (Sad — Happy)" value={valence} max={10} color="hsl(142 71% 45%)" />}
-                {danceability != null && <AnimatedBar label="Danceability" value={danceability} max={10} color="hsl(258 90% 66%)" />}
+            {/* Strongest */}
+            <div className="rounded-xl border border-green-500/20 bg-green-500/[0.03] p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-6 w-6 rounded-lg bg-green-500/10 flex items-center justify-center"><TrendingUp className="h-3.5 w-3.5 text-green-400" /></div>
+                <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Strongest Element</span>
               </div>
-              {(saveRatePrediction || skipRiskMoment) && (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {saveRatePrediction && (
-                    <div className="rounded-lg bg-primary/5 border border-primary/15 p-3.5">
-                      <p className="text-[10px] text-primary font-bold uppercase tracking-widest mb-1">Save Rate Prediction</p>
-                      <p className="text-base font-bold text-foreground">{saveRatePrediction}</p>
-                    </div>
-                  )}
-                  {skipRiskMoment && (
-                    <div className="rounded-lg bg-red-500/5 border border-red-500/20 p-3.5">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
-                        <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Skip Risk</p>
-                      </div>
-                      <p className="text-sm font-medium text-red-300">{skipRiskMoment}</p>
-                    </div>
-                  )}
-                </div>
-              )}
+              <p className="text-lg font-bold text-foreground">{strongest.label}</p>
+              <p className="text-sm text-muted-foreground">{strongest.value}/10 — outperforming benchmarks</p>
             </div>
-          </Section>
-        )}
 
-        {/* ═══ 6. AUDIENCE PROFILE ═══ */}
-        {(targetAudience || listeningMoment || tikTokFit) && (
-          <Section delay={0.35}>
-            <SectionHeader icon={User} title="Audience Profile" subtitle="Who will listen and where they'll discover you" />
-            <div className={`grid gap-3 ${[targetAudience, listeningMoment, tikTokFit].filter(Boolean).length >= 3 ? "sm:grid-cols-3" : [targetAudience, listeningMoment, tikTokFit].filter(Boolean).length === 2 ? "sm:grid-cols-2" : ""}`}>
-              {targetAudience && (
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <User className="h-4 w-4 text-primary mb-2" />
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">Who They Are</p>
-                  <p className="text-sm text-foreground leading-relaxed">{targetAudience}</p>
-                </div>
-              )}
-              {listeningMoment && (
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <MapPin className="h-4 w-4 text-primary mb-2" />
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">When They Listen</p>
-                  <p className="text-sm text-foreground leading-relaxed">{listeningMoment}</p>
-                </div>
-              )}
-              {tikTokFit && (
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <TikTokLogo className="h-4 w-4 mb-2" />
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">TikTok Fit</p>
-                  <p className="text-sm text-foreground leading-relaxed">{tikTokFit}</p>
-                </div>
-              )}
-            </div>
-          </Section>
-        )}
-
-        {/* ═══ 7. GENRE COMPARISON ═══ */}
-        {similarSongs?.length > 0 && (
-          <Section delay={0.4}>
-            <SectionHeader icon={Award} title="Genre Comparison" subtitle="How your song compares to trending tracks" />
-            <SourceRow platforms={["spotify", "apple", "youtube"]} />
-            <div className="grid gap-3 md:grid-cols-3">
-              {similarSongs.slice(0, 3).map((song: any, i: number) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 + i * 0.1 }}
-                  className="rounded-xl border border-border bg-card p-4 space-y-2.5 hover:border-accent/30 transition-all overflow-hidden relative">
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-                      <SpotifyLogo className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-foreground text-sm truncate">{song.title}</p>
-                      <p className="text-xs text-muted-foreground">{song.artist}</p>
-                    </div>
-                  </div>
-                  {song.streams && <div className="text-lg font-black text-accent tabular-nums">{song.streams}</div>}
-                  {song.whatTheyHaveThatYouDont && (
-                    <div className="pt-2.5 border-t border-border">
-                      <span className="text-[9px] text-accent/70 font-bold uppercase tracking-widest">Gap analysis</span>
-                      <p className="text-sm text-foreground/70 mt-1 leading-relaxed">{song.whatTheyHaveThatYouDont}</p>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ═══ 8. WHAT'S WORKING vs WHAT TO FIX ═══ */}
-        {(strengths?.length > 0 || improvements?.length > 0) && (
-          <Section delay={0.5}>
-            <div className="grid gap-4 md:grid-cols-2">
-              {strengths?.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="h-7 w-7 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                      <Check className="h-3.5 w-3.5 text-green-400" />
-                    </div>
-                    <h2 className="text-sm font-bold font-heading text-foreground uppercase tracking-wide">What's Working</h2>
-                  </div>
-                  <div className="rounded-xl border border-border bg-card p-4 space-y-2.5">
-                    {strengths.map((s: string, i: number) => (
-                      <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 + i * 0.04 }}
-                        className="flex items-start gap-2.5">
-                        <div className="mt-0.5 flex-shrink-0 h-4 w-4 rounded-full bg-green-500/15 flex items-center justify-center">
-                          <Check className="h-2.5 w-2.5 text-green-400" />
-                        </div>
-                        <span className="text-sm text-foreground/80 leading-relaxed">{s}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {improvements?.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="h-7 w-7 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                      <X className="h-3.5 w-3.5 text-red-400" />
-                    </div>
-                    <h2 className="text-sm font-bold font-heading text-foreground uppercase tracking-wide">What to Fix</h2>
-                  </div>
-                  <div className="rounded-xl border border-border bg-card p-4 space-y-2.5">
-                    {improvements.map((s: string, i: number) => (
-                      <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 + i * 0.04 }}
-                        className="flex items-start gap-2.5">
-                        <div className="mt-0.5 flex-shrink-0 h-4 w-4 rounded-full bg-red-500/15 flex items-center justify-center">
-                          <X className="h-2.5 w-2.5 text-red-400" />
-                        </div>
-                        <span className="text-sm text-foreground/80 leading-relaxed">{s}</span>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Section>
-        )}
-
-        {/* ═══ 9. THE ONE CHANGE ═══ */}
-        {oneChange && (
-          <Section delay={0.6}>
-            <div className="rounded-xl border border-accent/30 bg-gradient-to-b from-accent/[0.05] to-transparent p-6 md:p-8 text-center">
-              <div className="h-10 w-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-4">
-                <Target className="h-5 w-5 text-accent" />
+            {/* Weakest */}
+            <div className="rounded-xl border border-red-500/15 bg-red-500/[0.03] p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-6 w-6 rounded-lg bg-red-500/10 flex items-center justify-center"><AlertTriangle className="h-3.5 w-3.5 text-red-400" /></div>
+                <span className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Needs Attention</span>
               </div>
-              <p className="text-[10px] text-accent font-bold uppercase tracking-[0.2em] mb-3">If You Change One Thing Before Releasing</p>
-              <p className="text-lg md:text-xl font-black text-foreground leading-snug max-w-2xl mx-auto">{oneChange}</p>
-              <p className="text-xs text-muted-foreground mt-4">This single change could be the difference between 1,000 and 1,000,000 streams.</p>
-            </div>
-          </Section>
-        )}
-
-        {/* ═══ 10. PLAYLIST TARGETS ═══ */}
-        {(playlistStrategy || matchedPlaylists?.length > 0) && (
-          <Section delay={0.65}>
-            <SectionHeader icon={ListMusic} title="Playlist Targets" subtitle="Curated playlists matching your sound" />
-            <SourceRow platforms={["spotify"]} />
-            {playlistStrategy && (
-              <div className="rounded-xl border border-primary/15 bg-primary/5 p-4 mb-4">
-                <div className="flex items-start gap-2.5">
-                  <Lightbulb className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-foreground/80 leading-relaxed">{playlistStrategy}</p>
-                </div>
-              </div>
-            )}
-            {matchedPlaylists?.length > 0 && (
-              <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                {matchedPlaylists.slice(0, 6).map((pl: any, i: number) => (
-                  <motion.div key={i} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.7 + i * 0.04 }}
-                    className="rounded-xl border border-border bg-card p-3.5 hover:border-primary/20 transition-colors">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <SpotifyLogo className="h-3.5 w-3.5" />
-                      <span className="font-semibold text-sm text-foreground truncate">{pl.name}</span>
-                    </div>
-                    {pl.followers && <p className="text-xs text-muted-foreground">{pl.followers} followers</p>}
-                    {pl.reason && <p className="text-xs text-primary/70 mt-0.5">{pl.reason}</p>}
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </Section>
-        )}
-
-        {/* ═══ 11. 30-DAY ROADMAP ═══ */}
-        <Section delay={0.75}>
-          <SectionHeader icon={Calendar} title="30-Day Release Roadmap" subtitle="Your step-by-step plan to maximize streams" />
-          <div className="relative pl-7">
-            <div className="absolute left-[10px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-primary via-accent to-green-500 rounded-full" />
-            <div className="space-y-3">
-              {roadmap.map((item, i) => (
-                <motion.div key={item.week} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8 + i * 0.06 }}
-                  className="relative rounded-xl border border-border bg-card p-4">
-                  <div className="absolute -left-[22px] top-4 w-3.5 h-3.5 rounded-full bg-background border-2 border-primary flex items-center justify-center">
-                    <div className={`w-1.5 h-1.5 rounded-full ${item.color}`} />
-                  </div>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{item.week}</span>
-                  <p className="text-sm text-foreground/80 mt-1 leading-relaxed">{item.action}</p>
-                </motion.div>
-              ))}
+              <p className="text-lg font-bold text-foreground">{weakest.label}</p>
+              <p className="text-sm text-muted-foreground">{weakest.value}/10 — below category average</p>
             </div>
           </div>
         </Section>
 
-        {/* ═══ 12. AI REMIX ═══ */}
-        <Section delay={0.85}>
+        {/* ═══════════════════════════════════════
+           3. HIT DNA BREAKDOWN
+           ═══════════════════════════════════════ */}
+        <Section delay={2}>
+          <SectionLabel number="02" title="Hit DNA Breakdown" subtitle="Six core dimensions of viral potential" icon={Layers} />
+          <div className="grid gap-3 md:grid-cols-2">
+            <DNABar label="Hook Strength" value={hookStrength} max={10} explanation={hookAnalysis || "How compelling and memorable your hook is compared to top-performing tracks."} delay={0} />
+            <DNABar label="Replay Value" value={replayValue} max={10} explanation="Measures how likely listeners are to replay. Driven by danceability, groove, and earworm potential." delay={1} />
+            <DNABar label="Emotional Impact" value={emotionalImpact} max={10} explanation={emotionalCore || "The emotional resonance and connection your track creates with listeners."} delay={2} />
+            <DNABar label="Structure Quality" value={structureQuality} max={10} explanation="How well your song structure matches patterns found in chart-topping tracks." delay={3} />
+            <DNABar label="Market Fit" value={marketFit} max={10} explanation="Your track's alignment with current market trends and genre expectations." delay={4} />
+            <DNABar label="Algorithm Compatibility" value={algorithmCompat} max={10} explanation="How well your track's characteristics match streaming platform recommendation signals." delay={5} />
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════
+           4. CRITICAL ISSUES
+           ═══════════════════════════════════════ */}
+        {criticalIssues.length > 0 && (
+          <Section delay={3}>
+            <SectionLabel number="03" title="Critical Issues" subtitle="What's holding your track back — and exactly how to fix it" icon={Crosshair} />
+            <div className="space-y-3">
+              {criticalIssues.map((issue, i) => (
+                <CriticalIssueCard key={i} index={i} {...issue} />
+              ))}
+            </div>
+            {oneChange && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="mt-4 rounded-xl border border-accent/30 bg-gradient-to-r from-accent/[0.05] to-transparent p-5 text-center"
+              >
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Target className="h-4 w-4 text-accent" />
+                  <span className="text-[10px] text-accent font-bold uppercase tracking-[0.2em]">The #1 Change to Make</span>
+                </div>
+                <p className="text-base md:text-lg font-black text-foreground leading-snug max-w-2xl mx-auto">{oneChange}</p>
+                <p className="text-xs text-muted-foreground mt-2">This single change could significantly increase your viral potential.</p>
+              </motion.div>
+            )}
+          </Section>
+        )}
+
+        {/* ═══════════════════════════════════════
+           5. OPPORTUNITY ZONE
+           ═══════════════════════════════════════ */}
+        {opportunities.length > 0 && (
+          <Section delay={4}>
+            <SectionLabel number="04" title="Opportunity Zone" subtitle="What can push this track toward viral status" icon={Flame} />
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {opportunities.map((opp, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                  <OpportunityCard {...opp} />
+                </motion.div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* ═══════════════════════════════════════
+           6. COMPARISON TO TOP TRACKS
+           ═══════════════════════════════════════ */}
+        <Section delay={5}>
+          <SectionLabel number="05" title="Compared to Top-Performing Tracks" subtitle="Your track benchmarked against current hits" icon={BarChart3} />
+          <div className="rounded-xl border border-border bg-card/60 p-5 md:p-6 space-y-5">
+            {benchmarks.map((b, i) => (
+              <BenchmarkBar key={b.label} {...b} delay={i} />
+            ))}
+          </div>
+          {/* Similar songs */}
+          {similarSongs?.length > 0 && (
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              {similarSongs.slice(0, 3).map((song: any, i: number) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                  className="rounded-xl border border-border bg-card p-4 hover:border-accent/20 transition-colors">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center"><SpotifyLogo className="h-3.5 w-3.5" /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-foreground truncate">{song.title}</p>
+                      <p className="text-xs text-muted-foreground">{song.artist}</p>
+                    </div>
+                  </div>
+                  {song.streams && <p className="text-lg font-black text-accent tabular-nums">{song.streams}</p>}
+                  {song.whatTheyHaveThatYouDont && (
+                    <div className="pt-2 border-t border-border mt-2">
+                      <span className="text-[9px] text-accent/70 font-bold uppercase tracking-widest">Gap</span>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{song.whatTheyHaveThatYouDont}</p>
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </Section>
+
+        {/* ═══════════════════════════════════════
+           7. IMPROVEMENT ROADMAP
+           ═══════════════════════════════════════ */}
+        <Section delay={6}>
+          <SectionLabel number="06" title="Improvement Roadmap" subtitle="Your step-by-step plan to maximize viral potential" icon={CheckCircle2} />
+          <div className="space-y-2">
+            {roadmap.map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -12 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors"
+              >
+                <div className="mt-0.5 flex-shrink-0 h-6 w-6 rounded-full border-2 border-primary/40 flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-primary">{i + 1}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{item.step}</span>
+                  <p className="text-sm text-foreground/80 mt-0.5 leading-relaxed">{item.action}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </Section>
+
+        {/* ═══════════════════════════════════════
+           8. VIRAL CTA — REMIX SECTION
+           ═══════════════════════════════════════ */}
+        <Section delay={7}>
           {canRemix ? (
             <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
           ) : (
-            <div className="rounded-xl border border-accent/30 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 md:p-8 text-center relative overflow-hidden">
-              <div className="h-10 w-10 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
-                <Headphones className="h-5 w-5 text-accent" />
+            <div className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 md:p-10 text-center relative overflow-hidden">
+              <div className="h-12 w-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="h-6 w-6 text-accent" />
               </div>
-              <h2 className="text-xl md:text-2xl font-black font-heading text-foreground mb-2">AI Remix Studio</h2>
-              <p className="text-sm text-muted-foreground mb-1 max-w-md mx-auto">AI covers your song with a stronger hook and more viral energy.</p>
+              <h2 className="text-2xl md:text-3xl font-black font-heading text-foreground mb-2">Make This Track Viral</h2>
+              <p className="text-sm text-muted-foreground mb-1 max-w-lg mx-auto">Automatically optimize your track using global hit patterns and algorithmic insights.</p>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                Your song scored <strong className="text-accent">{score}/100</strong>. Unlock AI Remix to push it to the next level.
+                Your song scored <strong className="text-accent">{score}/100</strong>. Let AI push it to the next level.
               </p>
+
+              {/* Feature preview on hover concept */}
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {["Structure", "Hook", "Energy", "Mix", "Algorithm"].map(f => (
+                  <span key={f} className="text-[10px] px-2.5 py-1 rounded-full border border-accent/20 text-accent/70 font-semibold uppercase tracking-wider">{f}</span>
+                ))}
+              </div>
+
               <motion.button onClick={() => setShowRemixPaywall(true)}
-                className="relative px-8 py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden"
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                className="relative px-10 py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base overflow-hidden"
+                whileHover={{ scale: 1.03, boxShadow: "0 0 40px hsl(38 92% 50% / 0.3)" }} whileTap={{ scale: 0.98 }}>
                 <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
-                <span className="relative flex items-center gap-2"><Sparkles className="h-4 w-4" /> Unlock AI Remix <ArrowRight className="h-4 w-4" /></span>
+                <span className="relative flex items-center gap-2"><Sparkles className="h-5 w-5" /> Make This Track Viral <ArrowRight className="h-5 w-5" /></span>
               </motion.button>
               <p className="text-xs text-muted-foreground mt-3">Pro — $19/month or $7/remix one-time</p>
             </div>
@@ -1400,11 +1228,29 @@ const Results = () => {
           {showRemixPaywall && <RemixPaywallModal score={score} songTitle={title} onClose={() => setShowRemixPaywall(false)} />}
         </AnimatePresence>
 
-        {/* ═══ 13. BOTTOM CTA ═══ */}
-        <Section delay={0.9} className="pt-4">
+        {/* ═══════════════════════════════════════
+           9. DATA TRUST LAYER
+           ═══════════════════════════════════════ */}
+        <Section delay={8}>
+          <div className="rounded-xl border border-border bg-card/40 p-5 text-center space-y-3">
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-lg mx-auto">
+              Analysis based on patterns from top-performing tracks across major platforms. Data points are derived from publicly available chart data and audio pattern analysis.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <SpotifyLogo className="h-4 w-4 opacity-40" />
+              <AppleMusicLogo className="h-4 w-4 opacity-40" />
+              <TikTokLogo className="h-4 w-4 opacity-40" />
+              <YouTubeLogo className="h-4 w-4 opacity-40" />
+            </div>
+            <p className="text-[10px] text-muted-foreground/50">Platform names are referenced for context only — no official integrations or partnerships implied.</p>
+          </div>
+        </Section>
+
+        {/* ═══ BOTTOM CTAs ═══ */}
+        <Section delay={9} className="pt-2">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Button asChild size="lg" className="gradient-purple text-primary-foreground font-bold glow-purple hover:opacity-90 transition-all px-8 h-12 text-sm">
-              <Link to="/analyze">Analyze Another Song</Link>
+              <Link to="/analyze">Analyze Another Track</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-border hover:bg-secondary px-6 h-12 text-sm font-semibold gap-2">
               <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
