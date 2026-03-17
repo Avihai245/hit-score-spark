@@ -11,7 +11,7 @@ import {
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin,
   ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles, Shield,
   BarChart3, TrendingUp, Radio, Mic2, FileText, Calendar, Award, Eye, CheckCircle2,
-  Flame, ArrowUpRight, Crosshair, Layers, Gauge, CircleDot, ChevronDown, Star
+  Flame, ArrowUpRight, Crosshair, Layers, Gauge, CircleDot, ChevronDown, Star, Rocket
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -101,9 +101,9 @@ const confidenceFromScore = (s: number) => {
 
 const percentileFromScore = (s: number) => Math.min(99, Math.max(5, Math.round(s * 0.95 + 3)));
 
-/* ─── Score Gauge (cinematic) ─── */
+/* ─── Score Gauge (mobile-optimized) ─── */
 const ScoreGauge = ({ score }: { score: number }) => {
-  const r = 100;
+  const r = 80;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
@@ -117,29 +117,23 @@ const ScoreGauge = ({ score }: { score: number }) => {
 
   return (
     <motion.div
-      className="relative flex items-center justify-center w-[260px] h-[260px] md:w-[300px] md:h-[300px]"
+      className="relative flex items-center justify-center w-[180px] h-[180px] md:w-[220px] md:h-[220px]"
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
     >
       <motion.div
-        className="absolute w-64 h-64 rounded-full blur-[100px] opacity-0"
+        className="absolute w-48 h-48 rounded-full blur-[80px] opacity-0"
         style={{ backgroundColor: color }}
-        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.35, 0.15] }}
+        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.3, 0.12] }}
         transition={{ duration: 2.5, ease: "easeOut" }}
       />
-      <motion.div
-        className="absolute inset-[-6px] rounded-full border border-dashed opacity-10"
-        style={{ borderColor: color }}
-        animate={{ rotate: 360 }}
-        transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-      />
-      <svg width="100%" height="100%" viewBox="0 0 220 220" className="-rotate-90">
-        <circle cx="110" cy="110" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="6" strokeOpacity="0.2" />
+      <svg width="100%" height="100%" viewBox="0 0 180 180" className="-rotate-90">
+        <circle cx="90" cy="90" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="5" strokeOpacity="0.2" />
         <motion.circle
-          cx="110" cy="110" r={r} fill="none"
+          cx="90" cy="90" r={r} fill="none"
           stroke="url(#scoreGradV2)"
-          strokeWidth="10"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -147,9 +141,9 @@ const ScoreGauge = ({ score }: { score: number }) => {
           transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
         />
         <motion.circle
-          cx="110" cy="110" r={r} fill="none"
+          cx="90" cy="90" r={r} fill="none"
           stroke="url(#scoreGradV2)"
-          strokeWidth="10"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -164,14 +158,14 @@ const ScoreGauge = ({ score }: { score: number }) => {
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
           <filter id="glowV2">
-            <feGaussianBlur stdDeviation="5" result="blur" />
+            <feGaussianBlur stdDeviation="4" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
       </svg>
       <div className="absolute text-center">
         <motion.div
-          className="text-6xl md:text-7xl font-black tabular-nums font-heading"
+          className="text-5xl md:text-6xl font-black tabular-nums font-heading"
           style={{ color }}
           initial={{ scale: 0.5 }}
           animate={{ scale: [0.5, 1.1, 1] }}
@@ -180,7 +174,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
           {rounded}
         </motion.div>
         <motion.div
-          className="text-xs text-muted-foreground font-semibold mt-1 uppercase tracking-[0.25em]"
+          className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-[0.2em]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.5 }}
@@ -192,74 +186,127 @@ const ScoreGauge = ({ score }: { score: number }) => {
   );
 };
 
-/* ─── Animated DNA Bar ─── */
+/* ─── DNA Bar (compact mobile) ─── */
 const DNABar = ({ label, value, max, explanation, delay = 0 }: { label: string; value: number; max: number; explanation: string; delay?: number }) => {
   const pct = Math.min((value / max) * 100, 100);
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-30px" });
   const color = pct >= 80 ? "hsl(270 91% 65%)" : pct >= 60 ? "hsl(142 71% 45%)" : pct >= 40 ? "hsl(38 92% 50%)" : "hsl(0 84% 60%)";
   return (
     <motion.div
       ref={ref}
-      className="p-4 rounded-xl border border-border bg-card/50 hover:border-primary/20 transition-colors"
-      initial={{ opacity: 0, y: 12 }}
+      className="p-3.5 rounded-xl border border-border bg-card/50"
+      initial={{ opacity: 0, y: 10 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: delay * 0.08, duration: 0.4 }}
+      transition={{ delay: delay * 0.06, duration: 0.35 }}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1.5">
         <span className="text-sm font-bold text-foreground">{label}</span>
-        <motion.span
-          className="text-lg font-black tabular-nums"
-          style={{ color }}
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: delay * 0.08 + 0.3 }}
-        >
-          {value}<span className="text-xs text-muted-foreground font-normal">/{max}</span>
+        <motion.span className="text-base font-black tabular-nums" style={{ color }}
+          initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: delay * 0.06 + 0.2 }}>
+          {value}<span className="text-[10px] text-muted-foreground font-normal">/{max}</span>
         </motion.span>
       </div>
-      <div className="h-2.5 rounded-full bg-muted overflow-hidden mb-2">
-        <motion.div
-          className="h-full rounded-full relative"
-          style={{ backgroundColor: color }}
-          initial={{ width: 0 }}
-          animate={isInView ? { width: `${pct}%` } : { width: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: delay * 0.08 }}
-        >
-          <motion.div className="absolute inset-0 rounded-full" style={{ boxShadow: `0 0 12px ${color}40` }} />
-        </motion.div>
+      <div className="h-2 rounded-full bg-muted overflow-hidden mb-1.5">
+        <motion.div className="h-full rounded-full" style={{ backgroundColor: color }}
+          initial={{ width: 0 }} animate={isInView ? { width: `${pct}%` } : { width: 0 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: delay * 0.06 }} />
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{explanation}</p>
+      <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{explanation}</p>
     </motion.div>
   );
 };
 
 /* ─── Section wrapper ─── */
-const Section = ({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) => (
+const Section = ({ children, delay = 0, className = "", id }: { children: ReactNode; delay?: number; className?: string; id?: string }) => (
   <motion.section
-    initial={{ opacity: 0, y: 24 }}
+    id={id}
+    initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-60px" }}
-    transition={{ delay: delay * 0.15, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    viewport={{ once: true, margin: "-40px" }}
+    transition={{ delay: delay * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     className={className}
   >
     {children}
   </motion.section>
 );
 
-const SectionLabel = ({ number, title, subtitle, icon: Icon }: { number: string; title: string; subtitle?: string; icon: React.ElementType }) => (
-  <div className="flex items-start gap-3 mb-5">
-    <div className="h-9 w-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-      <Icon className="h-4.5 w-4.5 text-primary" />
+const SectionLabel = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
+  <div className="flex items-center gap-2.5 mb-4">
+    <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+      <Icon className="h-4 w-4 text-primary" />
     </div>
-    <div>
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-primary font-bold uppercase tracking-[0.2em]">Section {number}</span>
-      </div>
-      <h2 className="text-lg md:text-xl font-black font-heading text-foreground tracking-tight leading-tight">{title}</h2>
-      {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
-    </div>
+    <h2 className="text-base md:text-lg font-black font-heading text-foreground tracking-tight">{title}</h2>
   </div>
+);
+
+/* ─── Sticky Section Nav ─── */
+const NAV_ITEMS = [
+  { id: "overview", label: "Overview" },
+  { id: "issues", label: "Issues" },
+  { id: "improve", label: "Improve" },
+  { id: "compare", label: "Compare" },
+  { id: "roadmap", label: "Roadmap" },
+];
+
+const StickyNav = ({ activeSection }: { activeSection: string }) => (
+  <motion.div
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 3 }}
+    className="sticky top-[70px] z-30 -mx-4 px-4 py-2 bg-background/80 backdrop-blur-lg border-b border-border/50"
+  >
+    <div className="flex gap-1 overflow-x-auto no-scrollbar">
+      {NAV_ITEMS.map(item => (
+        <button
+          key={item.id}
+          onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+            activeSection === item.id
+              ? "bg-primary/15 text-primary border border-primary/25"
+              : "text-muted-foreground hover:text-foreground border border-transparent"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  </motion.div>
+);
+
+/* ─── Floating CTA ─── */
+const FloatingCTA = ({ onClick }: { onClick: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 3.5, type: "spring", stiffness: 200, damping: 20 }}
+    className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-auto z-40"
+  >
+    <motion.button
+      onClick={onClick}
+      className="relative w-full md:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden shadow-lg shadow-accent/20"
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+    >
+      {/* Glow pulse */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl"
+        animate={{ boxShadow: ["0 0 20px hsl(38 92% 50% / 0.2)", "0 0 35px hsl(38 92% 50% / 0.4)", "0 0 20px hsl(38 92% 50% / 0.2)"] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+      />
+      {/* Shimmer */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+      />
+      <span className="relative flex items-center justify-center gap-2">
+        <Rocket className="h-4 w-4" />
+        Make This Track Viral
+        <ArrowRight className="h-4 w-4" />
+      </span>
+    </motion.button>
+  </motion.div>
 );
 
 /* ─── Critical Issue Card ─── */
@@ -922,88 +969,112 @@ const Results = () => {
   const strongest = sorted[0];
   const weakest = sorted[sorted.length - 1];
 
+  // Track active section for nav
+  const [activeSection, setActiveSection] = useState("overview");
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: "-30% 0px -60% 0px" }
+    );
+    const timer = setTimeout(() => {
+      NAV_ITEMS.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (el) observer.observe(el);
+      });
+    }, 1000);
+    return () => { clearTimeout(timer); observer.disconnect(); };
+  }, []);
+
+  const scrollToViral = () => {
+    document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="min-h-screen px-4 pt-28 pb-20 bg-background relative overflow-hidden">
-      <ParticleField count={25} color="hsl(258, 90%, 66%)" speed={0.25} />
+    <div className="min-h-screen px-4 pt-24 pb-28 bg-background relative overflow-hidden">
+      <ParticleField count={20} color="hsl(258, 90%, 66%)" speed={0.2} />
 
-      <div className="container max-w-5xl space-y-14 relative z-10">
+      {/* ─── Sticky Mini Nav ─── */}
+      <StickyNav activeSection={activeSection} />
 
-        {/* ═══════════════════════════════════════
-           1. HERO RESULT — ABOVE THE FOLD
-           ═══════════════════════════════════════ */}
-        <Section delay={0}>
-          <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-6 md:p-10 relative overflow-hidden">
-            {/* Accent line */}
+      {/* ─── Floating CTA ─── */}
+      <FloatingCTA onClick={scrollToViral} />
+
+      <div className="max-w-2xl mx-auto space-y-8 relative z-10">
+
+        {/* ═══ 1. HERO — Score + Verdict ═══ */}
+        <Section delay={0} id="overview">
+          <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
-              {/* Score */}
-              <div className="flex-shrink-0">
-                <ScoreGauge score={score} />
-              </div>
+            {/* Score centered on mobile */}
+            <div className="flex flex-col items-center text-center">
+              <ScoreGauge score={score} />
 
-              {/* Info */}
-              <div className="flex-1 text-center md:text-left space-y-4">
-                <div className="space-y-2">
-                  <motion.span
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1.5, duration: 0.4, type: "spring" }}
-                    className={`inline-block px-4 py-1.5 rounded-full text-[11px] font-black border uppercase tracking-[0.15em] ${badge.cls}`}
-                  >
-                    {badge.label}
-                  </motion.span>
+              <motion.span
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.5, type: "spring" }}
+                className={`mt-3 inline-block px-4 py-1.5 rounded-full text-[11px] font-black border uppercase tracking-[0.12em] ${badge.cls}`}
+              >
+                {badge.label}
+              </motion.span>
 
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1.8 }}
-                    className="flex items-center gap-3 justify-center md:justify-start"
-                  >
-                    <span className="text-xs text-muted-foreground">Confidence:</span>
-                    <span className="text-sm font-bold text-foreground">{confidence}%</span>
-                    <div className="h-3 w-px bg-border" />
-                    <span className="text-xs text-muted-foreground">Analysis:</span>
-                    <span className="text-sm font-bold text-primary">{isRealAudio ? "Audio Pattern" : "Metadata"}</span>
-                  </motion.div>
-                </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.8 }}
+                className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"
+              >
+                <span>Confidence: <strong className="text-foreground">{confidence}%</strong></span>
+                <span className="text-border">•</span>
+                <span>{isRealAudio ? "Audio Analysis" : "Pattern Analysis"}</span>
+              </motion.div>
 
-                <motion.h1
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 2, duration: 0.5 }}
-                  className="text-xl md:text-2xl font-black font-heading text-foreground leading-snug"
-                >
-                  {verdict || `Your track "${title}" shows ${score >= 65 ? 'strong' : 'developing'} viral potential${score < 80 ? ', with key areas to optimize' : ''}.`}
-                </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2 }}
+                className="text-base md:text-lg font-bold text-foreground leading-snug mt-4 max-w-md"
+              >
+                {verdict || (score >= 80
+                  ? "Strong viral potential. Minor tweaks could make this a hit."
+                  : score >= 65
+                  ? "Good foundation, but key issues are limiting performance."
+                  : score >= 40
+                  ? "Potential is there. Several areas need improvement before release."
+                  : "This track needs significant work before it's ready.")}
+              </motion.p>
 
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 2.3 }}
-                  className="text-sm text-muted-foreground"
-                >
-                  "{title}" {songGenre ? `• ${songGenre}` : ''}
-                </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.3 }}
+                className="text-xs text-muted-foreground mt-2"
+              >
+                "{title}" {songGenre ? `• ${songGenre}` : ''}
+              </motion.p>
 
-                {/* Quick actions */}
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 2.5 }}
-                  className="flex flex-wrap gap-2 justify-center md:justify-start"
-                >
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border"
-                    onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`); toast.success("Link copied!"); }}>
-                    <Copy className="h-3 w-3" /> Copy Link
-                  </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border"
-                    onClick={() => window.open(tweetUrl, '_blank')}>
-                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    Share on X
-                  </Button>
-                </motion.div>
-              </div>
+              {/* Share row */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2.5 }}
+                className="flex gap-2 mt-4"
+              >
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
+                  onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`); toast.success("Copied!"); }}>
+                  <Copy className="h-3 w-3" /> Copy
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
+                  onClick={() => window.open(tweetUrl, '_blank')}>
+                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  Share
+                </Button>
+              </motion.div>
             </div>
 
             {/* Hidden share card */}
@@ -1018,75 +1089,60 @@ const Results = () => {
           </div>
         </Section>
 
-        {/* ═══ PAYWALL ═══ */}
+        {/* ═══ Paywall ═══ */}
         {user && hasExhaustedFreeAnalysis && (
           <Section delay={0.5}><PaywallBanner score={score} /></Section>
         )}
 
-        {/* ═══════════════════════════════════════
-           2. PERFORMANCE SNAPSHOT
-           ═══════════════════════════════════════ */}
+        {/* ═══ 2. SNAPSHOT — Percentile + Best/Worst ═══ */}
         <Section delay={1}>
-          <SectionLabel number="01" title="Performance Snapshot" subtitle="How your track compares globally" icon={Gauge} />
-          <div className="grid gap-4 md:grid-cols-3">
-            {/* Percentile */}
-            <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/[0.05] to-transparent p-5 text-center">
-              <motion.p
-                className="text-4xl font-black text-primary tabular-nums"
-                initial={{ opacity: 0, scale: 0.5 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, type: "spring" }}
-              >
-                {percentile}%
-              </motion.p>
-              <p className="text-sm text-foreground font-semibold mt-1">You outperform {percentile}% of tracks</p>
-              <p className="text-xs text-muted-foreground mt-0.5">in your category</p>
-            </div>
+          {/* Percentile card */}
+          <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4 text-center mb-3">
+            <motion.p className="text-3xl font-black text-primary tabular-nums"
+              initial={{ opacity: 0, scale: 0.5 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring" }}>
+              Top {100 - percentile}%
+            </motion.p>
+            <p className="text-sm text-foreground mt-0.5">You outperform <strong>{percentile}%</strong> of analyzed tracks</p>
+          </div>
 
-            {/* Strongest */}
-            <div className="rounded-xl border border-green-500/20 bg-green-500/[0.03] p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-6 w-6 rounded-lg bg-green-500/10 flex items-center justify-center"><TrendingUp className="h-3.5 w-3.5 text-green-400" /></div>
-                <span className="text-[10px] text-green-400 font-bold uppercase tracking-widest">Strongest Element</span>
+          {/* Best / Worst row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-green-500/20 bg-green-500/[0.03] p-3.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-green-400" />
+                <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Strongest</span>
               </div>
-              <p className="text-lg font-bold text-foreground">{strongest.label}</p>
-              <p className="text-sm text-muted-foreground">{strongest.value}/10 — outperforming benchmarks</p>
+              <p className="text-sm font-bold text-foreground">{strongest.label}</p>
+              <p className="text-xs text-muted-foreground">{strongest.value}/10</p>
             </div>
-
-            {/* Weakest */}
-            <div className="rounded-xl border border-red-500/15 bg-red-500/[0.03] p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-6 w-6 rounded-lg bg-red-500/10 flex items-center justify-center"><AlertTriangle className="h-3.5 w-3.5 text-red-400" /></div>
-                <span className="text-[10px] text-red-400 font-bold uppercase tracking-widest">Needs Attention</span>
+            <div className="rounded-xl border border-red-500/15 bg-red-500/[0.03] p-3.5">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+                <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Weakest</span>
               </div>
-              <p className="text-lg font-bold text-foreground">{weakest.label}</p>
-              <p className="text-sm text-muted-foreground">{weakest.value}/10 — below category average</p>
+              <p className="text-sm font-bold text-foreground">{weakest.label}</p>
+              <p className="text-xs text-muted-foreground">{weakest.value}/10</p>
             </div>
           </div>
         </Section>
 
-        {/* ═══════════════════════════════════════
-           3. HIT DNA BREAKDOWN
-           ═══════════════════════════════════════ */}
+        {/* ═══ 3. HIT DNA — Short bars ═══ */}
         <Section delay={2}>
-          <SectionLabel number="02" title="Hit DNA Breakdown" subtitle="Six core dimensions of viral potential" icon={Layers} />
-          <div className="grid gap-3 md:grid-cols-2">
-            <DNABar label="Hook Strength" value={hookStrength} max={10} explanation={hookAnalysis || "How compelling and memorable your hook is compared to top-performing tracks."} delay={0} />
-            <DNABar label="Replay Value" value={replayValue} max={10} explanation="Measures how likely listeners are to replay. Driven by danceability, groove, and earworm potential." delay={1} />
-            <DNABar label="Emotional Impact" value={emotionalImpact} max={10} explanation={emotionalCore || "The emotional resonance and connection your track creates with listeners."} delay={2} />
-            <DNABar label="Structure Quality" value={structureQuality} max={10} explanation="How well your song structure matches patterns found in chart-topping tracks." delay={3} />
-            <DNABar label="Market Fit" value={marketFit} max={10} explanation="Your track's alignment with current market trends and genre expectations." delay={4} />
-            <DNABar label="Algorithm Compatibility" value={algorithmCompat} max={10} explanation="How well your track's characteristics match streaming platform recommendation signals." delay={5} />
+          <SectionLabel title="Hit DNA Breakdown" icon={Layers} />
+          <div className="space-y-2.5">
+            <DNABar label="Hook Strength" value={hookStrength} max={10} explanation={hookAnalysis || "How catchy and memorable your hook is."} delay={0} />
+            <DNABar label="Replay Value" value={replayValue} max={10} explanation="How likely listeners are to hit replay." delay={1} />
+            <DNABar label="Emotional Impact" value={emotionalImpact} max={10} explanation={emotionalCore || "The emotional connection your track creates."} delay={2} />
+            <DNABar label="Structure Quality" value={structureQuality} max={10} explanation="How your structure matches hit patterns." delay={3} />
+            <DNABar label="Market Fit" value={marketFit} max={10} explanation="Alignment with current genre trends." delay={4} />
+            <DNABar label="Algorithm Fit" value={algorithmCompat} max={10} explanation="Match with platform recommendation signals." delay={5} />
           </div>
         </Section>
 
-        {/* ═══════════════════════════════════════
-           4. CRITICAL ISSUES
-           ═══════════════════════════════════════ */}
+        {/* ═══ 4. CRITICAL ISSUES ═══ */}
         {criticalIssues.length > 0 && (
-          <Section delay={3}>
-            <SectionLabel number="03" title="Critical Issues" subtitle="What's holding your track back — and exactly how to fix it" icon={Crosshair} />
+          <Section delay={3} id="issues">
+            <SectionLabel title="What's Holding You Back" icon={Crosshair} />
             <div className="space-y-3">
               {criticalIssues.map((issue, i) => (
                 <CriticalIssueCard key={i} index={i} {...issue} />
@@ -1094,31 +1150,28 @@ const Results = () => {
             </div>
             {oneChange && (
               <motion.div
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="mt-4 rounded-xl border border-accent/30 bg-gradient-to-r from-accent/[0.05] to-transparent p-5 text-center"
+                className="mt-3 rounded-xl border border-accent/30 bg-accent/[0.04] p-4 text-center"
               >
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Target className="h-4 w-4 text-accent" />
-                  <span className="text-[10px] text-accent font-bold uppercase tracking-[0.2em]">The #1 Change to Make</span>
+                <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                  <Target className="h-3.5 w-3.5 text-accent" />
+                  <span className="text-[10px] text-accent font-bold uppercase tracking-wider">Priority Fix</span>
                 </div>
-                <p className="text-base md:text-lg font-black text-foreground leading-snug max-w-2xl mx-auto">{oneChange}</p>
-                <p className="text-xs text-muted-foreground mt-2">This single change could significantly increase your viral potential.</p>
+                <p className="text-sm font-bold text-foreground leading-snug">{oneChange}</p>
               </motion.div>
             )}
           </Section>
         )}
 
-        {/* ═══════════════════════════════════════
-           5. OPPORTUNITY ZONE
-           ═══════════════════════════════════════ */}
+        {/* ═══ 5. OPPORTUNITIES ═══ */}
         {opportunities.length > 0 && (
-          <Section delay={4}>
-            <SectionLabel number="04" title="Opportunity Zone" subtitle="What can push this track toward viral status" icon={Flame} />
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+          <Section delay={4} id="improve">
+            <SectionLabel title="Opportunities" icon={Flame} />
+            <div className="space-y-2.5">
               {opportunities.map((opp, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
                   <OpportunityCard {...opp} />
                 </motion.div>
               ))}
@@ -1126,100 +1179,72 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══════════════════════════════════════
-           6. COMPARISON TO TOP TRACKS
-           ═══════════════════════════════════════ */}
-        <Section delay={5}>
-          <SectionLabel number="05" title="Compared to Top-Performing Tracks" subtitle="Your track benchmarked against current hits" icon={BarChart3} />
-          <div className="rounded-xl border border-border bg-card/60 p-5 md:p-6 space-y-5">
-            {benchmarks.map((b, i) => (
+        {/* ═══ 6. COMPARISON ═══ */}
+        <Section delay={5} id="compare">
+          <SectionLabel title="You vs Top Tracks" icon={BarChart3} />
+          <div className="rounded-xl border border-border bg-card/50 p-4 space-y-4">
+            {benchmarks.slice(0, 4).map((b, i) => (
               <BenchmarkBar key={b.label} {...b} delay={i} />
             ))}
           </div>
-          {/* Similar songs */}
           {similarSongs?.length > 0 && (
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <div className="mt-3 space-y-2.5">
               {similarSongs.slice(0, 3).map((song: any, i: number) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-                  className="rounded-xl border border-border bg-card p-4 hover:border-accent/20 transition-colors">
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center"><SpotifyLogo className="h-3.5 w-3.5" /></div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-foreground truncate">{song.title}</p>
-                      <p className="text-xs text-muted-foreground">{song.artist}</p>
-                    </div>
+                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+                  className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+                    <SpotifyLogo className="h-3.5 w-3.5" />
                   </div>
-                  {song.streams && <p className="text-lg font-black text-accent tabular-nums">{song.streams}</p>}
-                  {song.whatTheyHaveThatYouDont && (
-                    <div className="pt-2 border-t border-border mt-2">
-                      <span className="text-[9px] text-accent/70 font-bold uppercase tracking-widest">Gap</span>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{song.whatTheyHaveThatYouDont}</p>
-                    </div>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-foreground truncate">{song.title}</p>
+                    <p className="text-xs text-muted-foreground">{song.artist}</p>
+                  </div>
+                  {song.streams && <span className="text-sm font-black text-accent tabular-nums flex-shrink-0">{song.streams}</span>}
                 </motion.div>
               ))}
             </div>
           )}
         </Section>
 
-        {/* ═══════════════════════════════════════
-           7. IMPROVEMENT ROADMAP
-           ═══════════════════════════════════════ */}
-        <Section delay={6}>
-          <SectionLabel number="06" title="Improvement Roadmap" subtitle="Your step-by-step plan to maximize viral potential" icon={CheckCircle2} />
+        {/* ═══ 7. ROADMAP ═══ */}
+        <Section delay={6} id="roadmap">
+          <SectionLabel title="Your Action Plan" icon={CheckCircle2} />
           <div className="space-y-2">
             {roadmap.map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -12 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors"
-              >
+              <motion.div key={i} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
+                className="flex items-start gap-3 rounded-xl border border-border bg-card p-3.5">
                 <div className="mt-0.5 flex-shrink-0 h-6 w-6 rounded-full border-2 border-primary/40 flex items-center justify-center">
                   <span className="text-[10px] font-bold text-primary">{i + 1}</span>
                 </div>
-                <div>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest">{item.step}</span>
-                  <p className="text-sm text-foreground/80 mt-0.5 leading-relaxed">{item.action}</p>
-                </div>
+                <p className="text-sm text-foreground/80 leading-snug">{item.action}</p>
               </motion.div>
             ))}
           </div>
         </Section>
 
-        {/* ═══════════════════════════════════════
-           8. VIRAL CTA — REMIX SECTION
-           ═══════════════════════════════════════ */}
-        <Section delay={7}>
+        {/* ═══ 8. VIRAL CTA ═══ */}
+        <Section delay={7} id="viral-cta">
           {canRemix ? (
             <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
           ) : (
-            <div className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 md:p-10 text-center relative overflow-hidden">
-              <div className="h-12 w-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="h-6 w-6 text-accent" />
+            <div className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 text-center relative overflow-hidden">
+              <div className="h-11 w-11 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
+                <Rocket className="h-5 w-5 text-accent" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-black font-heading text-foreground mb-2">Make This Track Viral</h2>
-              <p className="text-sm text-muted-foreground mb-1 max-w-lg mx-auto">Automatically optimize your track using global hit patterns and algorithmic insights.</p>
-              <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                Your song scored <strong className="text-accent">{score}/100</strong>. Let AI push it to the next level.
+              <h2 className="text-xl font-black font-heading text-foreground mb-1.5">Ready to Upgrade This Track?</h2>
+              <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">
+                Apply proven patterns from high-performing tracks. Score: <strong className="text-accent">{score}/100</strong>
               </p>
 
-              {/* Feature preview on hover concept */}
-              <div className="flex flex-wrap justify-center gap-2 mb-6">
-                {["Structure", "Hook", "Energy", "Mix", "Algorithm"].map(f => (
-                  <span key={f} className="text-[10px] px-2.5 py-1 rounded-full border border-accent/20 text-accent/70 font-semibold uppercase tracking-wider">{f}</span>
-                ))}
-              </div>
-
               <motion.button onClick={() => setShowRemixPaywall(true)}
-                className="relative px-10 py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base overflow-hidden"
-                whileHover={{ scale: 1.03, boxShadow: "0 0 40px hsl(38 92% 50% / 0.3)" }} whileTap={{ scale: 0.98 }}>
+                className="relative w-full max-w-xs mx-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden"
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
                 <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent" animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2.5, ease: 'linear' }} />
-                <span className="relative flex items-center gap-2"><Sparkles className="h-5 w-5" /> Make This Track Viral <ArrowRight className="h-5 w-5" /></span>
+                <span className="relative flex items-center justify-center gap-2">
+                  <Rocket className="h-4 w-4" /> Make This Track Viral <ArrowRight className="h-4 w-4" />
+                </span>
               </motion.button>
-              <p className="text-xs text-muted-foreground mt-3">Pro — $19/month or $7/remix one-time</p>
+              <p className="text-[11px] text-muted-foreground mt-3">Pro — $19/month or $7 one-time</p>
             </div>
           )}
         </Section>
@@ -1228,42 +1253,38 @@ const Results = () => {
           {showRemixPaywall && <RemixPaywallModal score={score} songTitle={title} onClose={() => setShowRemixPaywall(false)} />}
         </AnimatePresence>
 
-        {/* ═══════════════════════════════════════
-           9. DATA TRUST LAYER
-           ═══════════════════════════════════════ */}
+        {/* ═══ 9. TRUST LAYER ═══ */}
         <Section delay={8}>
-          <div className="rounded-xl border border-border bg-card/40 p-5 text-center space-y-3">
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-lg mx-auto">
-              Analysis based on patterns from top-performing tracks across major platforms. Data points are derived from publicly available chart data and audio pattern analysis.
+          <div className="rounded-xl border border-border bg-card/30 p-4 text-center space-y-2">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Based on patterns from top-performing tracks across major platforms.
             </p>
             <div className="flex items-center justify-center gap-3">
-              <SpotifyLogo className="h-4 w-4 opacity-40" />
-              <AppleMusicLogo className="h-4 w-4 opacity-40" />
-              <TikTokLogo className="h-4 w-4 opacity-40" />
-              <YouTubeLogo className="h-4 w-4 opacity-40" />
+              <SpotifyLogo className="h-3.5 w-3.5 opacity-30" />
+              <AppleMusicLogo className="h-3.5 w-3.5 opacity-30" />
+              <TikTokLogo className="h-3.5 w-3.5 opacity-30" />
+              <YouTubeLogo className="h-3.5 w-3.5 opacity-30" />
             </div>
-            <p className="text-[10px] text-muted-foreground/50">Platform names are referenced for context only — no official integrations or partnerships implied.</p>
+            <p className="text-[9px] text-muted-foreground/40">No official integrations or partnerships implied.</p>
           </div>
         </Section>
 
-        {/* ═══ BOTTOM CTAs ═══ */}
-        <Section delay={9} className="pt-2">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button asChild size="lg" className="gradient-purple text-primary-foreground font-bold glow-purple hover:opacity-90 transition-all px-8 h-12 text-sm">
+        {/* ═══ Bottom Actions ═══ */}
+        <Section delay={9} className="pb-8">
+          <div className="flex flex-col items-center gap-3">
+            <Button asChild size="lg" className="gradient-purple text-primary-foreground font-bold glow-purple w-full max-w-xs h-11 text-sm">
               <Link to="/analyze">Analyze Another Track</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="border-border hover:bg-secondary px-6 h-12 text-sm font-semibold gap-2">
+            <Button asChild variant="outline" className="border-border w-full max-w-xs h-10 text-sm gap-2">
               <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                Share My Score on X
+                Share Score on X
               </a>
             </Button>
-          </div>
-          <p className="text-center text-xs text-muted-foreground mt-3">
-            <Link to="/billing" className="text-accent hover:underline font-medium">
-              Upgrade to Pro for unlimited analyses <ArrowRight className="h-3 w-3 inline ml-0.5" />
+            <Link to="/billing" className="text-xs text-accent hover:underline font-medium mt-1">
+              Upgrade to Pro <ArrowRight className="h-3 w-3 inline ml-0.5" />
             </Link>
-          </p>
+          </div>
         </Section>
       </div>
     </div>
