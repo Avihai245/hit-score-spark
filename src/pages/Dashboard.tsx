@@ -32,6 +32,8 @@ const PLAN_COLORS: Record<Plan, string> = {
   free: 'bg-secondary text-muted-foreground',
   pro: 'bg-primary/20 text-primary',
   studio: 'bg-accent/20 text-accent',
+  business: 'bg-emerald-500/20 text-emerald-400',
+  unlimited: 'bg-amber-500/20 text-amber-400',
 };
 
 const scoreColor = (s: number) => {
