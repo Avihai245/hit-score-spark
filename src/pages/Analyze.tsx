@@ -393,15 +393,15 @@ const Analyze = () => {
             <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
           </div>
 
-          {/* Platform badges */}
+          {/* Platform data sources */}
           <div className="flex items-center gap-3">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-semibold"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold"
             >
-              <SpotifyIcon /> Spotify
+              <SpotifyIcon /> Hit Patterns
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -409,7 +409,7 @@ const Analyze = () => {
               transition={{ delay: 0.8 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/20 text-pink-400 text-xs font-semibold"
             >
-              <AppleMusicIcon /> Apple Music
+              <AppleMusicIcon /> Chart Data
             </motion.div>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -417,7 +417,7 @@ const Analyze = () => {
               transition={{ delay: 1.1 }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold"
             >
-              📊 500K+ Songs
+              📊 500K+ Benchmarks
             </motion.div>
           </div>
 
