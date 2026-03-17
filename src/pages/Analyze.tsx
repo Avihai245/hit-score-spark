@@ -92,6 +92,59 @@ const LoadingWaveform = () => (
   </div>
 );
 
+/* ─── Platform Logos ─── */
+const SpotifyIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+  </svg>
+);
+
+const AppleMusicIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+    <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.8.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03c.525 0 1.048-.034 1.57-.1.823-.106 1.597-.35 2.296-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.862.37-1.314.1-.6.15-1.206.154-1.814V6.124zM17.884 18.63c-.026.504-.1.98-.345 1.424-.385.698-1.003 1.078-1.79 1.15-.19.02-.38.024-.57.012-.657-.04-1.284-.21-1.89-.45-.755-.3-1.474-.686-2.196-1.066a7.27 7.27 0 01-.387-.216c-.228-.136-.432-.298-.61-.492-.256-.28-.378-.608-.383-.98V8.873c0-.12.01-.24.03-.36.06-.37.23-.67.53-.9.26-.2.56-.32.88-.41.28-.08.57-.12.86-.15.27-.03.55-.04.82-.03.3.01.59.05.87.13.39.11.74.3 1.04.57.23.21.38.46.43.77.03.17.04.34.04.52v9.12c0 .04 0 .08-.01.12-.03.33-.17.6-.42.82-.22.2-.49.32-.78.39-.16.04-.32.06-.49.07-.33.02-.66 0-.98-.07z"/>
+  </svg>
+);
+
+/* ─── Live Data Feed ─── */
+const LiveDataFeed = ({ elapsedSeconds }: { elapsedSeconds: number }) => {
+  const [visibleMessages, setVisibleMessages] = useState<string[]>([]);
+
+  useEffect(() => {
+    const idx = Math.min(Math.floor(elapsedSeconds / 2), dataFeedMessages.length - 1);
+    const msgs = dataFeedMessages.slice(0, idx + 1).reverse().slice(0, 5);
+    setVisibleMessages(msgs);
+  }, [elapsedSeconds]);
+
+  return (
+    <div className="w-full space-y-1 max-h-[120px] overflow-hidden">
+      <AnimatePresence mode="popLayout">
+        {visibleMessages.map((msg, i) => (
+          <motion.div
+            key={msg}
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: i === 0 ? 1 : 0.4 - i * 0.08, y: 0, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex items-center gap-2 text-xs font-mono"
+          >
+            {msg.includes("Spotify") ? (
+              <span className="text-green-400"><SpotifyIcon /></span>
+            ) : msg.includes("Apple") ? (
+              <span className="text-pink-400"><AppleMusicIcon /></span>
+            ) : (
+              <motion.span
+                className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 0.8 }}
+              />
+            )}
+            <span className={i === 0 ? "text-white/80" : "text-white/30"}>{msg}</span>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const saveAnalysisToSupabase = async (userId: string, data: {
   title: string;
   genre: string;
