@@ -77,16 +77,16 @@ const WaveformPreview = () => {
 
 /* ─── Bouncing Waveform for Loading ─── */
 const LoadingWaveform = () => (
-  <div className="flex items-end justify-center gap-2 h-24">
-    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+  <div className="flex items-end justify-center gap-1.5 h-28">
+    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
       <motion.div
         key={i}
-        className="w-3 rounded-full gradient-purple"
-        animate={{ scaleY: [0.3, 1, 0.3] }}
+        className="w-2.5 rounded-full bg-gradient-to-t from-primary via-primary to-accent"
+        animate={{ scaleY: [0.2, 1, 0.2] }}
         transition={{
           repeat: Infinity,
-          duration: 0.7,
-          delay: i * 0.1,
+          duration: 0.6,
+          delay: i * 0.08,
           ease: "easeInOut",
         }}
         style={{ height: "100%", transformOrigin: "bottom" }}
