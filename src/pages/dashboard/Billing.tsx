@@ -1,21 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { PLAN_LIMITS, Plan } from '@/lib/supabase';
-import { createCheckoutSession, PRICES } from '@/lib/stripe';
+import { createCheckoutSession, openCustomerPortal, PRICES } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Check, Star, Crown, Zap, Music, CreditCard, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-const comingSoon = () => toast.info('Payments launching soon!');
-
-const handleCheckout = async (priceId: string, userId?: string) => {
-  if (!userId) { toast.error('Please sign in first'); return; }
-  const result = await createCheckoutSession(priceId, userId);
-  if (result === null) comingSoon();
-};
+import { Check, Star, Crown, Zap, Music, CreditCard, ArrowRight, ExternalLink } from 'lucide-react';
 
 const FeatureRow = ({ text, included }: { text: string; included: boolean }) => (
   <li className="flex items-center gap-2 text-sm">
@@ -29,9 +21,36 @@ const FeatureRow = ({ text, included }: { text: string; included: boolean }) => 
 );
 
 export default function DashboardBilling() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
+  const [searchParams] = useSearchParams();
   const plan: Plan = (profile?.plan as Plan) || 'free';
   const isActive = (p: Plan) => plan === p;
+
+  // Handle payment success redirect
+  useEffect(() => {
+    if (searchParams.get('payment') === 'success') {
+      toast.success('Payment successful! Your plan has been updated.');
+      refreshProfile();
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard/billing');
+    }
+  }, [searchParams]);
+
+  const handleCheckout = async (priceId: string, mode: 'subscription' | 'payment' = 'subscription') => {
+    if (!user?.id) { toast.error('Please sign in first'); return; }
+    toast.loading('Redirecting to checkout...', { id: 'checkout' });
+    const result = await createCheckoutSession(priceId, user.id, mode);
+    toast.dismiss('checkout');
+    if (result === null) toast.error('Checkout unavailable. Please try again later.');
+  };
+
+  const handleManage = async () => {
+    if (!user?.id) return;
+    toast.loading('Opening billing portal...', { id: 'portal' });
+    const result = await openCustomerPortal(user.id);
+    toast.dismiss('portal');
+    if (result === null) toast.error('Billing portal unavailable. Please try again later.');
+  };
 
   return (
     <DashboardLayout>
@@ -50,11 +69,22 @@ export default function DashboardBilling() {
               <p className="text-xs text-muted-foreground uppercase tracking-wider">Current Plan</p>
               <p className="text-xl font-bold text-foreground">{PLAN_LIMITS[plan].label}</p>
             </div>
-            {profile?.subscription_status && (
-              <Badge className="bg-emerald-500/15 text-emerald-400 border-0 text-[10px]">
-                {profile.subscription_status}
-              </Badge>
-            )}
+            <div className="flex items-center gap-2">
+              {profile?.subscription_status && (
+                <Badge className={`border-0 text-[10px] ${
+                  profile.subscription_status === 'active' ? 'bg-emerald-500/15 text-emerald-400' :
+                  profile.subscription_status === 'past_due' ? 'bg-destructive/15 text-destructive' :
+                  'bg-muted text-muted-foreground'
+                }`}>
+                  {profile.subscription_status}
+                </Badge>
+              )}
+              {profile?.stripe_customer_id && (
+                <Button onClick={handleManage} size="sm" variant="outline" className="rounded-lg text-xs border-border gap-1.5">
+                  <ExternalLink className="w-3 h-3" /> Manage
+                </Button>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-muted/30 rounded-lg p-3">
@@ -84,7 +114,7 @@ export default function DashboardBilling() {
             {isActive('free') ? (
               <Button disabled className="w-full rounded-lg bg-muted text-muted-foreground border-0">Current</Button>
             ) : (
-              <Button variant="outline" className="w-full rounded-lg border-border">Downgrade</Button>
+              <Button variant="outline" className="w-full rounded-lg border-border" onClick={handleManage}>Downgrade</Button>
             )}
           </div>
 
@@ -107,9 +137,9 @@ export default function DashboardBilling() {
               <FeatureRow text="Priority processing" included />
             </ul>
             {isActive('pro') ? (
-              <Button onClick={comingSoon} className="w-full rounded-lg bg-primary/20 text-primary border border-primary/30">Manage</Button>
+              <Button onClick={handleManage} className="w-full rounded-lg bg-primary/20 text-primary border border-primary/30">Manage</Button>
             ) : (
-              <Button onClick={() => handleCheckout(PRICES.pro_monthly, user?.id)} className="w-full rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 font-bold">
+              <Button onClick={() => handleCheckout(PRICES.pro_monthly, 'subscription')} className="w-full rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground border-0 font-bold">
                 Upgrade to Pro <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             )}
@@ -128,9 +158,9 @@ export default function DashboardBilling() {
               <FeatureRow text="Priority support" included />
             </ul>
             {isActive('studio') ? (
-              <Button onClick={comingSoon} className="w-full rounded-lg bg-accent/20 text-accent border border-accent/30">Manage</Button>
+              <Button onClick={handleManage} className="w-full rounded-lg bg-accent/20 text-accent border border-accent/30">Manage</Button>
             ) : (
-              <Button onClick={() => handleCheckout(PRICES.studio_monthly, user?.id)} className="w-full rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground border-0 font-bold">
+              <Button onClick={() => handleCheckout(PRICES.studio_monthly, 'subscription')} className="w-full rounded-lg bg-accent hover:bg-accent/90 text-accent-foreground border-0 font-bold">
                 Go Studio
               </Button>
             )}
@@ -146,6 +176,9 @@ export default function DashboardBilling() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Status</span><Badge className="bg-emerald-500/15 text-emerald-400 border-0 text-[10px]">{profile.subscription_status || 'Active'}</Badge></div>
               {profile.plan_expires_at && <div className="flex justify-between"><span className="text-muted-foreground">Next renewal</span><span className="text-foreground">{new Date(profile.plan_expires_at).toLocaleDateString()}</span></div>}
+              <Button onClick={handleManage} size="sm" variant="outline" className="mt-2 rounded-lg text-xs border-border gap-1.5">
+                <ExternalLink className="w-3 h-3" /> Open Billing Portal
+              </Button>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">No payment method on file. Upgrade to add one.</p>
