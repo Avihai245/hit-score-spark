@@ -308,7 +308,7 @@ const Index = () => {
               transition={{ delay: 0.1, duration: 0.5 }}
               className="block"
             >
-              Your Music Has
+              Stop Guessing.
             </motion.span>
             <motion.span
               initial={{ opacity: 0, y: 20 }}
@@ -316,15 +316,15 @@ const Index = () => {
               transition={{ delay: 0.25, duration: 0.5 }}
               className="block gradient-text"
             >
-              Hit Potential.
+              Start Charting.
             </motion.span>
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="block text-muted-foreground text-[0.65em]"
+              className="block text-muted-foreground text-[0.6em] mt-1"
             >
-              Let's Prove It.
+              Turn streams into income.
             </motion.span>
           </motion.h1>
         </div>
