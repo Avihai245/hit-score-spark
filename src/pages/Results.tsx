@@ -870,7 +870,7 @@ const Results = () => {
   ].filter((f) => f.value);
 
   return (
-    <div className="min-h-screen px-4 pt-20 pb-16 bg-background">
+    <div className="min-h-screen px-4 pt-28 pb-16 bg-background">
       <div className="container max-w-4xl space-y-10">
 
         {/* ═══ 1. HERO: SCORE + VERDICT ═══ */}
