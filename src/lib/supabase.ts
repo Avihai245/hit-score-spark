@@ -5,11 +5,23 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIU
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-export type Plan = 'free' | 'payg' | 'pro' | 'studio';
+export type Plan = 'free' | 'pro' | 'studio';
 
 export const PLAN_LIMITS = {
-  free: { analyses: 1, remixes: 0, label: 'Free' },
-  payg: { analyses: 999, remixes: 999, label: 'Pay As You Go' },
-  pro: { analyses: 999, remixes: 10, label: 'Pro', price: 29 },
-  studio: { analyses: 999, remixes: 999, label: 'Studio', price: 49 },
+  free: { analyses: 1, remixes: 0, label: 'Free', price: 0 },
+  pro: { analyses: 999, remixes: 10, label: 'Pro', price: 19 },
+  studio: { analyses: 999, remixes: 999, label: 'Studio', price: 29 },
 };
+
+// Credit costs
+export const CREDIT_COSTS = {
+  analysis: 35,
+  remix: 85,
+};
+
+// Credit packs (PAYG)
+export const CREDIT_PACKS = [
+  { credits: 100, price: 10, label: '100 Credits', popular: false },
+  { credits: 300, price: 25, label: '300 Credits', popular: true, savings: '17%' },
+  { credits: 500, price: 40, label: '500 Credits', popular: false, savings: '20%' },
+];

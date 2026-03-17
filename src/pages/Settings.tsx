@@ -25,9 +25,8 @@ const TABS = [
 
 const PLANS: { id: Plan; name: string; price: string; features: string[] }[] = [
   { id: 'free', name: 'Free', price: '$0', features: ['1 analysis/month', 'No remixes', 'Basic results'] },
-  { id: 'payg', name: 'Pay As You Go', price: 'Credits', features: ['Pay per use', 'All features', 'No monthly limit'] },
   { id: 'pro', name: 'Pro', price: '$19/mo', features: ['Unlimited analyses', '10 remixes/month', 'Priority processing', 'Advanced insights'] },
-  { id: 'studio', name: 'Studio', price: '$49/mo', features: ['Everything in Pro', 'Unlimited remixes', 'API access', 'White-label exports', 'Priority support'] },
+  { id: 'studio', name: 'Studio', price: '$29/mo', features: ['Everything in Pro', 'Unlimited remixes', 'Team seats', 'Priority support'] },
 ];
 
 export default function Settings() {
@@ -177,7 +176,7 @@ export default function Settings() {
                       plan === 'studio' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
                       'bg-blue-500/20 text-blue-400 border-blue-500/30'
                     }`}>
-                      {plan === 'free' ? 'Free' : plan === 'payg' ? 'Pay As You Go' : plan === 'pro' ? '$19/mo' : '$49/mo'}
+                      {plan === 'free' ? 'Free' : plan === 'pro' ? '$19/mo' : '$29/mo'}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4 mb-4">
@@ -218,7 +217,7 @@ export default function Settings() {
 
                 {/* Quick plan grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {PLANS.filter(p => p.id !== 'payg').map((p) => (
+                  {PLANS.map((p) => (
                     <div
                       key={p.id}
                       className={`rounded-2xl border p-4 transition-all ${
