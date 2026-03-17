@@ -43,15 +43,34 @@ const GENRE_GRADIENTS: Record<string, string> = {
 const getGenreGradient = (genre?: string) =>
   genre && GENRE_GRADIENTS[genre] ? GENRE_GRADIENTS[genre] : 'from-violet-500 to-pink-500';
 
-/* ─── Mini Score Gauge ─── */
+/* ─── Mini Score Gauge (cinematic) ─── */
 const MiniGauge = ({ score }: { score: number }) => {
   const r = 60;
   const circ = 2 * Math.PI * r;
   const color = scoreColor(score);
+  const count = useMotionValue(0);
+  const rounded = useTransform(count, (v) => Math.round(v));
+
+  useEffect(() => {
+    const ctrl = animate(count, score, { duration: 2, ease: [0.16, 1, 0.3, 1] });
+    return ctrl.stop;
+  }, [count, score]);
+
   return (
-    <div className="relative flex items-center justify-center">
+    <motion.div
+      className="relative flex items-center justify-center"
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1], delay: 0.3 }}
+    >
+      <motion.div
+        className="absolute w-32 h-32 rounded-full blur-[50px] opacity-20"
+        style={{ backgroundColor: color }}
+        animate={{ scale: [1, 1.2, 1] }}
+        transition={{ repeat: Infinity, duration: 3 }}
+      />
       <svg width="160" height="160" className="-rotate-90">
-        <circle cx="80" cy="80" r={r} fill="none" stroke="hsl(0 0% 10%)" strokeWidth="10" />
+        <circle cx="80" cy="80" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="8" strokeOpacity="0.3" />
         <motion.circle
           cx="80" cy="80" r={r} fill="none"
           stroke={color}
@@ -60,14 +79,21 @@ const MiniGauge = ({ score }: { score: number }) => {
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: circ - (score / 100) * circ }}
-          transition={{ duration: 1.5, ease: 'easeOut' }}
+          transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+          filter="url(#miniGlow)"
         />
+        <defs>
+          <filter id="miniGlow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
       </svg>
       <div className="absolute text-center">
-        <p className="text-4xl font-black" style={{ color }}>{score}</p>
-        <p className="text-xs text-white/40">/ 100</p>
+        <motion.p className="text-4xl font-black" style={{ color }}>{rounded}</motion.p>
+        <p className="text-xs text-muted-foreground">/ 100</p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
