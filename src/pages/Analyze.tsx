@@ -499,15 +499,18 @@ const Analyze = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 pt-24 pb-12 bg-background">
+    <div className="min-h-screen px-4 pt-32 pb-12 bg-background">
       <div className="container max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-white">Analyze Your Song</h1>
-          <p className="text-center text-muted-foreground mb-10">
-            Upload your track and get your hit score in 60 seconds
+          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-foreground">Run Your Track Through Our Analysis Engine</h1>
+          <p className="text-center text-muted-foreground mb-3">
+            Upload your track and get data-driven insights in ~90 seconds
+          </p>
+          <p className="text-center text-[11px] text-muted-foreground/60 mb-10">
+            Based on patterns from top-performing tracks across Spotify • Apple Music • TikTok • YouTube
           </p>
         </motion.div>
 
