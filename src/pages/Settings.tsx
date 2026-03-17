@@ -25,9 +25,8 @@ const TABS = [
 
 const PLANS: { id: Plan; name: string; price: string; features: string[] }[] = [
   { id: 'free', name: 'Free', price: '$0', features: ['1 analysis/month', 'No remixes', 'Basic results'] },
-  { id: 'payg', name: 'Pay As You Go', price: 'Credits', features: ['Pay per use', 'All features', 'No monthly limit'] },
   { id: 'pro', name: 'Pro', price: '$19/mo', features: ['Unlimited analyses', '10 remixes/month', 'Priority processing', 'Advanced insights'] },
-  { id: 'studio', name: 'Studio', price: '$49/mo', features: ['Everything in Pro', 'Unlimited remixes', 'API access', 'White-label exports', 'Priority support'] },
+  { id: 'studio', name: 'Studio', price: '$29/mo', features: ['Everything in Pro', 'Unlimited remixes', 'Team seats', 'Priority support'] },
 ];
 
 export default function Settings() {
