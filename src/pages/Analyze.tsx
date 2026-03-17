@@ -316,8 +316,11 @@ const Analyze = () => {
         }
 
         pollCount++;
-        // Progress step markers based on poll count
-        if (pollCount >= 2 && !completedSteps.includes(2)) markStep(2);
+        // Progressive step markers for platform scanning
+        if (pollCount >= 1 && !completedSteps.includes(2)) markStep(2); // Spotify
+        if (pollCount >= 2 && !completedSteps.includes(3)) markStep(3); // Apple Music
+        if (pollCount >= 3 && !completedSteps.includes(4)) markStep(4); // Cross-ref
+        if (pollCount >= 4 && !completedSteps.includes(5)) markStep(5); // Audio analysis
 
         try {
           const res = await fetch((import.meta.env.VITE_LAMBDA_URL || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze"), {
