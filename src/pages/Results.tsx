@@ -9,7 +9,7 @@ import {
   Check, X, Target, ListMusic, Lightbulb, Clock, Activity, Zap,
   Headphones, Music, User, AlertTriangle, KeyRound, MapPin,
   ArrowRight, ChevronRight, Download, Share2, Upload, Play, Pause, Loader2, Copy, Sparkles, Shield,
-  BarChart3, TrendingUp, Radio, Mic2, FileText, Calendar, Award, Eye
+  BarChart3, TrendingUp, Radio, Mic2, FileText, Calendar, Award, Eye, CheckCircle2, Activity, Headphones
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
