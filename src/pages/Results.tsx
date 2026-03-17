@@ -933,8 +933,10 @@ const Results = () => {
   ].filter((f) => f.value);
 
   return (
-    <div className="min-h-screen px-4 pt-28 pb-16 bg-background">
-      <div className="container max-w-4xl space-y-10">
+    <div className="min-h-screen px-4 pt-28 pb-16 bg-background relative overflow-hidden">
+      {/* Cinematic background particles */}
+      <ParticleField count={30} color="hsl(258, 90%, 66%)" speed={0.3} />
+      <div className="container max-w-4xl space-y-10 relative z-10">
 
         {/* ═══ 1. HERO: SCORE + VERDICT ═══ */}
         <Section delay={0} className="text-center">
