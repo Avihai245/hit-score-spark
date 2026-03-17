@@ -220,8 +220,9 @@ export default function SongDetail() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-28 pb-32">
-      <div className="container max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-background text-foreground pt-28 pb-32 relative overflow-hidden">
+      <ParticleField count={25} color="hsl(258, 90%, 66%)" speed={0.3} />
+      <div className="container max-w-4xl mx-auto px-4 relative z-10">
 
         {/* Back + breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-white/40 mb-8">
