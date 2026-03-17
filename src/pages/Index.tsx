@@ -112,7 +112,7 @@ const FloatingCTA = () => {
       initial={false}
       animate={{ y: visible ? 0 : 100, opacity: visible ? 1 : 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
+      className="fixed bottom-8 left-0 right-0 z-40 flex justify-center px-4"
       style={{ pointerEvents: visible ? "auto" : "none" }}
     >
       <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
