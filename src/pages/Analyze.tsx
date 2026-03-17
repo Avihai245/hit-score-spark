@@ -485,11 +485,12 @@ const Analyze = () => {
           >
             <div className="flex items-center gap-2 mb-3">
               <motion.div
-                className="w-2 h-2 rounded-full bg-green-400"
+                className="w-2 h-2 rounded-full bg-emerald-400"
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
               />
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Live Data Feed</span>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Live Analysis Feed</span>
+              <span className="text-[10px] text-muted-foreground/50 ml-auto">Updated moments ago</span>
             </div>
             <LiveDataFeed elapsedSeconds={elapsedSeconds} />
           </motion.div>
