@@ -703,13 +703,20 @@ const Analyze = () => {
                 </Select>
               </div>
 
-              <Button
-                type="submit"
-                disabled={!file}
-                className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold glow-purple hover:opacity-90 transition-opacity disabled:opacity-40 gap-2"
-              >
-                <Zap className="h-5 w-5" /> Analyze Now →
-              </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  type="submit"
+                  disabled={!file}
+                  className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold hover:opacity-90 transition-all disabled:opacity-40 gap-2 relative overflow-hidden group shadow-[0_0_30px_-5px] shadow-primary/30"
+                >
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+                  />
+                  <Zap className="h-5 w-5 relative z-10" /> <span className="relative z-10">Analyze Now →</span>
+                </Button>
+              </motion.div>
 
               <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                 <Lock className="h-3 w-3" /> Your song is never stored or shared
