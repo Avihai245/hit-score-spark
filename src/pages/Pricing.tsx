@@ -1,19 +1,8 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Check, Sparkles, Crown, Zap, Building2, ArrowRight, Music, TrendingUp, Star } from "lucide-react";
+import { Check, Sparkles, Crown, Zap, ArrowRight, Music, TrendingUp, Star, Rocket } from "lucide-react";
 import { useState } from "react";
-
-function Coins({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="8" r="6"/>
-      <path d="M18.09 10.37A6 6 0 1 1 10.34 18"/>
-      <path d="M7 6h1v4"/>
-      <path d="m16.71 13.88.7.71-2.82 2.82"/>
-    </svg>
-  );
-}
 
 const plans = [
   {
@@ -43,38 +32,9 @@ const plans = [
     comingSoon: false,
   },
   {
-    id: "payg",
-    name: "Pay As You Go",
-    price: null,
-    period: "",
-    badge: null,
-    tagline: "No commitment",
-    description: "Perfect for artists releasing singles",
-    Icon: Coins,
-    gradient: "from-blue-500/15 to-blue-600/5",
-    iconBg: "bg-blue-500/15",
-    iconColor: "text-blue-400",
-    ring: "ring-blue-500/20",
-    priceLines: [
-      { label: "Deep Analysis", price: "$2.99", note: "per song" },
-      { label: "AI Remix", price: "$6.99", note: "per remix" },
-    ],
-    features: [
-      "Full analysis report",
-      "AI Remix with your style",
-      "Download MP3 & WAV",
-      "Viral potential breakdown",
-      "No expiration on credits",
-    ],
-    cta: "Buy Credits",
-    ctaClass: "bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-500/25",
-    highlighted: false,
-    comingSoon: true,
-  },
-  {
     id: "pro",
     name: "Pro",
-    price: "$29",
+    price: "$19",
     period: "/mo",
     badge: "MOST POPULAR",
     tagline: "Best value",
@@ -84,16 +44,13 @@ const plans = [
     iconBg: "bg-purple-500/20",
     iconColor: "text-purple-400",
     ring: "ring-purple-500/40",
-    savings: "Save $40+/mo vs Pay As You Go",
     features: [
       "Unlimited analyses",
-      "4 AI Hit Remixes per month",
-      "Deep viral breakdown",
-      "PDF download reports",
+      "Up to 4 viral songs/month",
+      "Smart scan of top 500 live hits",
+      "Full viral report + lyrics breakdown",
+      "MP3 download",
       "Priority processing",
-      "Competitor DNA match",
-      "Playlist targeting tips",
-      "30-day release roadmap",
     ],
     cta: "Get Pro",
     ctaClass: "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-black shadow-lg shadow-purple-500/25",
@@ -103,11 +60,11 @@ const plans = [
   {
     id: "studio",
     name: "Studio",
-    price: "$49",
+    price: "$29",
     period: "/mo",
     badge: null,
-    tagline: "Maximum power",
-    description: "For artists who want the ultimate creative toolkit",
+    tagline: "More power",
+    description: "More viral songs for serious creators",
     Icon: Star,
     gradient: "from-amber-500/15 to-amber-600/5",
     iconBg: "bg-amber-500/15",
@@ -115,14 +72,66 @@ const plans = [
     ring: "ring-amber-500/20",
     features: [
       "Everything in Pro",
-      "8 AI Hit Remixes per month",
-      "Advanced vocal tuning",
-      "Multi-style remixes",
+      "Up to 10 viral songs/month",
+      "WAV + MP3 download",
+      "Advanced analytics",
+      "Commercial use rights",
       "Priority support",
-      "Early access to new features",
     ],
     cta: "Get Studio",
     ctaClass: "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/25",
+    highlighted: false,
+    comingSoon: true,
+  },
+  {
+    id: "business",
+    name: "Business",
+    price: "$49",
+    period: "/mo",
+    badge: "BEST VALUE",
+    tagline: "Scale up",
+    description: "Scale your music production",
+    Icon: Sparkles,
+    gradient: "from-emerald-500/15 to-emerald-600/5",
+    iconBg: "bg-emerald-500/15",
+    iconColor: "text-emerald-400",
+    ring: "ring-emerald-500/20",
+    features: [
+      "Everything in Studio",
+      "Up to 20 viral songs/month",
+      "WAV + MP3 + stems download",
+      "Full commercial rights",
+      "Early access to new features",
+      "Priority support",
+    ],
+    cta: "Get Business",
+    ctaClass: "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25",
+    highlighted: false,
+    comingSoon: true,
+  },
+  {
+    id: "unlimited",
+    name: "Unlimited",
+    price: "$79",
+    period: "/mo",
+    badge: null,
+    tagline: "No limits",
+    description: "No limits. Maximum revenue potential.",
+    Icon: Rocket,
+    gradient: "from-rose-500/15 to-rose-600/5",
+    iconBg: "bg-rose-500/15",
+    iconColor: "text-rose-400",
+    ring: "ring-rose-500/20",
+    features: [
+      "Everything in Business",
+      "Unlimited viral songs",
+      "Fastest priority queue",
+      "Full commercial rights",
+      "Early access to new features",
+      "Premium support",
+    ],
+    cta: "Go Unlimited",
+    ctaClass: "bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25",
     highlighted: false,
     comingSoon: true,
   },
@@ -161,7 +170,7 @@ const Pricing = () => {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            One hit song can change your career forever. Our AI finds exactly what's 
+            One hit song can change your career forever. Our AI finds exactly what's
             missing — so every release has maximum viral potential.
           </p>
         </motion.div>
@@ -182,7 +191,7 @@ const Pricing = () => {
         </motion.div>
 
         {/* ─── Plans Grid ─── */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
+        <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-4 items-stretch">
           {plans.map((plan, i) => {
             const { Icon } = plan;
             const isHovered = hoveredPlan === plan.id;
@@ -194,21 +203,19 @@ const Pricing = () => {
                 transition={{ delay: 0.1 + i * 0.08 }}
                 onHoverStart={() => setHoveredPlan(plan.id)}
                 onHoverEnd={() => setHoveredPlan(null)}
-                className={`relative flex flex-col rounded-2xl ring-1 ${plan.ring} bg-gradient-to-b ${plan.gradient} backdrop-blur-sm p-7 transition-all duration-300 ${
+                className={`relative flex flex-col rounded-2xl ring-1 ${plan.ring} bg-gradient-to-b ${plan.gradient} backdrop-blur-sm p-5 transition-all duration-300 ${
                   plan.highlighted
-                    ? "shadow-2xl shadow-purple-500/15 xl:scale-[1.03] z-10"
+                    ? "shadow-2xl shadow-purple-500/15 xl:scale-[1.02] z-10"
                     : ""
                 } ${isHovered ? "-translate-y-1" : ""}`}
               >
-                {/* Glow effect for highlighted */}
                 {plan.highlighted && (
                   <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-purple-500/30 via-transparent to-transparent -z-10 blur-sm" />
                 )}
 
-                {/* Badge */}
                 {plan.badge && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="px-5 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 text-white text-[11px] font-black tracking-widest shadow-lg shadow-purple-500/30 flex items-center gap-1.5">
+                    <span className="px-4 py-1 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 text-white text-[10px] font-black tracking-widest shadow-lg shadow-purple-500/30 flex items-center gap-1 whitespace-nowrap">
                       <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
                       {plan.badge}
                     </span>
@@ -216,50 +223,42 @@ const Pricing = () => {
                 )}
 
                 {/* Icon + Name */}
-                <div className="space-y-4 pt-1 mb-5">
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${plan.iconBg}`}>
+                <div className="space-y-3 pt-1 mb-4">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.iconBg}`}>
                     <Icon className={`h-5 w-5 ${plan.iconColor}`} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black text-foreground">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-0.5">{plan.description}</p>
+                    <h3 className="text-lg font-black text-foreground">{plan.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{plan.description}</p>
                   </div>
                 </div>
 
                 {/* Price */}
-                <div className="mb-6 min-h-[60px]">
-                  {plan.id === "payg" && plan.priceLines ? (
-                    <div className="space-y-2">
-                      {plan.priceLines.map((line) => (
-                        <div key={line.label} className="flex items-baseline justify-between">
-                          <span className="text-sm text-muted-foreground">{line.label}</span>
-                          <div className="flex items-baseline gap-1">
-                            <span className="text-xl font-black text-foreground">{line.price}</span>
-                            <span className="text-xs text-muted-foreground">{line.note}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex items-end gap-1">
-                      <span className="text-5xl font-black text-foreground tracking-tight">{plan.price}</span>
-                      {plan.period && <span className="text-muted-foreground text-base pb-1.5 font-medium">{plan.period}</span>}
-                    </div>
-                  )}
-                  {plan.savings && (
-                    <p className="text-xs text-green-400 font-semibold mt-2 flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      {plan.savings}
-                    </p>
-                  )}
+                <div className="mb-4">
+                  <div className="flex items-end gap-1">
+                    <span className="text-4xl font-black text-foreground tracking-tight">{plan.price}</span>
+                    {plan.period && <span className="text-muted-foreground text-sm pb-1 font-medium">{plan.period}</span>}
+                  </div>
                 </div>
 
-                {/* CTA */}
-                <div className="mb-6">
+                {/* Features — flex-1 pushes CTA to bottom */}
+                <div className="space-y-2.5 flex-1 mb-5">
+                  {plan.features.map((f) => (
+                    <div key={f} className="flex items-start gap-2">
+                      <div className={`mt-0.5 rounded-full p-0.5 ${plan.highlighted ? 'bg-purple-500/20' : 'bg-white/5'}`}>
+                        <Check className={`h-3 w-3 ${plan.highlighted ? 'text-purple-400' : 'text-green-400'}`} />
+                      </div>
+                      <span className="text-[13px] text-foreground/80 leading-tight">{f}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA — always aligned at bottom */}
+                <div>
                   {plan.comingSoon ? (
                     <div className="space-y-1.5">
                       <button
-                        className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all cursor-not-allowed ${plan.ctaClass} ${plan.highlighted ? '' : 'opacity-80'}`}
+                        className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all cursor-not-allowed ${plan.ctaClass} ${plan.highlighted ? '' : 'opacity-80'}`}
                         disabled
                       >
                         {plan.cta}
@@ -267,27 +266,12 @@ const Pricing = () => {
                       <p className="text-[11px] text-center text-muted-foreground">Coming soon</p>
                     </div>
                   ) : (
-                    <Button asChild className={`w-full py-3.5 h-auto rounded-xl font-bold text-sm ${plan.ctaClass}`}>
+                    <Button asChild className={`w-full py-3 h-auto rounded-xl font-bold text-sm ${plan.ctaClass}`}>
                       <Link to={plan.ctaLink || "/analyze"}>
                         {plan.cta} <ArrowRight className="h-4 w-4 ml-1.5" />
                       </Link>
                     </Button>
                   )}
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-white/[0.06] mb-5" />
-
-                {/* Features */}
-                <div className="space-y-3 flex-1">
-                  {plan.features.map((f) => (
-                    <div key={f} className="flex items-start gap-2.5">
-                      <div className={`mt-0.5 rounded-full p-0.5 ${plan.highlighted ? 'bg-purple-500/20' : 'bg-white/5'}`}>
-                        <Check className={`h-3 w-3 ${plan.highlighted ? 'text-purple-400' : 'text-green-400'}`} />
-                      </div>
-                      <span className="text-sm text-foreground/80 leading-tight">{f}</span>
-                    </div>
-                  ))}
                 </div>
               </motion.div>
             );
@@ -312,7 +296,7 @@ const Pricing = () => {
               One viral song = <span className="text-amber-400">$10,000+</span> in streams
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              A single viral hit can generate thousands in streaming revenue, sync deals, and fan growth. 
+              A single viral hit can generate thousands in streaming revenue, sync deals, and fan growth.
               Our AI tells you exactly what to fix — for less than a coffee.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">

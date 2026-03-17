@@ -14,7 +14,7 @@ import {
 
 /* ─── Feature row ─── */
 const FeatureRow = ({ text, included }: { text: string; included: boolean }) => (
-  <li className="flex items-start gap-2 text-sm py-0.5">
+  <li className="flex items-start gap-2 text-[13px] py-0.5">
     {included ? (
       <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
         <Check className="h-2.5 w-2.5 text-emerald-400" />
@@ -59,7 +59,7 @@ export default function DashboardBilling() {
     if (result === null) toast.error('Billing portal unavailable. Please try again later.');
   };
 
-  const yearlyDiscount = 0.8; // 20% off
+  const yearlyDiscount = 0.8;
 
   const plans = [
     {
@@ -74,12 +74,12 @@ export default function DashboardBilling() {
       btnClass: 'bg-primary hover:bg-primary/90 text-primary-foreground',
       description: 'Unlimited analyses + viral song creation',
       features: [
-        { text: 'Unlimited song analyses', included: true },
-        { text: 'Up to 4 viral songs/month', included: true },
-        { text: 'Smart scan of top 500 live hits', included: true },
-        { text: 'Full viral report + lyrics breakdown', included: true },
-        { text: 'MP3 download', included: true },
-        { text: 'Priority processing', included: true },
+        'Unlimited song analyses',
+        'Up to 4 viral songs/month',
+        'Smart scan of top 500 live hits',
+        'Full viral report + lyrics breakdown',
+        'MP3 download',
+        'Priority processing',
       ],
     },
     {
@@ -94,12 +94,12 @@ export default function DashboardBilling() {
       btnClass: 'bg-accent hover:bg-accent/90 text-accent-foreground',
       description: 'More viral songs for serious creators',
       features: [
-        { text: 'Everything in Pro', included: true },
-        { text: 'Up to 10 viral songs/month', included: true },
-        { text: 'WAV + MP3 download', included: true },
-        { text: 'Advanced analytics', included: true },
-        { text: 'Commercial use rights', included: true },
-        { text: 'Priority support', included: true },
+        'Everything in Pro',
+        'Up to 10 viral songs/month',
+        'WAV + MP3 download',
+        'Advanced analytics',
+        'Commercial use rights',
+        'Priority support',
       ],
     },
     {
@@ -114,19 +114,19 @@ export default function DashboardBilling() {
       btnClass: 'bg-emerald-500 hover:bg-emerald-600 text-white',
       description: 'Scale your music production',
       features: [
-        { text: 'Everything in Studio', included: true },
-        { text: 'Up to 20 viral songs/month', included: true },
-        { text: 'Team seats (3 members)', included: true },
-        { text: 'Custom branding on exports', included: true },
-        { text: 'API access', included: true },
-        { text: 'Dedicated account manager', included: true },
+        'Everything in Studio',
+        'Up to 20 viral songs/month',
+        'WAV + MP3 + stems download',
+        'Full commercial rights',
+        'Early access to new features',
+        'Priority support',
       ],
     },
     {
       id: 'unlimited' as Plan,
       name: 'Unlimited',
       icon: Rocket,
-      monthlyPrice: 89,
+      monthlyPrice: 79,
       badge: null,
       badgeClass: '',
       borderClass: 'border-amber-500/30',
@@ -134,15 +134,18 @@ export default function DashboardBilling() {
       btnClass: 'bg-amber-500 hover:bg-amber-600 text-white',
       description: 'No limits. Maximum revenue potential.',
       features: [
-        { text: 'Everything in Business', included: true },
-        { text: 'Unlimited viral songs', included: true },
-        { text: 'Unlimited team seats', included: true },
-        { text: 'White-label exports', included: true },
-        { text: 'Priority queue (fastest)', included: true },
-        { text: 'Direct Slack/WhatsApp support', included: true },
+        'Everything in Business',
+        'Unlimited viral songs',
+        'Fastest priority queue',
+        'Full commercial rights',
+        'Early access to new features',
+        'Premium support',
       ],
     },
   ];
+
+  const planOrder = ['free', 'pro', 'studio', 'business', 'unlimited'];
+  const currentIndex = planOrder.indexOf(plan);
 
   return (
     <DashboardLayout>
@@ -157,7 +160,6 @@ export default function DashboardBilling() {
         {/* ─── Status Strip ─── */}
         <div className="bg-card border border-border rounded-xl p-3 sm:p-4">
           <div className="flex flex-col gap-4">
-            {/* Info row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
               <div>
                 <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground mb-0.5">Current Plan</p>
@@ -188,8 +190,6 @@ export default function DashboardBilling() {
                 <p className="text-xs sm:text-sm font-bold text-foreground">{profile?.credits ?? 0}</p>
               </div>
             </div>
-
-            {/* Action buttons */}
             <div className="flex flex-wrap items-center gap-2">
               {profile?.stripe_customer_id && (
                 <>
@@ -259,6 +259,8 @@ export default function DashboardBilling() {
               : p.monthlyPrice;
             const active = isActive(p.id);
             const Icon = p.icon;
+            const pIndex = planOrder.indexOf(p.id);
+            const isUpgrade = pIndex > currentIndex;
 
             return (
               <div
@@ -267,7 +269,6 @@ export default function DashboardBilling() {
                   active ? p.activeClass : `${p.borderClass} bg-card`
                 }`}
               >
-                {/* Badge */}
                 {p.badge && (
                   <Badge className={`${p.badgeClass} border-0 text-[9px] px-2 py-0.5 font-bold absolute -top-2.5 right-3`}>
                     {p.badge}
@@ -275,7 +276,7 @@ export default function DashboardBilling() {
                 )}
 
                 {/* Header */}
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Icon className="h-4 w-4 text-foreground/70" />
                   <span className="font-bold text-foreground text-base">{p.name}</span>
                 </div>
@@ -292,30 +293,30 @@ export default function DashboardBilling() {
                     : 'Billed monthly'}
                 </p>
 
-                {/* CTA */}
+                {/* Features — grows to fill space */}
+                <ul className="space-y-0.5 flex-1 mb-4">
+                  {p.features.map((f) => (
+                    <FeatureRow key={f} text={f} included />
+                  ))}
+                </ul>
+
+                {/* CTA — always at bottom */}
                 {active ? (
                   <Button
                     onClick={handleManage}
-                    className="w-full rounded-xl h-10 bg-muted text-foreground border border-border font-semibold text-sm mb-4"
+                    className="w-full rounded-xl h-10 bg-muted text-foreground border border-border font-semibold text-sm"
                   >
                     Current Plan
                   </Button>
                 ) : (
                   <Button
                     onClick={() => handleCheckout(PRICES.pro_monthly, 'subscription')}
-                    className={`w-full rounded-xl h-10 border-0 font-bold text-sm mb-4 ${p.btnClass}`}
+                    className={`w-full rounded-xl h-10 border-0 font-bold text-sm ${p.btnClass}`}
                   >
-                    {plans.findIndex(x => x.id === plan) > plans.findIndex(x => x.id === p.id) ? 'Downgrade' : 'Upgrade'}
+                    {isUpgrade ? 'Upgrade' : 'Downgrade'}
                     <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </Button>
                 )}
-
-                {/* Features */}
-                <ul className="space-y-0.5 flex-1">
-                  {p.features.map((f) => (
-                    <FeatureRow key={f.text} text={f.text} included={f.included} />
-                  ))}
-                </ul>
               </div>
             );
           })}
@@ -332,7 +333,6 @@ export default function DashboardBilling() {
             </p>
           </div>
 
-          {/* Credit costs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-5">
             <div className="flex items-center gap-2 text-xs sm:text-sm">
               <div className="w-2 h-2 rounded-full bg-primary" />
@@ -350,7 +350,7 @@ export default function DashboardBilling() {
             {CREDIT_PACKS.map((pack) => (
               <div
                 key={pack.credits}
-                className={`rounded-2xl border-2 p-4 sm:p-5 text-center transition-all ${
+                className={`rounded-2xl border-2 p-4 sm:p-5 flex flex-col items-center text-center transition-all ${
                   pack.popular ? 'border-primary bg-primary/5' : 'border-border bg-card'
                 }`}
               >
@@ -359,17 +359,19 @@ export default function DashboardBilling() {
                     MOST POPULAR
                   </Badge>
                 )}
+                {!pack.popular && <div className="mb-2 h-5" />}
                 <p className="text-2xl sm:text-3xl font-bold text-foreground">{pack.credits}</p>
                 <p className="text-[11px] text-muted-foreground mb-1">credits</p>
                 <p className="text-lg sm:text-xl font-bold text-foreground mb-1">${pack.price}</p>
-                {pack.savings && (
+                {pack.savings ? (
                   <p className="text-[11px] text-emerald-400 font-medium mb-3">Save {pack.savings}</p>
+                ) : (
+                  <div className="mb-3 h-4" />
                 )}
-                {!pack.savings && <div className="mb-3" />}
                 <Button
                   onClick={() => handleCheckout(PRICES.analysis_credit, 'payment')}
                   size="sm"
-                  className={`w-full rounded-xl h-9 font-semibold text-xs ${
+                  className={`w-full rounded-xl h-9 font-semibold text-xs mt-auto ${
                     pack.popular
                       ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-0'
                       : 'bg-muted text-foreground border border-border hover:bg-muted/80'
