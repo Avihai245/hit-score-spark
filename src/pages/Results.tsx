@@ -402,7 +402,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
               className={`flex items-center gap-2.5 py-1 px-3 rounded-lg text-xs ${isCurrent ? 'bg-accent/10 border border-accent/20' : ''}`}
             >
               <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                {isDone ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400" /> : <PlatformIcon type={step.icon} />}
+                {isDone ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <PlatformIcon type={step.icon} />}
               </div>
               <span className={`flex-1 ${isCurrent ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                 {step.platform && <span className="font-semibold">{step.platform} — </span>}
