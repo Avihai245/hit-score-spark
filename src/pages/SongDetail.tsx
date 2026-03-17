@@ -161,9 +161,9 @@ export default function SongDetail() {
 
   if (error || !analysis) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
-        <p className="text-white/50">{error || 'Analysis not found'}</p>
-        <Button asChild variant="outline" className="border-white/20">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <p className="text-muted-foreground">{error || 'Analysis not found'}</p>
+        <Button asChild variant="outline" className="border-border">
           <Link to="/library">← Back to Library</Link>
         </Button>
       </div>
