@@ -101,7 +101,7 @@ const scoreBadge = (s: number) => {
   return { label: "HIT POTENTIAL", cls: "bg-primary/15 text-primary border-primary/30" };
 };
 
-/* ─── Score Gauge ─── */
+/* ─── Score Gauge (cinematic reveal) ─── */
 const ScoreGauge = ({ score }: { score: number }) => {
   const r = 90;
   const circ = 2 * Math.PI * r;
@@ -111,21 +111,33 @@ const ScoreGauge = ({ score }: { score: number }) => {
   const rounded = useTransform(count, (v) => Math.round(v));
 
   useEffect(() => {
-    const ctrl = animate(count, score, { duration: 2, ease: "easeOut" });
+    const ctrl = animate(count, score, { duration: 2.5, ease: [0.16, 1, 0.3, 1] });
     return ctrl.stop;
   }, [count, score]);
 
   return (
-    <div className="relative flex items-center justify-center w-[200px] h-[200px] md:w-[220px] md:h-[220px]">
+    <motion.div
+      className="relative flex items-center justify-center w-[220px] h-[220px] md:w-[250px] md:h-[250px]"
+      initial={{ scale: 0.5, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+    >
+      {/* Outer glow */}
       <motion.div
-        className="absolute w-48 h-48 rounded-full blur-[60px] opacity-25"
+        className="absolute w-56 h-56 rounded-full blur-[80px] opacity-0"
         style={{ backgroundColor: color }}
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.25 }}
-        transition={{ duration: 2, ease: "easeOut" }}
+        animate={{ scale: [0.5, 1.2, 1], opacity: [0, 0.35, 0.2] }}
+        transition={{ duration: 2.5, ease: "easeOut" }}
+      />
+      {/* Rotating ring accent */}
+      <motion.div
+        className="absolute inset-[-4px] rounded-full border border-dashed opacity-20"
+        style={{ borderColor: color }}
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
       />
       <svg width="100%" height="100%" viewBox="0 0 200 200" className="-rotate-90">
-        <circle cx="100" cy="100" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="10" />
+        <circle cx="100" cy="100" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="8" strokeOpacity="0.3" />
         <motion.circle
           cx="100" cy="100" r={r} fill="none"
           stroke="url(#scoreGrad)"
@@ -134,22 +146,52 @@ const ScoreGauge = ({ score }: { score: number }) => {
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+        />
+        {/* Glow overlay */}
+        <motion.circle
+          cx="100" cy="100" r={r} fill="none"
+          stroke="url(#scoreGrad)"
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circ}
+          initial={{ strokeDashoffset: circ }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+          filter="url(#glow)"
+          opacity={0.5}
         />
         <defs>
           <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
         </defs>
       </svg>
       <div className="absolute text-center">
-        <motion.div className="text-5xl md:text-6xl font-black tabular-nums font-heading" style={{ color }}>
+        <motion.div
+          className="text-5xl md:text-6xl font-black tabular-nums font-heading"
+          style={{ color }}
+          initial={{ scale: 0.5 }}
+          animate={{ scale: [0.5, 1.1, 1] }}
+          transition={{ duration: 0.6, delay: 2, ease: [0.34, 1.56, 0.64, 1] }}
+        >
           {rounded}
         </motion.div>
-        <div className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-[0.2em]">out of 100</div>
+        <motion.div
+          className="text-[10px] text-muted-foreground font-medium mt-0.5 uppercase tracking-[0.2em]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5 }}
+        >
+          out of 100
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
