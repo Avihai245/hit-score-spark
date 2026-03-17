@@ -4,15 +4,23 @@ import { PLAN_LIMITS, Plan } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
-  Music2, CreditCard, Zap, ArrowRight, X, Rocket, Search,
+  Home, Music2, CreditCard, ArrowRight, X, Rocket, Search,
+  Bell, User, Coins, Library,
 } from 'lucide-react';
 import { LogoIcon } from '@/components/ViralizeLogo';
 
 const NAV_ITEMS = [
-  { href: '/analyze', label: 'Analyze Song', icon: Search, description: 'Upload & scan a track' },
-  { href: '/dashboard', label: 'My Songs', icon: Music2, description: 'Your song library', exact: true },
-  { href: '/dashboard/viral', label: 'Make it a Hit', icon: Rocket, description: 'AI-powered improvements' },
-  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, description: 'Plans & payments' },
+  { href: '/dashboard', label: 'Home', icon: Home, exact: true },
+  { href: '/analyze', label: 'Create', icon: Rocket },
+  { href: '/dashboard/tracks', label: 'Library', icon: Library },
+  { href: '/dashboard/search', label: 'Search', icon: Search },
+  { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
+];
+
+const BOTTOM_NAV = [
+  { href: '/dashboard/profile', label: 'Account', icon: User },
+  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
+  { href: '/dashboard/credits', label: 'Buy Credits', icon: Coins },
 ];
 
 interface DashboardSidebarProps {
@@ -30,13 +38,39 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
   const isActive = (href: string, exact?: boolean) =>
     exact ? location.pathname === href : location.pathname.startsWith(href);
 
+  const renderNavItem = ({ href, label, icon: Icon, exact }: typeof NAV_ITEMS[0]) => {
+    const active = isActive(href, exact);
+    const showText = !collapsed;
+    return (
+      <Link
+        key={href}
+        to={href}
+        title={!showText ? label : undefined}
+        className={cn(
+          'relative flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150',
+          !showText ? 'justify-center px-2 py-3' : 'px-3 py-2.5',
+          active
+            ? 'bg-primary/15 text-primary shadow-[0_0_20px_-4px] shadow-primary/20'
+            : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+        )}
+      >
+        {active && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
+        )}
+        <Icon className={cn("w-5 h-5 shrink-0", active && "text-primary")} />
+        {showText && (
+          <span className={cn(active ? "text-primary font-semibold" : "")}>{label}</span>
+        )}
+      </Link>
+    );
+  };
+
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 bottom-0 z-50 flex-col bg-[#0a0a0a] border-r border-border/30 transition-all duration-200',
-        // Hidden on mobile (bottom nav used instead), visible on desktop
+        'fixed left-0 top-0 bottom-0 z-50 flex-col bg-[hsl(var(--background))] border-r border-border/30 transition-all duration-200',
         'hidden md:flex',
-        !collapsed ? 'md:w-60' : 'md:w-16'
+        !collapsed ? 'md:w-56' : 'md:w-16'
       )}
     >
       {/* Logo */}
@@ -49,39 +83,28 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
         </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2">
-        <div className="space-y-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, description, exact }) => {
-            const active = isActive(href, exact);
-            const showText = !collapsed;
-            return (
-              <Link
-                key={href}
-                to={href}
-                title={!showText ? label : undefined}
-                className={cn(
-                  'relative flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-150',
-                  !showText ? 'justify-center px-2 py-3' : 'px-3 py-3',
-                  active
-                    ? 'bg-primary/15 text-primary shadow-[0_0_20px_-4px] shadow-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                )}
-              >
-                {/* Active indicator bar */}
-                {active && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
-                )}
-                <Icon className={cn("w-5 h-5 shrink-0", active && "text-primary")} />
-                {showText && (
-                  <div className="flex flex-col">
-                    <span className={cn(active ? "text-primary font-semibold" : "")}>{label}</span>
-                    <span className="text-[10px] text-muted-foreground/60 font-normal">{description}</span>
-                  </div>
-                )}
-              </Link>
-            );
-          })}
+      {/* User info */}
+      {!collapsed && (
+        <div className="px-4 py-3 border-b border-border/20">
+          <p className="text-sm font-semibold text-foreground truncate">
+            {profile?.display_name || profile?.email?.split('@')[0] || 'User'}
+          </p>
+          <p className="text-[11px] text-muted-foreground">{profile?.credits ?? 0} credits</p>
+        </div>
+      )}
+
+      {/* Main Nav */}
+      <nav className="flex-1 overflow-y-auto py-3 px-2">
+        <div className="space-y-0.5">
+          {NAV_ITEMS.map(renderNavItem)}
+        </div>
+
+        {/* Separator */}
+        <div className="my-4 mx-2 border-t border-border/20" />
+
+        {/* Bottom section */}
+        <div className="space-y-0.5">
+          {BOTTOM_NAV.map(renderNavItem)}
         </div>
       </nav>
 
@@ -89,13 +112,12 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
       {!collapsed && plan !== 'studio' && (
         <div className="mx-3 mb-3 p-3 rounded-xl bg-primary/8 border border-primary/15">
           <div className="flex items-center gap-2 mb-1">
-            <Zap className="w-3.5 h-3.5 text-primary" />
             <span className="text-[11px] font-bold text-primary uppercase tracking-wide">
               {PLAN_LIMITS[plan].label} Plan
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground mb-2">
-            Unlock unlimited analyses
+            Unlock more analyses & remixes
           </p>
           <Button asChild size="sm" className="w-full h-7 text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-lg">
             <Link to="/dashboard/billing">
