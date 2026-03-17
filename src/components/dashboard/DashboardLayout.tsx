@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { DashboardSidebar } from './DashboardSidebar';
 import { DashboardTopbar } from './DashboardTopbar';
 import { cn } from '@/lib/utils';
@@ -8,8 +9,8 @@ import { Search, Music2, Rocket, CreditCard } from 'lucide-react';
 
 const MOBILE_NAV = [
   { href: '/analyze', label: 'Analyze', icon: Search },
-  { href: '/dashboard', label: 'Tracks', icon: Music2, exact: true },
-  { href: '/dashboard/viral', label: 'Viral', icon: Rocket },
+  { href: '/dashboard', label: 'My Songs', icon: Music2, exact: true },
+  { href: '/dashboard/viral', label: 'Hit', icon: Rocket },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
 ];
 
@@ -19,10 +20,13 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user, loading } = useAuth();
+  const { currentTrack } = useAudioPlayer();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const hasPlayer = !!currentTrack;
 
   useEffect(() => {
     if (!loading && !user) navigate('/');
@@ -51,12 +55,20 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           sidebarCollapsed={collapsed}
           onMobileMenuToggle={() => setMobileOpen(!mobileOpen)}
         />
-        {/* Main content — add bottom padding on mobile for bottom nav */}
-        <main className="flex-1 p-4 lg:p-6 pb-24 md:pb-6">{children}</main>
+        {/* Main content — add bottom padding on mobile for bottom nav + player */}
+        <main className={cn(
+          "flex-1 p-4 lg:p-6 md:pb-6",
+          hasPlayer ? "pb-36" : "pb-24"
+        )}>
+          {children}
+        </main>
       </div>
 
       {/* ─── Mobile Bottom Navigation ─── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0a] border-t border-border/30 safe-area-pb">
+      <nav className={cn(
+        "fixed left-0 right-0 z-50 md:hidden bg-[#0a0a0a] border-t border-border/30 safe-area-pb transition-all",
+        hasPlayer ? "bottom-[60px]" : "bottom-0"
+      )}>
         <div className="flex items-center justify-around h-16">
           {MOBILE_NAV.map(({ href, label, icon: Icon, exact }) => {
             const active = isActive(href, exact);
