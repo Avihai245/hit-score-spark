@@ -251,18 +251,28 @@ export default function AdminDashboard() {
     else { setSortCol(col); setSortDir('desc'); }
   };
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <AdminGuard>
-      <div className="flex min-h-screen bg-[#0a0a0a] text-white">
-        <AdminNav />
-        <main className="flex-1 overflow-auto p-6">
+      <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <AdminNav mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
+        <main className="flex-1 overflow-auto p-4 md:p-6 ml-0 md:ml-56">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-              <p className="text-xs text-white/40 mt-1">
-                Last updated: {format(lastUpdated, 'HH:mm:ss')}
-              </p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setMobileNavOpen(true)}
+                className="md:hidden p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 border border-white/10"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-white">Admin Dashboard</h1>
+                <p className="text-xs text-white/40 mt-1">
+                  Last updated: {format(lastUpdated, 'HH:mm:ss')}
+                </p>
+              </div>
             </div>
             <button
               onClick={fetchAll}
