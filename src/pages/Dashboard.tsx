@@ -139,7 +139,7 @@ export default function Dashboard() {
             { icon: <BarChart2 className="h-5 w-5 text-primary" />, label: 'Songs Analyzed', value: dataLoading ? '…' : displayAnalysesCount.toString() },
             { icon: <RefreshCw className="h-5 w-5 text-accent" />, label: 'Remixes Made', value: dataLoading ? '…' : displayRemixesCount.toString() },
             { icon: <TrendingUp className="h-5 w-5 text-emerald-400" />, label: 'Avg Hit Score', value: avgScore > 0 ? `${avgScore}/100` : '—' },
-            { icon: <Zap className="h-5 w-5 text-blue-400" />, label: 'Credits', value: plan === 'payg' ? credits.toString() : plan === 'free' ? '—' : '∞' },
+            { icon: <Zap className="h-5 w-5 text-blue-400" />, label: 'Credits', value: credits > 0 ? credits.toString() : plan === 'free' ? '—' : '∞' },
           ].map((stat) => (
             <div key={stat.label} className="glass-card p-5 hover:bg-card/90 transition-colors">
               <div className="flex items-center gap-2 mb-3">

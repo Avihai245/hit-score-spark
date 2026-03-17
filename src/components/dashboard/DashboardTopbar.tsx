@@ -22,7 +22,6 @@ export const DashboardTopbar = ({ sidebarCollapsed, onMobileMenuToggle }: Dashbo
 
   const PLAN_BADGE: Record<Plan, string> = {
     free: 'bg-muted text-muted-foreground',
-    payg: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
     pro: 'bg-primary/15 text-primary border-primary/20',
     studio: 'bg-accent/15 text-accent border-accent/20',
   };

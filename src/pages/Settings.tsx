@@ -217,7 +217,7 @@ export default function Settings() {
 
                 {/* Quick plan grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {PLANS.filter(p => p.id !== 'payg').map((p) => (
+                  {PLANS.map((p) => (
                     <div
                       key={p.id}
                       className={`rounded-2xl border p-4 transition-all ${

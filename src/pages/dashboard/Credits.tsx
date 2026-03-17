@@ -94,7 +94,7 @@ export default function Credits() {
           </div>
 
           {/* Credits balance for PAYG */}
-          {plan === 'payg' && (
+          {(profile?.credits ?? 0) > 0 && (
             <div className="mt-4 bg-muted/30 rounded-xl p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Zap className="w-5 h-5 text-accent" />
