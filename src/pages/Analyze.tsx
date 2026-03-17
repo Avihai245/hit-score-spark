@@ -381,15 +381,16 @@ const Analyze = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center gap-6 max-w-lg w-full"
         >
-          <div className="relative">
+           <div className="relative">
             <div className="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-primary/20 blur-3xl" />
             <LoadingWaveform />
           </div>
           <div className="text-center">
             <p className="text-lg font-bold font-heading text-foreground">
-              Analyzing your song...
+              Running global pattern analysis...
             </p>
-            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s</p>
+            <p className="text-xs text-muted-foreground mt-1">Comparing against thousands of high-performing tracks</p>
+            <p className="mt-1 text-sm text-muted-foreground tabular-nums">{elapsedSeconds}s elapsed</p>
           </div>
 
           {/* Platform badges */}
