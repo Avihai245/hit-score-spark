@@ -127,9 +127,6 @@ const FloatingCTA = () => {
           </Link>
         </Button>
       </motion.div>
-      <p className="text-[10px] text-muted-foreground text-center mt-1.5 font-medium">
-        No signup required · Results in 30 seconds
-      </p>
     </motion.div>
   );
 };
