@@ -21,36 +21,33 @@ const goals = [
 ];
 
 const analysisSteps = [
-  { label: "Uploading audio file", key: "upload", icon: "📤" },
-  { label: "Extracting audio patterns", key: "listen", icon: "🎧" },
-  { label: "Mapping structure against top-performing tracks", key: "spotify", icon: "🟢" },
-  { label: "Analyzing hook timing & retention signals", key: "apple", icon: "🍎" },
-  { label: "Matching against global benchmarks", key: "compare", icon: "📊" },
-  { label: "Evaluating replay potential & skip risk", key: "audio", icon: "🔊" },
-  { label: "Finalizing data-driven insights", key: "report", icon: "📋" },
+  { label: "Uploading & reading audio file", key: "upload", platform: null, color: "text-muted-foreground" },
+  { label: "Scanning Spotify hit patterns & playlist data", key: "spotify", platform: "spotify", color: "text-emerald-400" },
+  { label: "Analyzing Apple Music chart performance", key: "apple", platform: "apple", color: "text-pink-400" },
+  { label: "Cross-referencing YouTube & TikTok viral trends", key: "compare", platform: "youtube", color: "text-red-400" },
+  { label: "Mapping hook timing & skip-risk signals", key: "audio", platform: null, color: "text-accent" },
+  { label: "Benchmarking against 500K+ top-performing tracks", key: "benchmark", platform: null, color: "text-primary" },
+  { label: "Generating your personalized hit report", key: "report", platform: null, color: "text-foreground" },
 ];
 
 /* ─── Live Data Feed Messages ─── */
 const dataFeedMessages = [
-  "Extracting audio fingerprint…",
-  "Detecting tempo & BPM patterns…",
-  "Fetching genre benchmarks from hit data…",
-  "Loading chart performance data…",
-  "Analyzing hook timing at 0:00–0:15…",
-  "Comparing to 847 pattern-matched tracks…",
-  "Measuring danceability index…",
-  "Checking algorithmic playlist fit…",
-  "Calculating valence score…",
-  "Evaluating save rate prediction…",
-  "Analyzing frequency spectrum…",
-  "Genre trend analysis in progress…",
-  "Computing skip risk probability…",
-  "Matching editorial playlist patterns…",
-  "Evaluating lyrical sentiment…",
-  "Cross-referencing viral sound patterns…",
-  "Building audience demographic profile…",
-  "Comparing against thousands of high-performing tracks…",
-  "Finalizing data-driven insights…",
+  "Connecting to Spotify catalog data…",
+  "Pulling playlist placement patterns…",
+  "Extracting tempo & BPM signature…",
+  "Scanning Apple Music editorial trends…",
+  "Loading TikTok viral sound fingerprints…",
+  "Comparing hook timing across 847 hits…",
+  "Measuring danceability & energy index…",
+  "Checking algorithmic playlist fit score…",
+  "Analyzing save-rate prediction model…",
+  "Cross-referencing YouTube trending data…",
+  "Mapping frequency spectrum to hit profiles…",
+  "Evaluating skip risk at 0:03, 0:15, 0:30…",
+  "Computing replay potential score…",
+  "Matching against editorial playlist DNA…",
+  "Scoring viral coefficient across platforms…",
+  "Building your personalized hit blueprint…",
 ];
 
 /* ─── Fake Waveform Preview ─── */
@@ -413,9 +410,9 @@ const Analyze = () => {
               animate={{ opacity: [1, 0.7, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
             >
-              Running global pattern analysis...
-            </motion.p>
-            <p className="text-xs text-muted-foreground mt-1">Comparing against thousands of high-performing tracks</p>
+               Scanning global hit data...
+             </motion.p>
+             <p className="text-xs text-muted-foreground mt-1">Pulling real patterns from Spotify, Apple Music & YouTube charts</p>
             <div className="flex items-center justify-center gap-2 mt-2">
               <motion.div
                 className="w-2 h-2 rounded-full bg-emerald-400"
@@ -492,12 +489,12 @@ const Analyze = () => {
                   )}
                 >
                   <div className={cn(
-                    "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs",
+                    "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
                     isCompleted
                       ? "bg-emerald-500"
                       : isCurrent
-                        ? "bg-primary/30 border-2 border-primary"
-                        : "bg-muted"
+                        ? "bg-primary/20 border-2 border-primary"
+                        : "bg-muted/50"
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500 }}>
@@ -505,22 +502,42 @@ const Analyze = () => {
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
-                        className="w-1.5 h-1.5 rounded-full bg-primary"
+                        className="w-2 h-2 rounded-full bg-primary"
                         animate={{ scale: [1, 1.8, 1], opacity: [1, 0.4, 1] }}
                         transition={{ repeat: Infinity, duration: 0.8 }}
                       />
                     ) : (
-                      <span className="text-[10px] text-muted-foreground">{step.icon}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
                     )}
                   </div>
-                  <span className={cn(
-                    "text-sm font-medium",
-                    isCompleted ? "text-emerald-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
-                  )}>
-                    {step.label}
-                    {isCompleted && " ✓"}
-                    {isCurrent && "..."}
-                  </span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {step.platform === "spotify" && <SpotifyIcon />}
+                    {step.platform === "apple" && <AppleMusicIcon />}
+                    <span className={cn(
+                      "text-sm font-medium truncate",
+                      isCompleted ? "text-emerald-400" : isCurrent ? step.color : "text-muted-foreground/50"
+                    )}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {isCompleted && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-[10px] text-emerald-400/70 font-mono flex-shrink-0"
+                    >
+                      DONE
+                    </motion.span>
+                  )}
+                  {isCurrent && (
+                    <motion.span
+                      animate={{ opacity: [1, 0.3, 1] }}
+                      transition={{ repeat: Infinity, duration: 1 }}
+                      className="text-[10px] text-primary font-mono flex-shrink-0"
+                    >
+                      SCANNING
+                    </motion.span>
+                  )}
                 </motion.div>
               );
             })}
