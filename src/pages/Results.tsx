@@ -274,24 +274,203 @@ const downloadTrack = async (url: string, filename: string) => {
 };
 
 const ProcessingWaveform = () => (
-  <div className="flex items-end justify-center gap-1.5 h-14">
-    {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+  <div className="flex items-end justify-center gap-1 h-10">
+    {Array.from({ length: 12 }).map((_, i) => (
       <motion.div
         key={i}
-        className="w-1.5 rounded-full bg-gradient-to-t from-accent to-yellow-300"
-        animate={{ scaleY: [0.2, 1, 0.2] }}
-        transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.12, ease: "easeInOut" }}
+        className="w-1 rounded-full bg-gradient-to-t from-accent to-yellow-300"
+        animate={{ scaleY: [0.15, 1, 0.15] }}
+        transition={{ repeat: Infinity, duration: 0.6 + Math.random() * 0.4, delay: i * 0.08, ease: "easeInOut" }}
         style={{ height: "100%", transformOrigin: "bottom" }}
       />
     ))}
   </div>
 );
 
-const remixMessages = (elapsed: number) => {
-  if (elapsed < 10) return "Uploading your song...";
-  if (elapsed < 30) return "AI is reading your melody...";
-  if (elapsed < 90) return "Generating your enhanced version...";
-  return "Finalizing the mix...";
+const remixPlatformSteps = [
+  { time: 0, icon: "upload", platform: "", label: "Uploading audio file", detail: "Preparing high-quality audio stream" },
+  { time: 8, icon: "spotify", platform: "Spotify", label: "Analyzing Spotify catalog data", detail: "Scanning 100M+ tracks for genre patterns" },
+  { time: 18, icon: "apple", platform: "Apple Music", label: "Cross-referencing Apple Music trends", detail: "Matching current editorial playlist preferences" },
+  { time: 28, icon: "waveform", platform: "", label: "Deep audio frequency analysis", detail: "Isolating melody, harmony & rhythm layers" },
+  { time: 38, icon: "tiktok", platform: "TikTok", label: "Mapping TikTok viral sound patterns", detail: "Identifying hook structures that drive shares" },
+  { time: 50, icon: "youtube", platform: "YouTube", label: "YouTube Music algorithm alignment", detail: "Optimizing for recommendation engine signals" },
+  { time: 62, icon: "ai", platform: "", label: "AI production engine active", detail: "Applying viral DNA patterns to remix" },
+  { time: 78, icon: "mix", platform: "", label: "Mixing & mastering enhanced version", detail: "Professional-grade audio processing" },
+  { time: 95, icon: "final", platform: "", label: "Finalizing your viral remix", detail: "Last quality checks before delivery" },
+];
+
+const remixDataFeedLines = [
+  "Spotify API → fetching genre benchmark data...",
+  "BPM match: analyzing tempo against top 200 chart entries",
+  "Apple Music → scanning editorial playlist criteria",
+  "Harmonic analysis: key detection & chord progression mapping",
+  "TikTok Sounds API → viral hook pattern database loaded",
+  "Cross-referencing 847 trending sounds from last 30 days",
+  "YouTube Music → recommendation signal optimization",
+  "Melody contour analysis: 94% match with viral patterns",
+  "AI engine: applying production enhancements",
+  "Vocal clarity optimization in progress",
+  "Bass frequency rebalancing for streaming platforms",
+  "Hook repetition calibrated for maximum retention",
+  "Dynamic range optimized for playlist placement",
+  "Spotify loudness normalization: -14 LUFS target",
+  "Apple Music spatial audio compatibility check",
+  "Final mix rendering at 320kbps",
+  "Quality assurance: checking against platform standards",
+  "Preparing delivery package...",
+];
+
+const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
+  const [feedLines, setFeedLines] = useState<string[]>([]);
+  const [dataPoints, setDataPoints] = useState({ tracks: 0, patterns: 0, signals: 0 });
+  const feedRef = useRef<HTMLDivElement>(null);
+
+  const currentStepIdx = remixPlatformSteps.reduce((acc, s, i) => (elapsed >= s.time ? i : acc), 0);
+  const currentStep = remixPlatformSteps[currentStepIdx];
+  const progress = Math.min(99, Math.round((elapsed / 120) * 100));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFeedLines(prev => {
+        const next = remixDataFeedLines[prev.length % remixDataFeedLines.length];
+        const updated = [...prev, next].slice(-6);
+        return updated;
+      });
+      setDataPoints(prev => ({
+        tracks: Math.min(prev.tracks + Math.floor(Math.random() * 1200 + 300), 100000),
+        patterns: Math.min(prev.patterns + Math.floor(Math.random() * 40 + 10), 5000),
+        signals: Math.min(prev.signals + Math.floor(Math.random() * 20 + 5), 2500),
+      }));
+    }, 2800);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (feedRef.current) feedRef.current.scrollTop = feedRef.current.scrollHeight;
+  }, [feedLines]);
+
+  const PlatformIcon = ({ type }: { type: string }) => {
+    if (type === "spotify") return <SpotifyIcon />;
+    if (type === "apple") return <AppleMusicIcon />;
+    if (type === "tiktok") return <TikTokIcon />;
+    if (type === "youtube") return <YouTubeIcon />;
+    if (type === "upload") return <Upload className="h-4 w-4 text-accent" />;
+    if (type === "waveform") return <Activity className="h-4 w-4 text-primary" />;
+    if (type === "ai") return <Sparkles className="h-4 w-4 text-primary" />;
+    if (type === "mix") return <Headphones className="h-4 w-4 text-accent" />;
+    return <CheckCircle className="h-4 w-4 text-emerald-400" />;
+  };
+
+  return (
+    <div className="space-y-5 py-2">
+      {/* Main status */}
+      <div className="text-center space-y-3">
+        <ProcessingWaveform />
+        <div>
+          <p className="text-base font-bold text-foreground">{currentStep.label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{currentStep.detail}</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="max-w-sm mx-auto space-y-1.5">
+        <div className="flex justify-between text-[10px] text-muted-foreground font-medium tabular-nums">
+          <span>{elapsed}s elapsed</span>
+          <span>{progress}%</span>
+        </div>
+        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-accent via-yellow-400 to-primary"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.5 }}
+          />
+        </div>
+      </div>
+
+      {/* Platform steps timeline */}
+      <div className="max-w-md mx-auto space-y-1">
+        {remixPlatformSteps.slice(0, currentStepIdx + 1).map((step, i) => {
+          const isDone = i < currentStepIdx;
+          const isCurrent = i === currentStepIdx;
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`flex items-center gap-2.5 py-1 px-3 rounded-lg text-xs ${isCurrent ? 'bg-accent/10 border border-accent/20' : ''}`}
+            >
+              <div className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                {isDone ? <CheckCircle className="h-3.5 w-3.5 text-emerald-400" /> : <PlatformIcon type={step.icon} />}
+              </div>
+              <span className={`flex-1 ${isCurrent ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
+                {step.platform && <span className="font-semibold">{step.platform} — </span>}
+                {step.label}
+              </span>
+              {isCurrent && (
+                <motion.div
+                  className="w-1.5 h-1.5 rounded-full bg-accent"
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ repeat: Infinity, duration: 1 }}
+                />
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Live data stats */}
+      <div className="grid grid-cols-3 gap-2 max-w-sm mx-auto">
+        {[
+          { label: "Tracks Scanned", value: dataPoints.tracks.toLocaleString() },
+          { label: "Patterns Found", value: dataPoints.patterns.toLocaleString() },
+          { label: "Signals Mapped", value: dataPoints.signals.toLocaleString() },
+        ].map((stat) => (
+          <div key={stat.label} className="text-center py-2 px-1 rounded-lg bg-card border border-border">
+            <p className="text-sm font-bold text-foreground tabular-nums">{stat.value}</p>
+            <p className="text-[9px] text-muted-foreground mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Live data feed console */}
+      <div className="max-w-md mx-auto">
+        <div ref={feedRef} className="rounded-lg bg-background border border-border p-3 h-28 overflow-y-auto font-mono text-[10px] space-y-1 scrollbar-thin">
+          {feedLines.map((line, i) => (
+            <motion.div
+              key={`${i}-${line}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-muted-foreground"
+            >
+              <span className="text-emerald-400/70">▸</span> {line}
+            </motion.div>
+          ))}
+          <motion.span
+            className="text-accent inline-block"
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
+          >_</motion.span>
+        </div>
+      </div>
+
+      {/* Platform badges */}
+      <div className="flex items-center justify-center gap-3 flex-wrap">
+        {[
+          { icon: <SpotifyIcon />, name: "Spotify" },
+          { icon: <AppleMusicIcon />, name: "Apple Music" },
+          { icon: <TikTokIcon />, name: "TikTok" },
+          { icon: <YouTubeIcon />, name: "YouTube" },
+        ].map((p) => (
+          <div key={p.name} className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-card border border-border text-[10px] text-muted-foreground">
+            <span className="w-3.5 h-3.5">{p.icon}</span>
+            {p.name}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 /* ─── Lyrics Editor ─── */
