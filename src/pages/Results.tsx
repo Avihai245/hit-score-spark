@@ -973,6 +973,7 @@ const Results = () => {
                 <Headphones className="h-3.5 w-3.5" /> Analyzed with Real Audio AI
               </motion.div>
             )}
+            <DataSourceBanner />
           </div>
         </Section>
 
