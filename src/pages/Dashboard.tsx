@@ -30,7 +30,6 @@ interface Remix {
 
 const PLAN_COLORS: Record<Plan, string> = {
   free: 'bg-secondary text-muted-foreground',
-  payg: 'bg-blue-500/20 text-blue-300',
   pro: 'bg-primary/20 text-primary',
   studio: 'bg-accent/20 text-accent',
 };
