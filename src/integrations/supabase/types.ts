@@ -182,14 +182,17 @@ export type Database = {
         Row: {
           analyses_this_month: number | null
           analyses_used: number | null
+          api_key: string | null
           created_at: string | null
           credits: number | null
+          display_name: string | null
           email: string
           id: string
           is_admin: boolean | null
           plan: string | null
           plan_expires_at: string | null
           remixes_this_month: number | null
+          remixes_used: number | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_status: string | null
@@ -198,14 +201,17 @@ export type Database = {
         Insert: {
           analyses_this_month?: number | null
           analyses_used?: number | null
+          api_key?: string | null
           created_at?: string | null
           credits?: number | null
+          display_name?: string | null
           email: string
           id: string
           is_admin?: boolean | null
           plan?: string | null
           plan_expires_at?: string | null
           remixes_this_month?: number | null
+          remixes_used?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
@@ -214,14 +220,17 @@ export type Database = {
         Update: {
           analyses_this_month?: number | null
           analyses_used?: number | null
+          api_key?: string | null
           created_at?: string | null
           credits?: number | null
+          display_name?: string | null
           email?: string
           id?: string
           is_admin?: boolean | null
           plan?: string | null
           plan_expires_at?: string | null
           remixes_this_month?: number | null
+          remixes_used?: number | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
