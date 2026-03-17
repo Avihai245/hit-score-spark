@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { ParticleField } from '@/components/ParticleField';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
