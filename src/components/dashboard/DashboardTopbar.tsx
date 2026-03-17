@@ -4,7 +4,7 @@ import { PLAN_LIMITS, Plan } from '@/lib/supabase';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Bell, Search, Plus, ChevronDown, LogOut, Settings, User, Shield,
+  Bell, Search, Plus, ChevronDown, LogOut, Settings, User, Shield, Menu,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -13,9 +13,10 @@ import {
 
 interface DashboardTopbarProps {
   sidebarCollapsed: boolean;
+  onMobileMenuToggle: () => void;
 }
 
-export const DashboardTopbar = ({ sidebarCollapsed }: DashboardTopbarProps) => {
+export const DashboardTopbar = ({ sidebarCollapsed, onMobileMenuToggle }: DashboardTopbarProps) => {
   const { user, profile, signOut } = useAuth();
   const plan: Plan = (profile?.plan as Plan) || 'free';
   const initials = (profile?.display_name || user?.email || 'U').slice(0, 2).toUpperCase();
@@ -28,13 +29,16 @@ export const DashboardTopbar = ({ sidebarCollapsed }: DashboardTopbarProps) => {
   };
 
   return (
-    <header
-      className="h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30"
-      style={{ marginLeft: sidebarCollapsed ? 64 : 240 }}
-    >
-      {/* Search */}
+    <header className="h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
+      {/* Mobile hamburger + Search */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
-        <div className="relative flex-1">
+        <button
+          onClick={onMobileMenuToggle}
+          className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <div className="relative flex-1 hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             placeholder="Search songs, analyses..."
@@ -66,17 +70,15 @@ export const DashboardTopbar = ({ sidebarCollapsed }: DashboardTopbarProps) => {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[11px] font-bold text-primary-foreground">
               {initials}
             </div>
-            {!sidebarCollapsed && (
-              <div className="hidden md:flex items-center gap-1.5">
-                <span className="text-xs font-medium text-foreground max-w-[100px] truncate">
-                  {profile?.display_name || user?.email?.split('@')[0]}
-                </span>
-                <Badge className={`${PLAN_BADGE[plan]} border text-[9px] px-1.5 py-0`}>
-                  {PLAN_LIMITS[plan].label}
-                </Badge>
-                <ChevronDown className="w-3 h-3 text-muted-foreground" />
-              </div>
-            )}
+            <div className="hidden md:flex items-center gap-1.5">
+              <span className="text-xs font-medium text-foreground max-w-[100px] truncate">
+                {profile?.display_name || user?.email?.split('@')[0]}
+              </span>
+              <Badge className={`${PLAN_BADGE[plan]} border text-[9px] px-1.5 py-0`}>
+                {PLAN_LIMITS[plan].label}
+              </Badge>
+              <ChevronDown className="w-3 h-3 text-muted-foreground" />
+            </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 bg-popover border-border">
             <DropdownMenuItem asChild>
