@@ -901,9 +901,10 @@ const Results = () => {
                 </motion.div>
               )}
 
-              {/* Platform data sources */}
+              {/* Data intelligence sources */}
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2 }}
                 className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
+                <span className="text-[9px] text-muted-foreground/50 mr-1 uppercase tracking-wider">Data sources:</span>
                 <PlatformBadge platform="spotify" size="md" />
                 <PlatformBadge platform="apple" size="md" />
                 <PlatformBadge platform="youtube" size="md" />
