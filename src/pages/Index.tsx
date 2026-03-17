@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom";
-import { motion, useMotionValue, useTransform, animate, useInView, useScroll, useSpring } from "framer-motion";
+import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState, useMemo } from "react";
 import {
   Headphones, BarChart3, Target, Users, FileText, CalendarDays,
   Zap, ArrowRight, Activity, Music, TrendingUp, Layers, Brain,
-  Radio, Repeat, Timer, BarChart2, Sparkles, ChevronRight, Rocket,
+  Radio, Repeat, Timer, BarChart2, Sparkles, Rocket,
   Play, Shield, Globe, Eye,
 } from "lucide-react";
-import { ParticleField } from "@/components/ParticleField";
 
 /* ─── Animated Counter ─── */
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number; to: number; duration?: number; suffix?: string }) => {
@@ -41,11 +40,7 @@ const LiveCounter = () => {
       transition={{ delay: 0.6 }}
       className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-card/40 border border-border/30 backdrop-blur-xl"
     >
-      <motion.div
-        className="w-2 h-2 rounded-full bg-emerald-400"
-        animate={{ opacity: [1, 0.3, 1], scale: [1, 1.3, 1] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
-      />
+      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
       <span className="text-sm font-bold text-foreground tabular-nums">
         {count.toLocaleString()}
       </span>
@@ -54,53 +49,46 @@ const LiveCounter = () => {
   );
 };
 
-/* ─── Cinematic Hero Waveform ─── */
-const CinematicWaveform = () => {
-  const bars = useMemo(() => Array.from({ length: 120 }, (_, i) => ({
+/* ─── Lightweight Hero Background (GPU-friendly, reduced bars) ─── */
+const HeroBackground = () => {
+  const bars = useMemo(() => Array.from({ length: 40 }, (_, i) => ({
     h1: 15 + Math.random() * 50,
     h2: 25 + Math.random() * 65,
     h3: 15 + Math.random() * 50,
-    dur: 2.5 + Math.random() * 3,
-    delay: i * 0.03,
+    dur: 3 + Math.random() * 4,
+    delay: i * 0.08,
   })), []);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Deep ambient gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(258_90%_66%_/0.12),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_80%,hsl(280_80%_55%_/0.06),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_40%_50%_at_20%_60%,hsl(220_90%_50%_/0.04),transparent)]" />
+      {/* Ambient gradients (static, no animation) */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,hsl(258_90%_66%_/0.10),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_80%,hsl(280_80%_55%_/0.05),transparent)]" />
 
-      {/* Central glow orb */}
+      {/* Central glow — single slow transform animation */}
       <motion.div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-        style={{ background: "radial-gradient(circle, hsl(258 90% 66% / 0.08), transparent 70%)" }}
-        animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
-        transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full will-change-transform"
+        style={{ background: "radial-gradient(circle, hsl(258 90% 66% / 0.06), transparent 70%)" }}
+        animate={{ scale: [1, 1.1, 1] }}
+        transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
       />
 
-      {/* Animated waveform */}
-      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-[2px] h-72 opacity-[0.05]">
+      {/* Waveform bars — reduced count, GPU-only transforms */}
+      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-[3px] h-64 opacity-[0.04]">
         {bars.map((b, i) => (
           <motion.div
             key={i}
-            className="w-[2px] rounded-full bg-gradient-to-t from-primary/50 to-primary"
-            animate={{ height: [`${b.h1}%`, `${b.h2}%`, `${b.h3}%`] }}
+            className="w-[2px] rounded-full bg-gradient-to-t from-primary/50 to-primary will-change-transform"
+            style={{ height: "60%", transformOrigin: "bottom" }}
+            animate={{ scaleY: [b.h1 / 100, b.h2 / 100, b.h3 / 100] }}
             transition={{ repeat: Infinity, duration: b.dur, delay: b.delay, ease: "easeInOut" }}
           />
         ))}
       </div>
 
-      {/* Horizontal scan line */}
-      <motion.div
-        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
-        animate={{ top: ["0%", "100%"] }}
-        transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-      />
-
-      {/* Grid overlay */}
+      {/* Grid overlay (static) */}
       <div
-        className="absolute inset-0 opacity-[0.015]"
+        className="absolute inset-0 opacity-[0.012]"
         style={{
           backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
           backgroundSize: "60px 60px",
@@ -124,30 +112,18 @@ const FloatingCTA = () => {
       initial={false}
       animate={{ y: visible ? 0 : 100, opacity: visible ? 1 : 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-6 right-4 md:right-8 z-50"
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-8 z-40"
+      style={{ pointerEvents: visible ? "auto" : "none" }}
     >
-      <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }}>
+      <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
         <Button
           asChild
           size="lg"
-          className="relative gradient-purple text-primary-foreground px-6 py-6 text-base font-bold shadow-2xl shadow-primary/30 overflow-hidden"
+          className="relative gradient-purple text-primary-foreground px-6 py-5 text-sm font-bold shadow-xl shadow-primary/20 overflow-hidden"
         >
           <Link to="/analyze" className="flex items-center gap-2">
-            {/* Shimmer */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-              animate={{ x: ["-100%", "200%"] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-            />
-            <Rocket className="h-4 w-4 relative z-10" />
-            <span className="relative z-10">Scan Your Track</span>
-            <motion.span
-              className="relative z-10"
-              animate={{ y: [0, -2, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            >
-              🚀
-            </motion.span>
+            <Rocket className="h-4 w-4" />
+            <span>Scan Your Track 🚀</span>
           </Link>
         </Button>
       </motion.div>
@@ -170,10 +146,11 @@ const StatBar = ({ label, value, max = 100, delay = 0 }: { label: string; value:
       </div>
       <div className="h-2 rounded-full bg-secondary overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60"
-          initial={{ width: 0 }}
-          animate={isInView ? { width: `${(value / max) * 100}%` } : {}}
-          transition={{ delay, duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+          className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60 will-change-transform"
+          initial={{ scaleX: 0 }}
+          animate={isInView ? { scaleX: value / max } : {}}
+          style={{ transformOrigin: "left" }}
+          transition={{ delay, duration: 1, ease: [0.25, 0.1, 0.25, 1] as const }}
         />
       </div>
     </div>
@@ -186,7 +163,6 @@ const platforms = [
   { name: "Apple Music", color: "#FC3C44" },
   { name: "TikTok", color: "hsl(var(--foreground))" },
   { name: "YouTube", color: "#FF0000" },
-  { name: "Global Charts", color: "hsl(var(--primary))" },
 ];
 
 /* ─── Data ─── */
@@ -236,17 +212,11 @@ const pricingPreview = [
 
 /* ─── Animation helpers ─── */
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 40 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-50px" },
-  transition: { delay, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] as const },
-});
-
-const stagger = {
   initial: { opacity: 0, y: 30 },
   whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-30px" },
-};
+  viewport: { once: true, margin: "-60px" },
+  transition: { delay, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] as const },
+});
 
 /* ─── Comparison Visual ─── */
 const ComparisonVisual = () => {
@@ -254,11 +224,10 @@ const ComparisonVisual = () => {
   const isInView = useInView(ref, { once: true });
   return (
     <div ref={ref} className="grid grid-cols-2 gap-4 max-w-xl mx-auto">
-      {/* Before */}
       <motion.div
-        initial={{ opacity: 0, x: -30 }}
+        initial={{ opacity: 0, x: -20 }}
         animate={isInView ? { opacity: 1, x: 0 } : {}}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.5 }}
         className="glass-card p-6 border-destructive/20 relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-destructive/5 to-transparent" />
@@ -267,21 +236,21 @@ const ComparisonVisual = () => {
           {[25, 15, 30, 20].map((v, i) => (
             <div key={i} className="h-1.5 rounded-full bg-secondary overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-destructive/40"
-                initial={{ width: 0 }}
-                animate={isInView ? { width: `${v}%` } : {}}
-                transition={{ delay: 0.3 + i * 0.1, duration: 0.8 }}
+                className="h-full rounded-full bg-destructive/40 will-change-transform"
+                initial={{ scaleX: 0 }}
+                animate={isInView ? { scaleX: v / 100 } : {}}
+                style={{ transformOrigin: "left" }}
+                transition={{ delay: 0.2 + i * 0.08, duration: 0.7 }}
               />
             </div>
           ))}
         </div>
         <p className="text-2xl font-black text-destructive/60 mt-3 relative">32<span className="text-sm">/100</span></p>
       </motion.div>
-      {/* After */}
       <motion.div
-        initial={{ opacity: 0, x: 30 }}
+        initial={{ opacity: 0, x: 20 }}
         animate={isInView ? { opacity: 1, x: 0 } : {}}
-        transition={{ duration: 0.6, delay: 0.2 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
         className="glass-card p-6 border-primary/30 relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
@@ -290,10 +259,11 @@ const ComparisonVisual = () => {
           {[85, 78, 92, 88].map((v, i) => (
             <div key={i} className="h-1.5 rounded-full bg-secondary overflow-hidden">
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60"
-                initial={{ width: 0 }}
-                animate={isInView ? { width: `${v}%` } : {}}
-                transition={{ delay: 0.5 + i * 0.1, duration: 0.8 }}
+                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60 will-change-transform"
+                initial={{ scaleX: 0 }}
+                animate={isInView ? { scaleX: v / 100 } : {}}
+                style={{ transformOrigin: "left" }}
+                transition={{ delay: 0.35 + i * 0.08, duration: 0.7 }}
               />
             </div>
           ))}
@@ -312,22 +282,17 @@ const Index = () => {
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative flex flex-col items-center justify-center min-h-[100svh] px-4 text-center overflow-hidden pt-32 pb-20">
-        <CinematicWaveform />
-        <ParticleField count={35} speed={0.4} className="opacity-30" />
+        <HeroBackground />
 
         {/* System badge */}
         <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.6, ease: "backOut" }}
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           className="relative mb-8"
         >
           <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/8 border border-primary/20 text-sm font-semibold text-primary backdrop-blur-sm">
-            <motion.div
-              className="w-2 h-2 rounded-full bg-emerald-400"
-              animate={{ opacity: [1, 0.3, 1], scale: [1, 1.2, 1] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Global Music Intelligence Engine — Active
           </span>
         </motion.div>
@@ -340,9 +305,9 @@ const Index = () => {
             {["Turn", "Your", "Track", "Into a"].map((word, i) => (
               <motion.span
                 key={word}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + i * 0.08, duration: 0.6 }}
+                transition={{ delay: 0.1 + i * 0.07, duration: 0.5 }}
                 className="inline-block mr-[0.3em]"
               >
                 {word}
@@ -350,26 +315,26 @@ const Index = () => {
             ))}
             <br />
             <motion.span
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.7 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
               className="gradient-text inline-block"
             >
               Viral Hit
             </motion.span>
             <motion.span
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
               className="inline-block ml-[0.3em]"
             >
               Using
             </motion.span>
             <br />
             <motion.span
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 0.7, duration: 0.7, ease: "backOut" }}
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
               className="brand-gradient-text inline-block"
             >
               Global Music Data
@@ -378,61 +343,48 @@ const Index = () => {
         </div>
 
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.6 }}
+          transition={{ delay: 0.8, duration: 0.5 }}
           className="relative mt-6 text-lg md:text-xl font-medium text-muted-foreground max-w-2xl leading-relaxed"
         >
           Analyze your music against real-world hit patterns, identify what's holding it back, and optimize it for algorithmic success.
         </motion.p>
 
-        {/* Platform row */}
+        {/* Platform row — static opacity, no infinite animations */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.1 }}
-          className="relative mt-5 flex items-center justify-center gap-4 flex-wrap"
+          transition={{ delay: 1 }}
+          className="relative mt-5 flex items-center justify-center gap-5 flex-wrap"
         >
-          {platforms.map((p, i) => (
-            <motion.span
+          {platforms.map((p) => (
+            <span
               key={p.name}
-              className="text-[11px] font-semibold tracking-wide"
-              style={{ color: p.color, opacity: 0.4 }}
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ repeat: Infinity, duration: 3, delay: i * 0.4 }}
+              className="text-[11px] font-semibold tracking-wide opacity-40"
+              style={{ color: p.color }}
             >
               {p.name}
-            </motion.span>
+            </span>
           ))}
         </motion.div>
 
         {/* CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.6 }}
+          transition={{ delay: 1.1, duration: 0.5 }}
           className="relative mt-10 flex flex-col sm:flex-row items-center gap-4"
         >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
             <Button
               asChild
               size="lg"
-              className="relative gradient-purple text-primary-foreground px-10 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-all overflow-hidden"
+              className="relative gradient-purple text-primary-foreground px-10 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden"
             >
               <Link to="/analyze" className="flex items-center gap-2">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                />
-                <span className="relative z-10">Analyze Your Track</span>
-                <motion.span
-                  className="relative z-10"
-                  animate={{ y: [0, -3, 0], scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                >
-                  🔥
-                </motion.span>
+                <span>Analyze Your Track</span>
+                <span>🔥</span>
               </Link>
             </Button>
           </motion.div>
@@ -457,7 +409,7 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 0.5 }}
+          transition={{ delay: 1.8, duration: 0.4 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:block"
         >
           <motion.div
@@ -465,7 +417,7 @@ const Index = () => {
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
             className="w-6 h-10 rounded-full border-2 border-border/50 flex items-start justify-center p-1.5"
           >
-            <motion.div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+            <div className="w-1.5 h-1.5 rounded-full bg-primary/60" />
           </motion.div>
         </motion.div>
       </section>
@@ -478,15 +430,12 @@ const Index = () => {
             {socialProofStats.map((stat, i) => (
               <motion.div
                 key={stat.label}
-                {...fadeUp(i * 0.1)}
-                className="text-center group"
+                {...fadeUp(i * 0.08)}
+                className="text-center"
               >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-primary/10 border border-primary/15 mb-4 mx-auto"
-                >
+                <div className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-primary/10 border border-primary/15 mb-4 mx-auto">
                   <stat.icon className="h-5 w-5 text-primary" />
-                </motion.div>
+                </div>
                 <p className="text-4xl md:text-5xl font-black text-foreground tabular-nums">
                   {stat.prefix || ""}
                   <AnimatedCounter from={0} to={stat.value} suffix={stat.suffix} />
@@ -499,7 +448,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ PROBLEM → SOLUTION ═══════════ */}
-      <section className="py-28 px-4 relative overflow-hidden">
+      <section className="py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.03),transparent_60%)]" />
         <div className="container max-w-4xl relative">
           <motion.div {...fadeUp()} className="text-center mb-6">
@@ -516,7 +465,7 @@ const Index = () => {
 
           <ComparisonVisual />
 
-          <motion.div {...fadeUp(0.3)} className="text-center mt-14">
+          <motion.div {...fadeUp(0.25)} className="text-center mt-14">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-wider mb-4">
               <Shield className="h-3 w-3" /> The Solution
             </span>
@@ -528,7 +477,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ DATA ENGINE ═══════════ */}
-      <section className="py-28 px-4 relative overflow-hidden border-t border-border/20">
+      <section className="py-24 px-4 relative overflow-hidden border-t border-border/20">
         <div className="container max-w-6xl relative">
           <motion.div {...fadeUp()} className="text-center mb-5">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-wider">
@@ -546,20 +495,15 @@ const Index = () => {
             {dataEngineFeatures.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="glass-card p-7 hover:border-primary/20 transition-colors group cursor-default"
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
+                className="glass-card p-7 hover:border-primary/20 transition-colors group cursor-default hover:-translate-y-1 transition-transform duration-200"
               >
-                <motion.div
-                  className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-5"
-                  whileHover={{ scale: 1.15, rotate: -5 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-5">
                   <f.icon className="h-5 w-5 text-primary" />
-                </motion.div>
+                </div>
                 <h3 className="font-bold font-heading mb-2 text-foreground text-lg">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
@@ -569,7 +513,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ HOW IT WORKS ═══════════ */}
-      <section className="border-t border-border/20 py-28 px-4 relative overflow-hidden">
+      <section className="border-t border-border/20 py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,hsl(258_90%_66%_/0.04),transparent_60%)]" />
         <div className="container max-w-5xl relative">
           <motion.h2 {...fadeUp()} className="text-center text-3xl md:text-5xl font-black font-heading mb-20 text-foreground">
@@ -577,31 +521,23 @@ const Index = () => {
           </motion.h2>
 
           <div className="relative">
-            {/* Connection line */}
             <div className="hidden md:block absolute top-1/2 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2" />
 
             <div className="grid gap-8 md:grid-cols-3">
               {steps.map((step, i) => (
                 <motion.div
                   key={step.title}
-                  initial={{ opacity: 0, y: 40 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.15, duration: 0.6 }}
-                  whileHover={{ y: -8, transition: { duration: 0.25 } }}
-                  className="glass-card p-8 text-center relative overflow-hidden group"
+                  transition={{ delay: i * 0.12, duration: 0.5 }}
+                  className="glass-card p-8 text-center relative overflow-hidden hover:-translate-y-1.5 transition-transform duration-200"
                 >
-                  {/* Step number watermark */}
                   <span className="absolute top-3 right-4 text-6xl font-black text-foreground/[0.03] font-heading">{step.num}</span>
 
-                  {/* Animated icon */}
-                  <motion.div
-                    className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-primary/10 border border-primary/15 mb-5 mx-auto"
-                    whileHover={{ scale: 1.1, rotate: 10 }}
-                    transition={{ type: "spring" }}
-                  >
+                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-primary/10 border border-primary/15 mb-5 mx-auto">
                     <step.icon className="h-7 w-7 text-primary" />
-                  </motion.div>
+                  </div>
 
                   <div className="text-3xl font-black brand-gradient-text mb-3">{step.num}</div>
                   <h3 className="text-xl font-bold font-heading mb-3 text-foreground">{step.title}</h3>
@@ -617,7 +553,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ DATA VISUALS — PROOF ═══════════ */}
-      <section className="border-t border-border/20 py-28 px-4 relative overflow-hidden">
+      <section className="border-t border-border/20 py-24 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent" />
         <div className="container max-w-4xl relative">
           <motion.div {...fadeUp()} className="text-center mb-5">
@@ -640,7 +576,7 @@ const Index = () => {
               </div>
             </motion.div>
 
-            <motion.div {...fadeUp(0.2)} className="glass-card p-8">
+            <motion.div {...fadeUp(0.15)} className="glass-card p-8">
               <h3 className="font-bold font-heading text-foreground mb-8 text-lg">Key Metrics</h3>
               <div className="grid grid-cols-2 gap-6">
                 {[
@@ -648,7 +584,7 @@ const Index = () => {
                   { label: "Hook Fix Success", val: 89, suf: "%" },
                   { label: "Replay Rate Lift", val: 34, suf: "%" },
                   { label: "Skip Risk Reduction", val: 41, suf: "%" },
-                ].map((m, i) => (
+                ].map((m) => (
                   <div key={m.label} className="text-center">
                     <p className="text-3xl font-black text-primary tabular-nums">
                       <AnimatedCounter from={0} to={m.val} suffix={m.suf} duration={1.5} />
@@ -663,7 +599,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ EVERYTHING YOU NEED ═══════════ */}
-      <section className="py-28 px-4 border-t border-border/20 relative overflow-hidden">
+      <section className="py-24 px-4 border-t border-border/20 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(258_90%_66%_/0.03),transparent_50%)]" />
         <div className="container max-w-5xl relative">
           <motion.h2 {...fadeUp()} className="text-center text-3xl md:text-5xl font-black font-heading mb-4 text-foreground">
@@ -676,19 +612,13 @@ const Index = () => {
             {viralFeatures.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className="glass-card p-7 hover:border-primary/20 transition-colors group"
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
+                className="glass-card p-7 hover:border-primary/20 transition-colors hover:-translate-y-1 transition-transform duration-200"
               >
-                <motion.div
-                  whileHover={{ scale: 1.15, rotate: -5 }}
-                  transition={{ type: "spring", stiffness: 400 }}
-                >
-                  <f.icon className={`h-8 w-8 ${i % 2 === 0 ? "text-primary" : "text-accent"} mb-4`} />
-                </motion.div>
+                <f.icon className={`h-8 w-8 ${i % 2 === 0 ? "text-primary" : "text-accent"} mb-4`} />
                 <h3 className="font-bold font-heading mb-2 text-foreground text-lg">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </motion.div>
@@ -698,11 +628,9 @@ const Index = () => {
       </section>
 
       {/* ═══════════ VIRAL FEATURE — DRAMATIC ═══════════ */}
-      <section className="relative py-32 px-4 overflow-hidden">
-        {/* Dark dramatic background */}
+      <section className="relative py-28 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-card to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.08),transparent_60%)]" />
-        <ParticleField count={25} speed={0.3} className="opacity-20" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.06),transparent_60%)]" />
 
         <div className="container max-w-4xl relative">
           <motion.div {...fadeUp()} className="text-center mb-6">
@@ -717,51 +645,34 @@ const Index = () => {
             One click to optimize your track using patterns from high-performing music worldwide.
           </motion.p>
 
-          {/* Before/After dramatic visual */}
+          {/* Before/After */}
           <motion.div
             {...fadeUp(0.15)}
             className="glass-card p-8 md:p-12 border-primary/20 relative overflow-hidden"
           >
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5"
-              animate={{ opacity: [0.3, 0.6, 0.3] }}
-              transition={{ repeat: Infinity, duration: 4 }}
-            />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 opacity-40" />
 
             <div className="grid md:grid-cols-[1fr,auto,1fr] gap-8 items-center relative">
               <div>
                 <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Before</p>
                 <div className="space-y-3">
                   {["Hook at 0:45", "Low replay value", "Weak energy curve", "Score: 42/100"].map((t, i) => (
-                    <motion.p key={t} {...fadeUp(0.2 + i * 0.05)} className="text-sm text-muted-foreground/70 line-through decoration-destructive/40">{t}</motion.p>
+                    <motion.p key={t} {...fadeUp(0.2 + i * 0.04)} className="text-sm text-muted-foreground/70 line-through decoration-destructive/40">{t}</motion.p>
                   ))}
                 </div>
               </div>
 
               <div className="hidden md:flex flex-col items-center gap-2">
-                <motion.div
-                  className="h-20 w-px bg-gradient-to-b from-destructive/30 via-primary to-primary/30"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                />
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                >
-                  <ArrowRight className="h-5 w-5 text-primary" />
-                </motion.div>
-                <motion.div
-                  className="h-20 w-px bg-gradient-to-b from-primary/30 via-primary to-accent/30"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
-                />
+                <div className="h-20 w-px bg-gradient-to-b from-destructive/30 via-primary to-primary/30" />
+                <ArrowRight className="h-5 w-5 text-primary" />
+                <div className="h-20 w-px bg-gradient-to-b from-primary/30 via-primary to-accent/30" />
               </div>
 
               <div>
                 <p className="text-sm font-bold text-primary uppercase tracking-wider mb-4">After</p>
                 <div className="space-y-3">
                   {["Hook at 0:12 ✓", "High replay value ✓", "Optimized energy ✓", "Score: 87/100 ✓"].map((t, i) => (
-                    <motion.p key={t} {...fadeUp(0.3 + i * 0.05)} className="text-sm text-foreground font-medium">{t}</motion.p>
+                    <motion.p key={t} {...fadeUp(0.25 + i * 0.04)} className="text-sm text-foreground font-medium">{t}</motion.p>
                   ))}
                 </div>
               </div>
@@ -771,7 +682,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ TESTIMONIALS ═══════════ */}
-      <section className="border-t border-border/20 py-28 px-4">
+      <section className="border-t border-border/20 py-24 px-4">
         <div className="container max-w-5xl">
           <motion.h2 {...fadeUp()} className="text-center text-3xl md:text-5xl font-black font-heading mb-16 text-foreground">
             Artists Trust Our Data
@@ -780,12 +691,11 @@ const Index = () => {
             {testimonials.map((t, i) => (
               <motion.div
                 key={t.handle}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="glass-card p-7 flex flex-col hover:border-primary/15 transition-colors"
+                transition={{ delay: i * 0.08, duration: 0.45 }}
+                className="glass-card p-7 flex flex-col hover:border-primary/15 transition-colors hover:-translate-y-1 transition-transform duration-200"
               >
                 <div className="flex items-center gap-2 mb-4">
                   <div className="h-7 w-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
@@ -802,7 +712,7 @@ const Index = () => {
       </section>
 
       {/* ═══════════ PRICING PREVIEW ═══════════ */}
-      <section className="py-28 px-4 border-t border-border/20">
+      <section className="py-24 px-4 border-t border-border/20">
         <div className="container max-w-6xl">
           <motion.h2 {...fadeUp()} className="text-center text-3xl md:text-5xl font-black font-heading mb-4 text-foreground">
             Simple, Transparent Pricing
@@ -814,12 +724,11 @@ const Index = () => {
             {pricingPreview.map((plan, i) => (
               <motion.div
                 key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className={`glass-card p-8 flex flex-col transition-colors ${plan.highlighted ? "border-primary/40 shadow-2xl shadow-primary/10 xl:scale-[1.03] z-10 relative" : "hover:border-border/50"}`}
+                transition={{ delay: i * 0.06, duration: 0.45 }}
+                className={`glass-card p-8 flex flex-col transition-all duration-200 hover:-translate-y-1 ${plan.highlighted ? "border-primary/40 shadow-2xl shadow-primary/10 xl:scale-[1.03] z-10 relative" : "hover:border-border/50"}`}
               >
                 {plan.badge && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full gradient-purple px-4 py-1 text-[11px] font-black text-primary-foreground tracking-wider shadow-lg shadow-primary/30">
@@ -854,54 +763,40 @@ const Index = () => {
       </section>
 
       {/* ═══════════ FINAL CTA ═══════════ */}
-      <section className="relative border-t border-border/20 py-32 px-4 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.06),transparent_60%)]" />
-        <ParticleField count={20} speed={0.3} className="opacity-15" />
+      <section className="relative border-t border-border/20 py-28 px-4 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(258_90%_66%_/0.05),transparent_60%)]" />
 
         <motion.div {...fadeUp()} className="container max-w-2xl relative">
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-wider mb-8"
-            animate={{ scale: [1, 1.02, 1] }}
-            transition={{ repeat: Infinity, duration: 3 }}
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary uppercase tracking-wider mb-8">
             <Activity className="h-3 w-3" /> System Ready
-          </motion.div>
+          </div>
           <h2 className="text-3xl md:text-5xl font-black font-heading mb-5 text-foreground">
             Ready to analyze your <span className="gradient-text">hit potential</span>?
           </h2>
           <p className="text-muted-foreground mb-10 text-lg">
             Upload your track and get data-driven insights in 90 seconds. No credit card needed.
           </p>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
             <Button
               asChild
               size="lg"
-              className="relative gradient-purple text-primary-foreground px-12 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-all overflow-hidden"
+              className="relative gradient-purple text-primary-foreground px-12 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden"
             >
               <Link to="/analyze" className="flex items-center gap-2">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                  animate={{ x: ["-100%", "200%"] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                />
-                <span className="relative z-10">Analyze Your Track Free</span>
-                <motion.span
-                  className="relative z-10"
-                  animate={{ y: [0, -3, 0], scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                >
-                  🔥
-                </motion.span>
+                <span>Analyze Your Track Free</span>
+                <span>🔥</span>
               </Link>
             </Button>
           </motion.div>
 
-          {/* Data trust */}
-          <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
-            <Globe className="h-3.5 w-3.5 text-muted-foreground/40" />
-            <p className="text-xs text-muted-foreground/60">
-              Based on patterns from 500K+ top-performing tracks across major platforms
-            </p>
+          {/* Data trust with platform icons */}
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <div className="flex items-center gap-3">
+              <Globe className="h-3.5 w-3.5 text-muted-foreground/40" />
+              <p className="text-xs text-muted-foreground/60">
+                Based on patterns from 500K+ top-performing tracks across major platforms
+              </p>
+            </div>
           </div>
         </motion.div>
       </section>
