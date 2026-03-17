@@ -504,27 +504,61 @@ export default function SongDetail() {
         )}
 
         {/* Create Remix CTA */}
-        <div id="remix-section" className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 text-center mt-8">
-          <div className="text-4xl mb-4">🎧</div>
-          <h2 className="text-2xl font-black text-white mb-2">Create AI Remix</h2>
-          <p className="text-white/50 mb-6 max-w-md mx-auto">
+        <motion.div
+          id="remix-section"
+          className="rounded-2xl border-2 border-accent/40 bg-gradient-to-b from-accent/[0.08] to-transparent p-8 text-center mt-8 relative overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          {/* Animated light sweep */}
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-accent/5 to-transparent"
+            animate={{ x: ['-100%', '200%'] }}
+            transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
+          />
+          <motion.div
+            className="text-4xl mb-4"
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            🎧
+          </motion.div>
+          <h2 className="text-2xl font-black text-foreground mb-2 relative z-10">Create AI Remix</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto relative z-10">
             {canRemix
               ? 'Upload your audio file to generate an AI-enhanced version with stronger hook and more viral energy.'
               : 'Upgrade to Pro to unlock AI remixes and make your song go viral.'}
           </p>
           {canRemix ? (
-            <Button asChild className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8">
-              <Link to="/analyze">
-                <Sparkles className="h-5 w-5" />
-                Upload & Remix This Song
-              </Link>
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button asChild className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-accent/40">
+                <Link to="/analyze">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                  />
+                  <Sparkles className="h-5 w-5 relative z-10" />
+                  <span className="relative z-10">Upload & Remix This Song</span>
+                </Link>
+              </Button>
+            </motion.div>
           ) : (
-            <Button asChild className="bg-gradient-to-r from-primary to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8">
-              <Link to="/billing">Upgrade to Pro — Unlock Remixes ✨</Link>
-            </Button>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button asChild className="bg-gradient-to-r from-primary to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-primary/40">
+                <Link to="/billing">
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                  />
+                  <span className="relative z-10">Upgrade to Pro — Unlock Remixes ✨</span>
+                </Link>
+              </Button>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
       </div>
     </div>
