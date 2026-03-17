@@ -489,12 +489,12 @@ const Analyze = () => {
                   )}
                 >
                   <div className={cn(
-                    "flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs",
+                    "flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
                     isCompleted
                       ? "bg-emerald-500"
                       : isCurrent
-                        ? "bg-primary/30 border-2 border-primary"
-                        : "bg-muted"
+                        ? "bg-primary/20 border-2 border-primary"
+                        : "bg-muted/50"
                   )}>
                     {isCompleted ? (
                       <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 500 }}>
@@ -502,22 +502,42 @@ const Analyze = () => {
                       </motion.div>
                     ) : isCurrent ? (
                       <motion.div
-                        className="w-1.5 h-1.5 rounded-full bg-primary"
+                        className="w-2 h-2 rounded-full bg-primary"
                         animate={{ scale: [1, 1.8, 1], opacity: [1, 0.4, 1] }}
                         transition={{ repeat: Infinity, duration: 0.8 }}
                       />
                     ) : (
-                      <span className="text-[10px] text-muted-foreground">{step.icon}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30" />
                     )}
                   </div>
-                  <span className={cn(
-                    "text-sm font-medium",
-                    isCompleted ? "text-emerald-400" : isCurrent ? "text-foreground" : "text-muted-foreground"
-                  )}>
-                    {step.label}
-                    {isCompleted && " ✓"}
-                    {isCurrent && "..."}
-                  </span>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {step.platform === "spotify" && <SpotifyIcon />}
+                    {step.platform === "apple" && <AppleMusicIcon />}
+                    <span className={cn(
+                      "text-sm font-medium truncate",
+                      isCompleted ? "text-emerald-400" : isCurrent ? step.color : "text-muted-foreground/50"
+                    )}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {isCompleted && (
+                    <motion.span
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-[10px] text-emerald-400/70 font-mono flex-shrink-0"
+                    >
+                      DONE
+                    </motion.span>
+                  )}
+                  {isCurrent && (
+                    <motion.span
+                      animate={{ opacity: [1, 0.3, 1] }}
+                      transition={{ repeat: Infinity, duration: 1 }}
+                      className="text-[10px] text-primary font-mono flex-shrink-0"
+                    >
+                      SCANNING
+                    </motion.span>
+                  )}
                 </motion.div>
               );
             })}
