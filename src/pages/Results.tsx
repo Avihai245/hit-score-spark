@@ -1259,6 +1259,7 @@ const Results = () => {
         {similarSongs?.length > 0 && (
           <Section delay={0.4}>
             <SectionTitle emoji="🏆" title="GENRE COMPARISON" />
+            <div className="flex gap-2 mb-4"><SourceTag platform="spotify" /><SourceTag platform="apple" /></div>
             <div className="grid gap-5 md:grid-cols-3">
               {similarSongs.slice(0, 3).map((song: any, i: number) => (
                 <motion.div
