@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
+import { Menu, X, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from "@/components/ViralizeLogo";
 import { useTheme } from "@/components/ThemeProvider";
