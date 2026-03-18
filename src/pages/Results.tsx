@@ -235,11 +235,9 @@ const Section = ({ children, delay = 0, className = "", id }: { children: ReactN
 /* ─── Scroll-spy Nav ─── */
 const NAV_ITEMS = [
   { id: "hero", label: "Your Score" },
-  { id: "breakdown", label: "Score Details" },
   { id: "holding-back", label: "What to Fix" },
   { id: "working", label: "What's Working" },
-  { id: "vs-top", label: "vs Top Tracks" },
-  { id: "plan", label: "7-Day Plan" },
+  { id: "plan", label: "Your 7-Day Plan" },
 ];
 
 const ScrollNav = ({ activeSection }: { activeSection: string }) => (
