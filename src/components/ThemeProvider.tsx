@@ -12,12 +12,7 @@ const ThemeContext = createContext<ThemeContextType>({ theme: "dark", toggleThem
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("viralize-theme") as Theme) || "dark";
-    }
-    return "dark";
-  });
+  const [theme] = useState<Theme>("dark");
 
   useEffect(() => {
     const root = document.documentElement;
