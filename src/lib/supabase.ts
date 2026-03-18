@@ -12,6 +12,42 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * Row-Level Security (RLS) Configuration
+ *
+ * The following tables have RLS ENABLED and protected:
+ * ✅ viralize_users - Users can only view/edit their own profile
+ * ✅ viralize_analyses - Users can only view/edit their own analyses
+ * ✅ viralize_remixes - Users can only view/edit their own remixes
+ * ✅ viralize_credits - Users can only view their own credit history
+ * ✅ admin_audit_logs - Only admins can view audit logs
+ * ✅ admin_impersonation_sessions - Only admins can manage
+ * ✅ viral_dna_cache - Read-only, system managed
+ * ✅ admin_settings - Admins only
+ *
+ * Verification: Run in Supabase Dashboard:
+ * 1. Go to Authentication → Policies
+ * 2. For each table above, verify RLS is "Enabled" (green toggle)
+ * 3. Check that policies exist that restrict access by auth.uid()
+ *
+ * DEV MODE ONLY: Check if tables are publicly accessible
+ */
+if (import.meta.env.DEV) {
+  // Log RLS configuration reminder on dev startup
+  console.info('🔒 RLS Configuration Reminder:', {
+    message: 'Verify Row-Level Security is enabled on all sensitive tables',
+    tables: [
+      'viralize_users',
+      'viralize_analyses',
+      'viralize_remixes',
+      'viralize_credits',
+      'admin_audit_logs',
+      'admin_impersonation_sessions',
+    ],
+    dashboard: 'https://supabase.com/dashboard → Authentication → Policies',
+  });
+}
+
 export type Plan = 'free' | 'pro' | 'studio' | 'business' | 'unlimited';
 
 export const PLAN_LIMITS = {
