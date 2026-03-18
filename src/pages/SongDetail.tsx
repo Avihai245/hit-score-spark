@@ -49,7 +49,7 @@ const MiniGauge = ({ score }: { score: number }) => {
   const circ = 2 * Math.PI * r;
   const color = scoreColor(score);
   const count = useMotionValue(0);
-  const rounded = useTransform(count, (v) => Math.round(v));
+  const rounded = useTransform(count, (v: number) => Math.round(v));
 
   useEffect(() => {
     const ctrl = animate(count, score, { duration: 2, ease: [0.16, 1, 0.3, 1] });

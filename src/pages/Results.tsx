@@ -109,7 +109,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
   const count = useMotionValue(0);
-  const rounded = useTransform(count, (v) => Math.round(v));
+  const rounded = useTransform(count, (v: number) => Math.round(v));
 
   useEffect(() => {
     const ctrl = animate(count, score, { duration: 2, ease: [0.16, 1, 0.3, 1] });
