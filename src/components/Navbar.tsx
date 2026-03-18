@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from "@/components/ViralizeLogo";
-import { useTheme } from "@/components/ThemeProvider";
+
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 
