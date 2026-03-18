@@ -242,13 +242,7 @@ const Navbar = () => {
 
           {/* Mobile right side */}
           <div className="flex-1 flex justify-end items-center gap-1 md:hidden">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+            
             <button
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
