@@ -298,9 +298,9 @@ const Pricing = () => {
               Our AI tells you exactly what to fix — for less than a coffee.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Button asChild className="px-8 py-4 h-auto rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-base hover:from-amber-400 hover:to-yellow-300 shadow-lg shadow-amber-500/20">
+              <Button asChild className="px-8 py-4 h-auto rounded-full gradient-purple text-primary-foreground font-black text-base hover:opacity-90 shadow-lg shadow-primary/25">
                 <Link to="/analyze">
-                  Analyze Your Song Free <ArrowRight className="h-5 w-5 ml-2" />
+                  Analyze Your Track — Free <ArrowRight className="h-5 w-5 ml-2" />
                 </Link>
               </Button>
             </div>
