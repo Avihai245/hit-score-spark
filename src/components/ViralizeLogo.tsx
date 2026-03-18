@@ -48,11 +48,11 @@ const LogoIcon = ({ size = 28, className }: { size?: number; className?: string 
 );
 
 const LOGO_GRADIENT: React.CSSProperties = {
-  background: "linear-gradient(180deg, #d4d4d4 0%, #b794f6 12%, #e8e0ff 26%, #a78bfa 42%, #c4b5fd 56%, #9b6df0 70%, #c084fc 82%, #b0b0b0 100%)",
+  background: "linear-gradient(180deg, #e0e0e0 0%, #c4b5fd 18%, #f5f5f5 32%, #a78bfa 50%, #d4d4d4 65%, #c084fc 78%, #9ca3af 100%)",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
   backgroundClip: "text",
-  filter: "drop-shadow(0 0 10px rgba(139, 92, 246, 0.4))",
+  filter: "drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))",
 };
 
 const LOGO_SCAN_STYLE: React.CSSProperties = {
