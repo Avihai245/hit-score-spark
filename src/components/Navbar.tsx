@@ -113,12 +113,12 @@ const Navbar = () => {
           {/* Center — Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3 group">
             <div className="relative">
-              <div className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-60 transition-opacity duration-700 bg-primary/30 blur-3xl" />
+              <div className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-50 transition-opacity duration-700 bg-primary/30 blur-3xl" />
               <LogoIcon size={36} className="relative z-10 transition-transform duration-300 group-hover:scale-110" />
             </div>
             <span
-              className="font-heading leading-none text-[22px] tracking-[0.16em]"
-              style={{ fontWeight: 800, ...LOGO_GRADIENT_STYLE }}
+              className="font-heading leading-none text-2xl"
+              style={{ fontWeight: 900, letterSpacing: "0.12em", ...LOGO_GRADIENT }}
             >
               SANTO
             </span>
