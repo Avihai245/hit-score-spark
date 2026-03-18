@@ -1278,6 +1278,37 @@ const Results = () => {
           </Section>
         )}
 
+        {/* ═══ 1.5 YOUR NEXT MOVE ═══ */}
+        <Section delay={1.5}>
+          <div className="rounded-xl border border-border bg-card/40 p-4">
+            <div className="flex items-center gap-1.5 mb-3">
+              <Rocket className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Your Next Move</span>
+            </div>
+            <div className="space-y-2">
+              {[
+                { num: "1", label: "Fix your #1 blocking issue", target: "issues", color: "red" },
+                { num: "2", label: "Explore improvement opportunities", target: "improve", color: "amber" },
+                { num: "3", label: "See your 30-day action plan", target: "roadmap", color: "primary" },
+              ].map(({ num, label, target, color }) => (
+                <button
+                  key={target}
+                  onClick={() => document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  className={`w-full flex items-center justify-between rounded-lg border border-border bg-background/50 px-3.5 py-2.5 hover:border-${color}-500/30 hover:bg-${color}-500/5 transition-colors group text-left`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className={`w-5 h-5 rounded-full bg-${color === "primary" ? "primary" : color + "-500"}/15 flex items-center justify-center flex-shrink-0`}>
+                      <span className={`text-[9px] font-black text-${color === "primary" ? "primary" : color + "-400"}`}>{num}</span>
+                    </span>
+                    <span className="text-sm font-semibold text-foreground">{label}</span>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </Section>
+
         {/* ═══ 2. SNAPSHOT ═══ */}
         <Section delay={2}>
           <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4 text-center mb-3">

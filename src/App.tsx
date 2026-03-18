@@ -13,6 +13,7 @@ import AudioPlayer from "@/components/AudioPlayer";
 import Navbar from "@/components/Navbar";
 import GlobalDataStrip from "@/components/GlobalDataStrip";
 import { useSessionTimeout } from "@/hooks/useSessionTimeout";
+import { OnboardingTour } from "@/components/OnboardingTour";
 
 // ─── Lazy-loaded pages (code splitting) ─────────────────────────────────────
 const Index = lazy(() => import("./pages/Index"));
@@ -167,6 +168,7 @@ const AppContent = () => {
       {!isAdminRoute && !isDashboardRoute && <Navbar />}
       <AnimatedRoutes />
       {!isAdminRoute && <AudioPlayer />}
+      {!isAdminRoute && !isDashboardRoute && <OnboardingTour />}
     </>
   );
 };

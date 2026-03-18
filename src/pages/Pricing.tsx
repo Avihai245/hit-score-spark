@@ -152,8 +152,8 @@ const Pricing = () => {
 
         {/* ─── Header ─── */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="text-center mb-6 space-y-5"
         >
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/15 to-amber-500/15 border border-purple-500/20 text-sm font-semibold">
@@ -177,8 +177,8 @@ const Pricing = () => {
 
         {/* ─── Social Proof ─── */}
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
           className="flex items-center justify-center gap-8 md:gap-14 mb-16"
         >
@@ -198,8 +198,8 @@ const Pricing = () => {
             return (
               <motion.div
                 key={plan.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 + i * 0.08 }}
                 onHoverStart={() => setHoveredPlan(plan.id)}
                 onHoverEnd={() => setHoveredPlan(null)}

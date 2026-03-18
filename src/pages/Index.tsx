@@ -205,9 +205,9 @@ const viralFeatures = [
 ];
 
 const testimonials = [
-  { quote: "I was about to release a 58/100 song. Viralize showed me one fix. Rereleased at 84. Now at 2M streams.", handle: "@axelbeats", metric: "+26 pts" },
-  { quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.", handle: "@lunawave", metric: "3 hit matches" },
-  { quote: "Saved me $300 in SubmitHub submissions by knowing exactly who to target.", handle: "@sonicpilot", metric: "100x ROI" },
+  { quote: "I was about to release a 58/100 song. Viralize showed me one fix. Rereleased at 84. Now at 2M streams.", handle: "@axelbeats", metric: "+26 pts", initials: "AB", role: "Producer", followers: "12.4K followers" },
+  { quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.", handle: "@lunawave", metric: "3 hit matches", initials: "LW", role: "Singer-Songwriter", followers: "8.1K followers" },
+  { quote: "Saved me $300 in SubmitHub submissions by knowing exactly who to target.", handle: "@sonicpilot", metric: "100x ROI", initials: "SP", role: "Electronic Artist", followers: "21.7K followers" },
 ];
 
 const pricingPreview = [
@@ -701,14 +701,19 @@ const Index = () => {
                 transition={{ delay: i * 0.08, duration: 0.45 }}
                 className="glass-card p-7 flex flex-col hover:border-primary/15 transition-colors hover:-translate-y-1 transition-transform duration-200"
               >
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-black text-primary">{t.initials}</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground leading-none">{t.handle}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{t.role} · {t.followers}</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-primary uppercase tracking-wider">{t.metric}</span>
+                  <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">{t.metric}</span>
                 </div>
                 <p className="text-sm text-foreground/80 leading-relaxed italic flex-1">"{t.quote}"</p>
-                <p className="mt-5 text-sm font-bold text-primary">{t.handle}</p>
               </motion.div>
             ))}
           </div>

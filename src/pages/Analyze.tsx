@@ -12,6 +12,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ParticleField } from "@/components/ParticleField";
 import { DataStream, ScanLine } from "@/components/DataStream";
 
+// ─── AI System Prompt Rules (sent to backend, applied when supported) ────────
+// These rules define the Viralize analyst persona and guardrails:
+//   1. Persona: "You are Viralize's senior music data analyst — authoritative, data-driven, direct."
+//   2. Genre specificity: "Always name the specific sub-genre and cite the benchmark (e.g. 'Melodic House avg hook score: 7.2/10')."
+//   3. Honest low scores: "For scores < 50, be honest. Do not soften with vague encouragement. Identify the root issue."
+//   4. Single action ending: "End every analysis with exactly ONE specific action item the artist can implement today."
+//   5. No fabricated stats: "Never invent stream counts, percentages, or chart positions. Use only what the audio data supports."
+export const AI_SYSTEM_PROMPT_CONTEXT = [
+  "You are Viralize's senior music data analyst — authoritative, data-driven, and direct.",
+  "Always reference genre-specific benchmarks (e.g. 'Pop avg hook score: 7.4/10').",
+  "For scores below 50, be honest about root issues — do not soften with vague encouragement.",
+  "End every analysis with exactly ONE specific, actionable improvement the artist can implement today.",
+  "Never fabricate stream counts, percentages, or chart positions not supported by the audio data.",
+].join(" ");
+
 const genres = ["Pop", "Hip Hop", "R&B", "Indie Pop", "Melodic House", "EDM", "Rock", "Latin", "Afrobeats", "Other"];
 const goals = [
   { value: "playlists", label: "Get on Spotify playlists" },
@@ -249,6 +264,10 @@ const Analyze = () => {
       toast({ title: "No file", description: "Please upload an audio file.", variant: "destructive" });
       return;
     }
+    if (!title.trim()) {
+      toast({ title: "Song title required", description: "Please enter your song title so your report is labelled correctly.", variant: "destructive" });
+      return;
+    }
 
     setLoading(true);
     setCurrentStep(0);
@@ -280,6 +299,7 @@ const Analyze = () => {
           title: title.trim() || undefined,
           genre: genre || undefined,
           goal: goal || undefined,
+          systemPromptContext: AI_SYSTEM_PROMPT_CONTEXT,
         }),
       });
       if (!analysisRes.ok) throw new Error("Analysis failed to start");
@@ -687,13 +707,14 @@ const Analyze = () => {
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold">
-                  Song Title <span className="text-muted-foreground font-normal">(optional)</span>
+                  Song Title <span className="text-red-400">*</span>
                 </label>
                 <Input
                   placeholder="Enter your song title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="h-12"
+                  required
                 />
               </div>
 
@@ -732,7 +753,7 @@ const Analyze = () => {
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button
                   type="submit"
-                  disabled={!file}
+                  disabled={!file || !title.trim()}
                   className="w-full h-14 gradient-purple text-primary-foreground text-lg font-bold hover:opacity-90 transition-all disabled:opacity-40 gap-2 relative overflow-hidden group shadow-[0_0_30px_-5px] shadow-primary/30"
                 >
                   <motion.div
