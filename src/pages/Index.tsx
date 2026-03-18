@@ -330,7 +330,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.5 }}
-              className="block mt-1 text-base text-accent my-[5px] mx-0 py-0 px-0 font-mono">
+              className="block mt-1 text-accent my-[5px] mx-0 py-0 px-0 font-mono text-lg">
               
               ​WILL YOUR SONG GO VIRAL?       
             </motion.span>
