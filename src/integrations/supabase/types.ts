@@ -142,6 +142,24 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+        }
+        Relationships: []
+      }
       viral_dna_cache: {
         Row: {
           dna: Json
