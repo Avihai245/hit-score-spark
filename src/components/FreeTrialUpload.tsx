@@ -104,6 +104,9 @@ export default function FreeTrialUpload() {
         colors: ["#8B5CF6", "#F59E0B", "#22C55E", "#3B82F6"],
       });
       toast({ title: "🎵 Track uploaded!", description: `${f.name} is ready to analyze.` });
+    },
+    [toast],
+  );
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
