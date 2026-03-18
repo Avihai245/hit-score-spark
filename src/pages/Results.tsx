@@ -1347,7 +1347,16 @@ const Results = () => {
         </Section>
 
         <AnimatePresence>
-          {showRemixPaywall && <RemixPaywallModal score={score} songTitle={title} onClose={() => setShowRemixPaywall(false)} />}
+          {showRemixPaywall && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowRemixPaywall(false)}>
+              <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="rounded-xl border border-primary/30 bg-card p-8 max-w-md mx-4 text-center space-y-4" onClick={e => e.stopPropagation()}>
+                <p className="text-lg font-bold text-primary">🎵 Unlock AI Remix</p>
+                <p className="text-sm text-muted-foreground">Upgrade to remix "{title}" (Score: {score}/100)</p>
+                <a href="/pricing" className="inline-block px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition">View Plans</a>
+                <button onClick={() => setShowRemixPaywall(false)} className="block mx-auto text-xs text-muted-foreground hover:text-foreground transition">Maybe later</button>
+              </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {/* ═══ 9. TRUST LAYER ═══ */}
