@@ -14,7 +14,7 @@ const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
   const count = useMotionValue(from);
-  const rounded = useTransform(count, (v) => Math.round(v).toLocaleString());
+  const rounded = useTransform(count, (v: number) => Math.round(v).toLocaleString());
 
   useEffect(() => {
     if (isInView) {
