@@ -112,5 +112,5 @@ const ViralizeLogo = ({ variant = "navbar", className, showTagline }: SantoLogoP
   );
 };
 
-export { LogoIcon, ViralizeLogo, LOGO_GRADIENT };
+export { LogoIcon, ViralizeLogo, LOGO_GRADIENT, LOGO_SCAN_STYLE };
 export default ViralizeLogo;

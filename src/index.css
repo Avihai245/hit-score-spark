@@ -145,3 +145,8 @@
   0%, 100% { transform: scaleY(0.3); }
   50% { transform: scaleY(1); }
 }
+
+@keyframes logo-scan {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

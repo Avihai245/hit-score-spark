@@ -112,11 +112,20 @@ const Navbar = () => {
 
           {/* Center — Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 group">
-            <span
-              className="font-heading leading-none text-3xl"
-              style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}
-            >
-              SANTO
+            <span className="relative inline-block">
+              <span
+                className="font-heading leading-none text-3xl"
+                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}
+              >
+                SANTO
+              </span>
+              <span
+                className="font-heading leading-none text-3xl pointer-events-none"
+                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
+                aria-hidden="true"
+              >
+                SANTO
+              </span>
             </span>
           </Link>
 
