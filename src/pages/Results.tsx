@@ -54,43 +54,12 @@ const YouTubeLogo = ({ className = "h-4 w-4" }: { className?: string }) => (
   </svg>
 );
 
-/* ─── Platform Badge ─── */
-const PlatformBadge = ({ platform, size = "sm" }: { platform: "spotify" | "apple" | "ai" | "tiktok" | "youtube"; size?: "sm" | "md" }) => {
-  const config = {
-    spotify: { icon: <SpotifyLogo className={size === "md" ? "h-4 w-4" : "h-3 w-3"} />, label: "Spotify Data", color: "#1DB954" },
-    apple: { icon: <AppleMusicLogo className={size === "md" ? "h-4 w-4" : "h-3 w-3"} />, label: "Apple Music", color: "#FC3C44" },
-    youtube: { icon: <YouTubeLogo className={size === "md" ? "h-4 w-4" : "h-3 w-3"} />, label: "YouTube Music", color: "#FF0000" },
-    tiktok: { icon: <TikTokLogo className={size === "md" ? "h-4 w-4" : "h-3 w-3"} />, label: "TikTok", color: "#ffffff" },
-    ai: { icon: <Shield className={size === "md" ? "h-4 w-4" : "h-3 w-3"} />, label: "AI Analysis", color: "hsl(258 90% 66%)" },
-  };
-  const c = config[platform];
-  const isMd = size === "md";
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-md border font-semibold uppercase tracking-wider ${
-        isMd ? "px-3 py-1.5 text-[11px]" : "px-2 py-0.5 text-[9px]"
-      }`}
-      style={{ borderColor: `${c.color}22`, backgroundColor: `${c.color}0D`, color: c.color }}
-    >
-      {c.icon}
-      {c.label}
-    </span>
-  );
-};
-
 /* ─── Score helpers ─── */
 const scoreColor = (s: number) => {
   if (s < 40) return "hsl(0 84% 60%)";
   if (s < 65) return "hsl(25 95% 53%)";
   if (s < 80) return "hsl(142 71% 45%)";
   return "hsl(270 91% 65%)";
-};
-
-const scoreBadge = (s: number) => {
-  if (s < 40) return { label: "LOW POTENTIAL", cls: "bg-red-500/15 text-red-400 border-red-500/30" };
-  if (s < 65) return { label: "MEDIUM POTENTIAL", cls: "bg-orange-500/15 text-orange-400 border-orange-500/30" };
-  if (s < 80) return { label: "HIGH POTENTIAL", cls: "bg-green-500/15 text-green-400 border-green-500/30" };
-  return { label: "HIT POTENTIAL", cls: "bg-primary/15 text-primary border-primary/30" };
 };
 
 const confidenceFromScore = (s: number) => {
@@ -100,11 +69,77 @@ const confidenceFromScore = (s: number) => {
   return 65;
 };
 
-const percentileFromScore = (s: number) => Math.min(99, Math.max(5, Math.round(s * 0.95 + 3)));
+/* ─── Emotional headline based on score ─── */
+const getEmotionalHeadline = (s: number) => {
+  if (s < 40) return "Your track needs work before release. Here's the fix.";
+  if (s < 60) return "You're close. A couple of changes can push this into viral territory.";
+  if (s < 80) return "Strong foundation. One fix away from breaking through.";
+  return "This track is ready. Here's how to maximize it.";
+};
 
-/* ─── Score Gauge (mobile-optimized) ─── */
-const ScoreGauge = ({ score }: { score: number }) => {
-  const r = 80;
+/* ─── Status badge for DNA scores ─── */
+const getStatusBadge = (value: number, max: number) => {
+  const pct = (value / max) * 10;
+  if (pct >= 8) return { emoji: "✅", label: "Strong", borderClass: "border-green-500/30", bgClass: "bg-green-500/[0.05]", textClass: "text-green-400" };
+  if (pct >= 6) return { emoji: "⚠️", label: "Needs Work", borderClass: "border-yellow-500/30", bgClass: "bg-yellow-500/[0.05]", textClass: "text-yellow-400" };
+  return { emoji: "🔴", label: "Fix This First", borderClass: "border-red-500/30", bgClass: "bg-red-500/[0.05]", textClass: "text-red-400" };
+};
+
+/* ─── Plain-English descriptions for DNA metrics ─── */
+const getDnaDescription = (label: string, value: number, hookAnalysis?: string, emotionalCore?: string) => {
+  const descriptions: Record<string, Record<string, string>> = {
+    "Hook Strength": {
+      high: hookAnalysis || "Your hook is memorable — listeners will want to hear it again.",
+      mid: "Your hook is decent but could be catchier to stick in people's heads.",
+      low: "Your hook isn't grabbing attention fast enough — listeners might skip.",
+    },
+    "Replay Value": {
+      high: "People will want to listen to this on repeat.",
+      mid: "It's enjoyable but doesn't quite create that addictive loop.",
+      low: "Listeners probably won't come back for a second play.",
+    },
+    "Emotional Impact": {
+      high: emotionalCore || "This track hits hard emotionally — that's your superpower.",
+      mid: "There's feeling here, but it could hit deeper.",
+      low: "The emotional connection feels flat — try more contrast.",
+    },
+    "Structure Quality": {
+      high: "Your song structure follows patterns that hit songs use.",
+      mid: "The structure is okay but could flow better between sections.",
+      low: "The arrangement feels off — listeners might lose interest.",
+    },
+    "Market Fit": {
+      high: "This fits perfectly with what's trending right now.",
+      mid: "It's in the right space but needs tweaks to compete.",
+      low: "This doesn't match what's performing well in your genre.",
+    },
+    "Platform Readiness": {
+      high: "Streaming algorithms will love this track.",
+      mid: "Algorithms might pick this up, but it's not optimized.",
+      low: "This track won't get recommended in its current form.",
+    },
+  };
+  const tier = value >= 8 ? "high" : value >= 6 ? "mid" : "low";
+  return descriptions[label]?.[tier] || "This metric affects how your track performs.";
+};
+
+/* ─── Translate issue titles to plain language ─── */
+const humanizeIssueTitle = (title: string, imp: string) => {
+  const lower = imp.toLowerCase();
+  if (lower.includes('hook')) return "Your hook arrives too late";
+  if (lower.includes('energy') || lower.includes('dynamic')) return "The energy drops before the chorus";
+  if (lower.includes('lyric') || lower.includes('word')) return "Your lyrics need more vivid imagery";
+  if (lower.includes('structure') || lower.includes('section')) return "The song structure feels disconnected";
+  if (lower.includes('intro')) return "Your intro doesn't grab attention";
+  if (lower.includes('chorus')) return "The chorus doesn't hit hard enough";
+  if (lower.includes('tempo') || lower.includes('bpm')) return "The tempo doesn't match the mood";
+  return title;
+};
+
+/* ─── Score Gauge (smaller, secondary) ─── */
+const ScoreGauge = ({ score, size = "default" }: { score: number; size?: "default" | "small" }) => {
+  const r = size === "small" ? 50 : 80;
+  const dim = size === "small" ? 120 : 180;
   const circ = 2 * Math.PI * r;
   const offset = circ - (score / 100) * circ;
   const color = scoreColor(score);
@@ -118,17 +153,17 @@ const ScoreGauge = ({ score }: { score: number }) => {
 
   return (
     <motion.div
-      className="relative flex items-center justify-center w-[180px] h-[180px] md:w-[220px] md:h-[220px]"
+      className={`relative flex items-center justify-center ${size === "small" ? "w-[120px] h-[120px]" : "w-[140px] h-[140px] md:w-[160px] md:h-[160px]"}`}
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
     >
-      <svg width="100%" height="100%" viewBox="0 0 180 180" className="-rotate-90">
-        <circle cx="90" cy="90" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="5" strokeOpacity="0.2" />
+      <svg width="100%" height="100%" viewBox={`0 0 ${dim} ${dim}`} className="-rotate-90">
+        <circle cx={dim/2} cy={dim/2} r={r} fill="none" stroke="hsl(var(--border))" strokeWidth={size === "small" ? 4 : 5} strokeOpacity="0.2" />
         <motion.circle
-          cx="90" cy="90" r={r} fill="none"
-          stroke="url(#scoreGradV2)"
-          strokeWidth="8"
+          cx={dim/2} cy={dim/2} r={r} fill="none"
+          stroke="url(#scoreGradV3)"
+          strokeWidth={size === "small" ? 5 : 7}
           strokeLinecap="round"
           strokeDasharray={circ}
           initial={{ strokeDashoffset: circ }}
@@ -136,7 +171,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
           transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
         />
         <defs>
-          <linearGradient id="scoreGradV2" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id="scoreGradV3" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={color} />
             <stop offset="100%" stopColor={score >= 80 ? "hsl(290 80% 60%)" : color} />
           </linearGradient>
@@ -144,7 +179,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
       </svg>
       <div className="absolute text-center">
         <motion.div
-          className="text-5xl md:text-6xl font-black tabular-nums font-heading"
+          className={`${size === "small" ? "text-3xl" : "text-4xl md:text-5xl"} font-black tabular-nums font-heading`}
           style={{ color }}
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
@@ -153,7 +188,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
           {rounded}
         </motion.div>
         <motion.div
-          className="text-[10px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-[0.2em]"
+          className="text-[9px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-[0.15em]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2 }}
@@ -165,39 +200,7 @@ const ScoreGauge = ({ score }: { score: number }) => {
   );
 };
 
-/* ─── DNA Bar (compact mobile) ─── */
-const DNABar = ({ label, value, max, explanation, delay = 0 }: { label: string; value: number; max: number; explanation: string; delay?: number }) => {
-  const pct = Math.min((value / max) * 100, 100);
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-30px" });
-  const color = pct >= 80 ? "hsl(270 91% 65%)" : pct >= 60 ? "hsl(142 71% 45%)" : pct >= 40 ? "hsl(38 92% 50%)" : "hsl(0 84% 60%)";
-  return (
-    <motion.div
-      ref={ref}
-      className="p-3.5 rounded-xl border border-border bg-card/50"
-      initial={{ opacity: 0, y: 10 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay: delay * 0.05, duration: 0.3 }}
-    >
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-sm font-bold text-foreground">{label}</span>
-        <motion.span className="text-base font-black tabular-nums" style={{ color }}
-          initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: delay * 0.05 + 0.15 }}>
-          {value}<span className="text-[10px] text-muted-foreground font-normal">/{max}</span>
-        </motion.span>
-      </div>
-      <div className="h-2 rounded-full bg-muted overflow-hidden mb-1.5">
-      <motion.div className="h-full rounded-full will-change-transform"
-          initial={{ scaleX: 0 }} animate={isInView ? { scaleX: pct / 100 } : { scaleX: 0 }}
-          style={{ backgroundColor: color, transformOrigin: "left" }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: delay * 0.05 }} />
-      </div>
-      <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{explanation}</p>
-    </motion.div>
-  );
-};
-
-/* ─── Section wrapper (reduced delays) ─── */
+/* ─── Section wrapper ─── */
 const Section = ({ children, delay = 0, className = "", id }: { children: ReactNode; delay?: number; className?: string; id?: string }) => (
   <motion.section
     id={id}
@@ -211,172 +214,53 @@ const Section = ({ children, delay = 0, className = "", id }: { children: ReactN
   </motion.section>
 );
 
-const SectionLabel = ({ title, icon: Icon }: { title: string; icon: React.ElementType }) => (
-  <div className="flex items-center gap-2.5 mb-4">
-    <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-      <Icon className="h-4 w-4 text-primary" />
-    </div>
-    <h2 className="text-base md:text-lg font-black font-heading text-foreground tracking-tight">{title}</h2>
-  </div>
-);
-
-/* ─── Sticky Section Nav ─── */
+/* ─── Scroll-spy Nav ─── */
 const NAV_ITEMS = [
-  { id: "overview", label: "Overview" },
-  { id: "issues", label: "Issues" },
-  { id: "improve", label: "Improve" },
-  { id: "compare", label: "Compare" },
-  { id: "roadmap", label: "Roadmap" },
+  { id: "hero", label: "Your Score" },
+  { id: "breakdown", label: "Score Details" },
+  { id: "holding-back", label: "What to Fix" },
+  { id: "working", label: "What's Working" },
+  { id: "vs-top", label: "vs Top Tracks" },
+  { id: "plan", label: "7-Day Plan" },
 ];
 
-const StickyNav = ({ activeSection }: { activeSection: string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: -10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 1.5 }}
-    className="sticky top-[88px] md:top-[96px] z-30 -mx-4 px-4 py-2 bg-background/90 backdrop-blur-lg border-b border-border/50"
-  >
-    <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-2xl mx-auto">
+const ScrollNav = ({ activeSection }: { activeSection: string }) => (
+  <>
+    {/* Desktop: sticky sidebar */}
+    <div className="hidden lg:block fixed left-6 top-1/2 -translate-y-1/2 z-30 space-y-1">
       {NAV_ITEMS.map(item => (
         <button
           key={item.id}
           onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+          className={`block text-left text-xs px-3 py-1.5 rounded-lg transition-all w-full ${
             activeSection === item.id
-              ? "bg-primary/15 text-primary border border-primary/25"
-              : "text-muted-foreground hover:text-foreground border border-transparent"
+              ? "bg-primary/15 text-primary font-bold border border-primary/25"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {item.label}
         </button>
       ))}
     </div>
-  </motion.div>
+    {/* Mobile: progress dots */}
+    <div className="lg:hidden fixed right-3 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5">
+      {NAV_ITEMS.map(item => (
+        <button
+          key={item.id}
+          onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className={`rounded-full transition-all ${
+            activeSection === item.id
+              ? "w-2.5 h-2.5 bg-primary shadow-[0_0_8px_hsl(258_90%_66%/0.5)]"
+              : "w-2 h-2 bg-muted-foreground/30"
+          }`}
+          title={item.label}
+        />
+      ))}
+    </div>
+  </>
 );
 
-/* ─── Floating CTA (proper spacing, no overlap) ─── */
-const FloatingCTA = ({ onClick }: { onClick: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 2, type: "spring", stiffness: 200, damping: 25 }}
-    className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-auto z-40 md:bottom-8"
-  >
-    <motion.button
-      onClick={onClick}
-      className="relative w-full md:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden shadow-lg shadow-accent/20"
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.97 }}
-    >
-      <span className="relative flex items-center justify-center gap-2">
-        <Rocket className="h-4 w-4" />
-        Make This Track Viral
-        <ArrowRight className="h-4 w-4" />
-      </span>
-    </motion.button>
-  </motion.div>
-);
-
-/* ─── Critical Issue Card ─── */
-const CriticalIssueCard = ({ title, why, fix, impact, index }: { title: string; why: string; fix: string; impact: string; index: number }) => (
-  <motion.div
-    initial={{ opacity: 0, x: -10 }}
-    whileInView={{ opacity: 1, x: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.06, duration: 0.35 }}
-    className="rounded-xl border border-red-500/15 bg-gradient-to-br from-red-500/[0.03] to-transparent p-5 space-y-3 hover:border-red-500/25 transition-colors"
-  >
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 h-6 w-6 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-        <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
-      </div>
-      <h3 className="text-base font-bold text-foreground leading-snug">{title}</h3>
-    </div>
-    <div className="pl-9 space-y-2.5">
-      <div>
-        <p className="text-[10px] text-red-400/70 font-bold uppercase tracking-widest mb-0.5">Why It Matters</p>
-        <p className="text-sm text-foreground/70 leading-relaxed">{why}</p>
-      </div>
-      <div>
-        <p className="text-[10px] text-green-400/70 font-bold uppercase tracking-widest mb-0.5">What To Change</p>
-        <p className="text-sm text-green-300/90 leading-relaxed">{fix}</p>
-      </div>
-      <div className="flex items-center gap-2 pt-1">
-        <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-        <p className="text-xs text-accent font-medium">{impact}</p>
-      </div>
-    </div>
-  </motion.div>
-);
-
-/* ─── Opportunity Card ─── */
-const OpportunityCard = ({ label, description, priority, impact, icon: Icon, color }: { label: string; description: string; priority: string; impact: string; icon: React.ElementType; color: string }) => (
-  <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/20 transition-colors">
-    <div className="flex items-center gap-2 mb-2">
-      <div className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15`, borderColor: `${color}25`, borderWidth: 1 }}>
-        <Icon className="h-3.5 w-3.5" style={{ color }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-foreground truncate">{label}</p>
-      </div>
-      <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border" style={{ color, borderColor: `${color}30`, backgroundColor: `${color}08` }}>{priority}</span>
-    </div>
-    <p className="text-xs text-muted-foreground leading-relaxed mb-2">{description}</p>
-    <div className="flex items-center gap-1.5">
-      <TrendingUp className="h-3 w-3 text-accent" />
-      <span className="text-xs text-accent font-semibold">{impact}</span>
-    </div>
-  </div>
-);
-
-/* ─── Benchmark Bar (GPU-friendly) ─── */
-const BenchmarkBar = ({ label, yours, benchmark, delay = 0 }: { label: string; yours: number; benchmark: number; delay?: number }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-40px" });
-  const diff = yours - benchmark;
-  const diffLabel = diff >= 0 ? `+${diff}` : `${diff}`;
-  const diffColor = diff >= 0 ? "text-green-400" : "text-red-400";
-  return (
-    <div ref={ref} className="space-y-2">
-      <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-foreground">{label}</span>
-        <span className={`font-bold tabular-nums ${diffColor}`}>{diffLabel}%</span>
-      </div>
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0">You</span>
-          <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
-            <motion.div className="h-full rounded-full bg-primary will-change-transform" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={isInView ? { scaleX: yours / 100 } : {}} transition={{ duration: 0.8, delay: delay * 0.08 }} />
-          </div>
-          <span className="text-xs font-bold text-foreground tabular-nums w-8 text-right">{yours}%</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] text-muted-foreground w-14 flex-shrink-0">Top Tracks</span>
-          <div className="h-2 rounded-full bg-muted flex-1 overflow-hidden">
-            <motion.div className="h-full rounded-full bg-accent/60 will-change-transform" style={{ transformOrigin: "left" }} initial={{ scaleX: 0 }} animate={isInView ? { scaleX: benchmark / 100 } : {}} transition={{ duration: 0.8, delay: delay * 0.08 + 0.1 }} />
-          </div>
-          <span className="text-xs font-bold text-accent tabular-nums w-8 text-right">{benchmark}%</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/* ─── Roadmap ─── */
-const generateRoadmap = (score: number, improvements: string[]) => {
-  const steps: { step: string; action: string; done: boolean }[] = [];
-  if (improvements?.length > 0) {
-    steps.push({ step: "Step 1", action: improvements[0] || "Fix the primary issue identified above.", done: false });
-    if (improvements.length > 1) steps.push({ step: "Step 2", action: improvements[1], done: false });
-  }
-  if (score < 80) {
-    steps.push({ step: `Step ${steps.length + 1}`, action: "Re-analyze your track after changes to verify improvement.", done: false });
-  }
-  steps.push({ step: `Step ${steps.length + 1}`, action: score >= 80 ? "Your track is release-ready. Begin distribution and playlist pitching." : "Once score reaches 80+, proceed with release strategy.", done: false });
-  return steps;
-};
-
-/* ─── Remix styles ─── */
+/* ─── Remix helpers (preserved) ─── */
 const remixStyles = [
   { value: "same", label: "Same vibe (enhanced)" },
   { value: "energetic", label: "More energetic" },
@@ -622,7 +506,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   );
 };
 
-/* ─── AI Remix Section ─── */
+/* ─── AI Remix Section (preserved) ─── */
 const AiRemixSection = ({
   uploadedFile, existingS3Key, songTitle, songGenre, analysisData, analysisId
 }: {
@@ -661,7 +545,6 @@ const AiRemixSection = ({
     setError("");
 
     try {
-      // Step 1 — get S3 key (reuse existing or upload fresh)
       let s3Key = existingS3Key || "";
       if (!s3Key && file) {
         const urlRes = await fetch(LAMBDA_URL, {
@@ -679,37 +562,21 @@ const AiRemixSection = ({
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-      // Step 2 — call suno-cover with FULL analysis data + user lyrics
-      const fullAnalysis = {
-        ...(analysisData || {}),
-        customLyrics: lyrics.trim() || undefined,
-      };
+      const fullAnalysis = { ...(analysisData || {}), customLyrics: lyrics.trim() || undefined };
       const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "suno-cover",
-          s3Key,
-          title: songTitle,
-          genre: songGenre || analysisData?.genre || "pop",
-          style,
-          analysisData: fullAnalysis,
-        }),
+        body: JSON.stringify({ action: "suno-cover", s3Key, title: songTitle, genre: songGenre || analysisData?.genre || "pop", style, analysisData: fullAnalysis }),
       });
       const coverData = await coverRes.json();
       if (coverData.error) throw new Error(coverData.error);
       const { taskIdV1, taskIdV2, version1, version2 } = coverData;
       if (!taskIdV1 || !taskIdV2) throw new Error("No task IDs returned from Suno");
 
-      // Step 3 — poll until both versions are ready
       let attempts = 0;
       const poll = async (): Promise<any> => {
         if (attempts++ > 40) throw new Error("Remix timed out. Please try again.");
-        const pollRes = await fetch(LAMBDA_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "suno-cover", taskIdV1, taskIdV2 }),
-        });
+        const pollRes = await fetch(LAMBDA_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "suno-cover", taskIdV1, taskIdV2 }) });
         const data = await pollRes.json();
         if (data.status === "complete") return data;
         if (data.status === "failed" || data.error) throw new Error(data.error || "Remix failed");
@@ -720,81 +587,34 @@ const AiRemixSection = ({
       const finalData = await poll();
       clearInterval(timerRef.current);
 
-      // Build tracks
       const tracks: any[] = [];
-      if (finalData.v1?.audioUrl) tracks.push({
-        audioUrl: finalData.v1.audioUrl,
-        imageUrl: finalData.v1.imageUrl,
-        label: version1?.label || "Faithful Remix",
-        description: version1?.description || "Production-upgraded, preserves original vibe",
-        accent: "blue",
-      });
-      if (finalData.v2?.audioUrl) tracks.push({
-        audioUrl: finalData.v2.audioUrl,
-        imageUrl: finalData.v2.imageUrl,
-        label: version2?.label || "Viral Edition",
-        description: version2?.description || "Trend-forward, maximum chart impact",
-        accent: "purple",
-      });
+      if (finalData.v1?.audioUrl) tracks.push({ audioUrl: finalData.v1.audioUrl, imageUrl: finalData.v1.imageUrl, label: version1?.label || "Faithful Remix", description: version1?.description || "Production-upgraded, preserves original vibe", accent: "blue" });
+      if (finalData.v2?.audioUrl) tracks.push({ audioUrl: finalData.v2.audioUrl, imageUrl: finalData.v2.imageUrl, label: version2?.label || "Viral Edition", description: version2?.description || "Trend-forward, maximum chart impact", accent: "purple" });
 
-      // ── 1. Build localStorage entries (bulletproof backup, always works) ──
       const localEntries = tracks.map((track: any, i: number) => ({
-        id: `local_${Date.now()}_${i}`,
-        remix_title: track.label || 'AI Remix',
-        original_title: songTitle || null,
-        audio_url: track.audioUrl,
-        image_url: track.imageUrl || null,
-        genre: songGenre || analysisData?.genre || null,
-        created_at: new Date().toISOString(),
-        analysis_id: analysisId || null,
-        suno_task_id: taskIdV1,
-        description: track.description,
-        accent: track.accent,
+        id: `local_${Date.now()}_${i}`, remix_title: track.label || 'AI Remix', original_title: songTitle || null, audio_url: track.audioUrl, image_url: track.imageUrl || null,
+        genre: songGenre || analysisData?.genre || null, created_at: new Date().toISOString(), analysis_id: analysisId || null, suno_task_id: taskIdV1, description: track.description, accent: track.accent,
       }));
       if (user) saveRemixesToLocalStorage(user.id, localEntries);
 
-      // ── 2. Auto-play first track via AudioPlayerContext → bottom player appears ──
       if (tracks[0]?.audioUrl) {
-        playTrack({
-          id: `remix_${Date.now()}_0`,
-          title: `${songTitle || 'AI Song'} – ${tracks[0].label || 'Remix'}`,
-          audioUrl: tracks[0].audioUrl,
-          imageUrl: tracks[0].imageUrl || undefined,
-          sourceTitle: songTitle || undefined,
-        });
+        playTrack({ id: `remix_${Date.now()}_0`, title: `${songTitle || 'AI Song'} – ${tracks[0].label || 'Remix'}`, audioUrl: tracks[0].audioUrl, imageUrl: tracks[0].imageUrl || undefined, sourceTitle: songTitle || undefined });
       }
 
-      // ── 3. Save to Supabase (async, non-blocking) ──
       if (user && tracks.length > 0) {
         let savedCount = 0;
         for (const track of tracks) {
           try {
             const { error: saveErr } = await supabase.from("viralize_remixes").insert({
-              user_id: user.id,
-              analysis_id: analysisId || null,
-              audio_url: track.audioUrl,
-              image_url: track.imageUrl || null,
-              suno_task_id: taskIdV1,
-              genre: songGenre || analysisData?.genre || null,
-              original_title: songTitle || null,
-              remix_title: track.label || 'AI Remix',
-              status: 'complete',
+              user_id: user.id, analysis_id: analysisId || null, audio_url: track.audioUrl, image_url: track.imageUrl || null, suno_task_id: taskIdV1,
+              genre: songGenre || analysisData?.genre || null, original_title: songTitle || null, remix_title: track.label || 'AI Remix', status: 'complete',
             });
             if (!saveErr) savedCount++;
             else console.warn('Supabase save error:', saveErr.message, saveErr.code);
-          } catch (e) {
-            console.warn('Supabase save exception:', e);
-          }
+          } catch (e) { console.warn('Supabase save exception:', e); }
         }
-        if (savedCount > 0) {
-          toast.success(`✅ ${savedCount} song${savedCount > 1 ? 's' : ''} saved to your library!`, {
-            action: { label: 'View Library', onClick: () => window.location.href = '/library' }
-          });
-        } else {
-          toast.info('Songs ready! Saved locally — find them in your Library.', {
-            action: { label: 'View Library', onClick: () => window.location.href = '/library' }
-          });
-        }
+        if (savedCount > 0) toast.success(`✅ ${savedCount} song${savedCount > 1 ? 's' : ''} saved to your library!`, { action: { label: 'View Library', onClick: () => window.location.href = '/library' } });
+        else toast.info('Songs ready! Saved locally — find them in your Library.', { action: { label: 'View Library', onClick: () => window.location.href = '/library' } });
       }
 
       setResult({ tracks });
@@ -808,7 +628,6 @@ const AiRemixSection = ({
 
   return (
     <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-5 md:p-6 relative overflow-hidden scroll-mt-24">
-      {/* Header */}
       <div className="flex items-center gap-2.5 mb-5">
         <div className="h-9 w-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
           <Rocket className="h-4 w-4 text-accent" />
@@ -819,11 +638,8 @@ const AiRemixSection = ({
         </div>
       </div>
 
-      {/* ── IDLE FORM ── */}
       {status === "idle" && (
         <div className="space-y-4">
-
-          {/* File indicator / re-upload */}
           {existingS3Key ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/20">
               <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
@@ -849,72 +665,27 @@ const AiRemixSection = ({
             </div>
           )}
 
-          {/* Style selector */}
           <div>
             <label className="text-sm font-bold text-foreground mb-1.5 block">Remix Style</label>
             <Select value={style} onValueChange={setStyle}>
               <SelectTrigger className="bg-card border-border"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {remixStyles.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                {remixStyles.map(s => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* ── LYRICS — always visible, no separate window ── */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                  <Mic2 className="h-4 w-4 text-primary" />
-                  Your Lyrics
-                  <span className="text-[10px] text-muted-foreground font-normal">(edit here — goes directly to AI)</span>
-                </label>
-                <div className="flex gap-1.5">
-                  {analysisData?.originalLyrics && (
-                    <button
-                      onClick={() => setLyrics(analysisData.originalLyrics)}
-                      className="text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
-                    >
-                      Original
-                    </button>
-                  )}
-                  {analysisData?.improvedLyrics && (
-                    <button
-                      onClick={() => setLyrics(analysisData.improvedLyrics)}
-                      className="text-[10px] px-2 py-1 rounded border border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
-                    >
-                      <Sparkles className="h-2.5 w-2.5" /> AI-improved
-                    </button>
-                  )}
-                </div>
-              </div>
-              <textarea
-                value={lyrics}
-                onChange={(e) => setLyrics(e.target.value)}
-                placeholder="Your song lyrics appear here automatically from the scan. Edit freely — these exact lyrics will be sent to the AI remix engine."
-                className="w-full h-40 bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
-              />
-              <p className="text-[10px] text-muted-foreground mt-1.5 pb-2">
-                {lyrics.length > 0 ? `✓ ${lyrics.length} characters — will be sent to AI` : "No lyrics yet — AI will generate from your song analysis"}
-              </p>
-            </div>
-          </div>
+          <LyricsEditor analysisData={analysisData} onLyricsReady={(l) => { setLyrics(l); startRemix(); }} />
 
-          {/* Create button */}
-          <motion.button
-            onClick={startRemix}
-            disabled={!canCreate}
+          <motion.button onClick={startRemix} disabled={!canCreate}
             className="w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            whileHover={canCreate ? { scale: 1.01 } : {}}
-            whileTap={canCreate ? { scale: 0.98 } : {}}
-          >
+            whileHover={canCreate ? { scale: 1.01 } : {}} whileTap={canCreate ? { scale: 0.98 } : {}}>
             <Rocket className="h-4 w-4" />
             {lyrics.trim() ? "Create AI Remix with My Lyrics" : "Create AI Remix"}
           </motion.button>
         </div>
       )}
 
-      {/* ── UPLOADING ── */}
       {status === "uploading" && (
         <div className="text-center py-8">
           <Loader2 className="h-8 w-8 text-accent mx-auto animate-spin mb-3" />
@@ -923,21 +694,16 @@ const AiRemixSection = ({
         </div>
       )}
 
-      {/* ── PROCESSING ── */}
       {status === "processing" && <RemixProcessingUI elapsed={elapsed} />}
 
-      {/* ── ERROR ── */}
       {status === "error" && (
         <div className="text-center py-6 space-y-3">
           <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
           <p className="text-sm text-destructive font-medium">{error}</p>
-          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="gap-2 border-border">
-            Try Again
-          </Button>
+          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="gap-2 border-border">Try Again</Button>
         </div>
       )}
 
-      {/* ── COMPLETE — 2 versions ── */}
       {status === "complete" && result?.tracks?.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-start justify-between">
@@ -948,21 +714,13 @@ const AiRemixSection = ({
               </div>
               <p className="text-xs text-muted-foreground mt-1">Two unique versions — playing automatically below ↓</p>
             </div>
-            <Link
-              to="/library"
-              className="text-xs text-primary hover:text-primary/80 border border-primary/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 flex-shrink-0 ml-3"
-            >
-              <Headphones className="h-3.5 w-3.5" />
-              My Library
+            <Link to="/library" className="text-xs text-primary hover:text-primary/80 border border-primary/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 flex-shrink-0 ml-3">
+              <Headphones className="h-3.5 w-3.5" /> My Library
             </Link>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {result.tracks.map((track: any, i: number) => (
-              <div
-                key={i}
-                className={`rounded-xl border p-4 ${i === 0 ? "border-blue-500/30 bg-blue-500/5" : "border-purple-500/30 bg-purple-500/5"}`}
-              >
+              <div key={i} className={`rounded-xl border p-4 ${i === 0 ? "border-blue-500/30 bg-blue-500/5" : "border-purple-500/30 bg-purple-500/5"}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">{i === 0 ? "🎸" : "🚀"}</span>
                   <div>
@@ -970,56 +728,23 @@ const AiRemixSection = ({
                     <p className="text-xs text-muted-foreground leading-snug">{track.description}</p>
                   </div>
                 </div>
-                {track.imageUrl && (
-                  <img src={track.imageUrl} alt={track.label} className="w-full h-28 object-cover rounded-lg mb-3" />
-                )}
-                {/* Play button → triggers bottom AudioPlayer */}
+                {track.imageUrl && <img src={track.imageUrl} alt={track.label} className="w-full h-28 object-cover rounded-lg mb-3" />}
                 <div className="flex gap-2 mb-2">
-                  <button
-                    onClick={() => {
-                      playTrack({
-                        id: `remix_${Date.now()}_${i}`,
-                        title: `${songTitle || 'AI Song'} – ${track.label || 'Remix'}`,
-                        audioUrl: track.audioUrl,
-                        sourceTitle: songTitle || undefined,
-                      });
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all
-                      ${i === 0
-                        ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30'
-                        : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30'
-                      }`}
-                  >
-                    <Play className="h-4 w-4" />
-                    Play Now
+                  <button onClick={() => { playTrack({ id: `remix_${Date.now()}_${i}`, title: `${songTitle || 'AI Song'} – ${track.label || 'Remix'}`, audioUrl: track.audioUrl, sourceTitle: songTitle || undefined }); }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all ${i === 0 ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30' : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30'}`}>
+                    <Play className="h-4 w-4" /> Play Now
                   </button>
-                  <a
-                    href={track.audioUrl}
-                    download={`${songTitle}_${(track.label || 'remix').replace(/\s+/g, "_")}.mp3`}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                  <a href={track.audioUrl} download={`${songTitle}_${(track.label || 'remix').replace(/\s+/g, "_")}.mp3`}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs border border-border/40 text-muted-foreground hover:text-foreground transition-colors">
                     <Download className="h-3.5 w-3.5" /> MP3
                   </a>
                 </div>
-                {/* Native audio as fallback */}
-                <audio
-                  ref={el => { audioRefs.current[i] = el; }}
-                  src={track.audioUrl}
-                  className="w-full h-8 opacity-50 hover:opacity-100 transition-opacity"
-                  controls
-                  onPlay={() => {
-                    audioRefs.current.forEach((a, idx) => { if (a && idx !== i) a.pause(); });
-                    setPlaying(i);
-                  }}
-                />
+                <audio ref={el => { audioRefs.current[i] = el; }} src={track.audioUrl} className="w-full h-8 opacity-50 hover:opacity-100 transition-opacity" controls
+                  onPlay={() => { audioRefs.current.forEach((a, idx) => { if (a && idx !== i) a.pause(); }); setPlaying(i); }} />
               </div>
             ))}
           </div>
-
-          <button
-            onClick={() => { setStatus("idle"); setResult(null); setError(""); }}
-            className="w-full py-2 text-xs text-muted-foreground hover:text-foreground border border-border/30 rounded-lg transition-colors"
-          >
+          <button onClick={() => { setStatus("idle"); setResult(null); setError(""); }} className="w-full py-2 text-xs text-muted-foreground hover:text-foreground border border-border/30 rounded-lg transition-colors">
             ↩ Create another version
           </button>
         </div>
@@ -1030,11 +755,11 @@ const AiRemixSection = ({
 
 
 /* ═══════════════════════════════════════════════
-   MAIN RESULTS PAGE
+   MAIN RESULTS PAGE — REDESIGNED
    ═══════════════════════════════════════════════ */
 const Results = () => {
   const location = useLocation();
-  const _navigate = useNavigate();
+  const navigate = useNavigate();
   const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string; analysisId?: string; s3Key?: string } | null;
 
   if (!state?.results) return <Navigate to="/analyze" replace />;
@@ -1050,25 +775,16 @@ const Results = () => {
   const { results, title, goal, uploadedFile, songGenre, analysisId, s3Key } = state;
   const {
     score, verdict, strengths, improvements, oneChange,
-    hookTiming, bpmEstimate, energyLevel, dataSource, openingLyrics,
+    hookTiming, bpmEstimate, energyLevel, dataSource,
     hookAnalysis, viralPotential, competitorMatch,
-    matchedPlaylists, playlistStrategy, musicalKey,
-    songTheme, emotionalCore, viralLine,
-    lyricWeakness, lyricFix,
-    targetAudience, listeningMoment, tikTokFit,
-    valence, danceability, saveRatePrediction, skipRiskMoment,
+    emotionalCore, viralLine,
+    danceability, valence,
     similarSongs,
   } = results;
 
   const isRealAudio = dataSource === "real_audio_analysis";
-  const badge = scoreBadge(score);
   const confidence = confidenceFromScore(score);
-  const percentile = percentileFromScore(score);
-  const hasViralLine = viralLine && viralLine !== "none yet";
-
-  const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    `My song "${title}" scored ${score}/100 on Santo!\n\nCheck yours → santo.fm`
-  )}`;
+  const targetScore = Math.min(100, score + 19);
 
   // Derive HIT DNA scores
   const hookStrength = hookAnalysis ? Math.min(10, Math.round(score * 0.1 + (competitorMatch || 5) * 0.3 + 2)) : Math.round(score / 10);
@@ -1078,80 +794,49 @@ const Results = () => {
   const marketFit = competitorMatch || Math.min(10, Math.round(score * 0.09 + 1));
   const algorithmCompat = Math.min(10, Math.round((danceability || 5) * 0.3 + (valence || 5) * 0.2 + score * 0.04));
 
-  // Critical issues
+  const dnaScores = [
+    { label: "Hook Strength", value: hookStrength, max: 10 },
+    { label: "Replay Value", value: replayValue, max: 10 },
+    { label: "Emotional Impact", value: emotionalImpact, max: 10 },
+    { label: "Structure Quality", value: structureQuality, max: 10 },
+    { label: "Market Fit", value: marketFit, max: 10 },
+    { label: "Platform Readiness", value: algorithmCompat, max: 10 },
+  ];
+
+  // Critical issues with humanized titles
   const criticalIssues = (improvements || []).slice(0, 4).map((imp: string, i: number) => {
     const isHook = imp.toLowerCase().includes('hook');
     const isEnergy = imp.toLowerCase().includes('energy') || imp.toLowerCase().includes('dynamic');
-    const isStructure = imp.toLowerCase().includes('structure') || imp.toLowerCase().includes('section');
     const isLyric = imp.toLowerCase().includes('lyric') || imp.toLowerCase().includes('word');
     return {
-      title: isHook ? "Hook Needs Optimization" : isEnergy ? "Energy Progression Issue" : isStructure ? "Structural Weakness" : isLyric ? "Lyric Impact Gap" : `Issue ${i + 1}: Improvement Needed`,
-      why: isHook ? "The hook is the #1 factor in listener retention. Weak hooks cause 60%+ skip rates in the first 15 seconds." :
-           isEnergy ? "Energy dynamics directly affect replay rates. Flat energy curves reduce algorithmic recommendation scores." :
-           isStructure ? "Top-performing tracks follow specific structural patterns. Deviations reduce playlist placement likelihood." :
-           isLyric ? "Memorable lyrics drive saves and shares. Generic phrasing reduces emotional connection and virality." :
-           "This element affects how streaming algorithms rank and recommend your track to new listeners.",
+      title: humanizeIssueTitle(
+        isHook ? "Hook Needs Optimization" : isEnergy ? "Energy Progression Issue" : isLyric ? "Lyric Impact Gap" : `Issue ${i + 1}`,
+        imp
+      ),
+      cost: isHook ? "60% of listeners skip within 15 seconds when the hook doesn't land."
+           : isEnergy ? "Flat energy drops replay rates by up to 40%."
+           : isLyric ? "Generic lyrics get 50% fewer saves and shares."
+           : "This reduces how often algorithms recommend your track.",
       fix: imp,
-      impact: isHook ? "+15-25% retention improvement" : isEnergy ? "+10-20% replay rate increase" : isStructure ? "+12-18% playlist match rate" : "+8-15% save rate improvement",
+      impact: isHook ? "+15–20 points" : isEnergy ? "+10–15 points" : isLyric ? "+8–12 points" : "+10–15 points",
     };
   });
 
-  // Opportunities
-  const opportunities = [
-    ...(strengths || []).slice(0, 2).map((s: string) => ({
-      label: "Quick Win",
-      description: s + " — leverage this strength in your marketing and playlist pitching.",
-      priority: "Quick Win",
-      impact: "+5-10% visibility",
-      icon: Zap,
-      color: "hsl(142 71% 45%)",
-    })),
-    ...(improvements || []).slice(0, 2).map((imp: string) => ({
-      label: "Key Improvement",
-      description: imp,
-      priority: "Medium",
-      impact: "+15-25% viral potential",
-      icon: Target,
-      color: "hsl(38 92% 50%)",
-    })),
-  ];
-  if (oneChange) {
-    opportunities.push({
-      label: "Major Upgrade",
-      description: oneChange,
-      priority: "High Impact",
-      impact: "+20-35% overall score",
-      icon: Flame,
-      color: "hsl(0 84% 60%)",
-    });
-  }
+  // Top 2 strengths
+  const topStrengths = (strengths || []).slice(0, 2);
 
   // Benchmarks
-  const benchmarks = [
-    { label: "Hook Timing", yours: Math.round(hookStrength * 10), benchmark: 82 },
-    { label: "Replay Rate", yours: Math.round(replayValue * 10), benchmark: 75 },
-    { label: "Energy Dynamics", yours: Math.round(algorithmCompat * 10), benchmark: 78 },
-    { label: "Structure Match", yours: Math.round(structureQuality * 10), benchmark: 85 },
-    { label: "Market Fit", yours: Math.round(marketFit * 10), benchmark: 72 },
-  ];
+  const avgTopScore = 78;
+  const gap = avgTopScore - score;
 
-  const roadmap = generateRoadmap(score, improvements || []);
+  // Share URL
+  const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`My song "${title}" scored ${score}/100 on Santo!\n\nCheck yours → santo.fm`)}`;
 
-  // Strongest / weakest
-  const dnaScores = [
-    { label: "Hook Strength", value: hookStrength },
-    { label: "Replay Value", value: replayValue },
-    { label: "Emotional Impact", value: emotionalImpact },
-    { label: "Structure", value: structureQuality },
-    { label: "Market Fit", value: marketFit },
-    { label: "Algorithm Fit", value: algorithmCompat },
-  ];
-  const sorted = [...dnaScores].sort((a, b) => b.value - a.value);
-  const strongest = sorted[0];
-  const weakest = sorted[sorted.length - 1];
+  // Estimated impact from oneChange
+  const oneChangeImpact = Math.min(25, Math.max(12, Math.round((100 - score) * 0.35)));
 
   // Active section tracking
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState("hero");
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1170,100 +855,91 @@ const Results = () => {
     return () => { clearTimeout(timer); observer.disconnect(); };
   }, []);
 
-  const scrollToViral = () => {
-    document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   return (
     <div className="min-h-screen px-4 pt-28 pb-32 bg-background relative">
-      {/* Sticky Mini Nav */}
-      <StickyNav activeSection={activeSection} />
+      {/* Scroll-spy nav */}
+      <ScrollNav activeSection={activeSection} />
 
-      {/* Floating CTA */}
-      <FloatingCTA onClick={scrollToViral} />
+      <div className="max-w-2xl mx-auto space-y-8 relative z-10">
 
-      <div className="max-w-2xl mx-auto space-y-6 relative z-10">
-
-        {/* ═══ 1. HERO — Score + Verdict ═══ */}
-        <Section delay={0} id="overview">
-          <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-5 relative overflow-hidden">
+        {/* ═══ SECTION 1 — HERO ═══ */}
+        <Section delay={0} id="hero">
+          <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-6 md:p-8 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-            <div className="flex flex-col items-center text-center">
-              <ScoreGauge score={score} />
+            {/* 1A — Emotional Headline + Score */}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-5">
+              <div className="flex-1 text-center md:text-left">
+                <motion.h1
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.5 }}
+                  className="text-2xl md:text-3xl font-black font-heading text-foreground leading-tight"
+                >
+                  {getEmotionalHeadline(score)}
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="text-sm text-muted-foreground mt-2"
+                >
+                  "{title}" {songGenre ? `· ${songGenre}` : ''}
+                </motion.p>
 
-              <motion.span
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.2, type: "spring" }}
-                className={`mt-3 inline-block px-4 py-1.5 rounded-full text-[11px] font-black border uppercase tracking-[0.12em] ${badge.cls}`}
-              >
-                {badge.label}
-              </motion.span>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5 }}
-                className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"
-              >
-                <span>Confidence: <strong className="text-foreground">{confidence}%</strong></span>
-                <span className="text-border">•</span>
-                <span>{isRealAudio ? "Audio Analysis" : "Pattern Analysis"}</span>
-              </motion.div>
-
-              <motion.p
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.7 }}
-                className="text-base md:text-lg font-bold text-foreground leading-snug mt-4 max-w-md"
-              >
-                {verdict || (score >= 80
-                  ? "Strong viral potential. Minor tweaks could make this a hit."
-                  : score >= 65
-                  ? "Good foundation, but key issues are limiting performance."
-                  : score >= 40
-                  ? "Potential is there. Several areas need improvement before release."
-                  : "This track needs significant work before it's ready.")}
-              </motion.p>
-
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.9 }}
-                className="text-xs text-muted-foreground mt-2"
-              >
-                "{title}" {songGenre ? `• ${songGenre}` : ''}
-              </motion.p>
-
-              {/* Share row */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 2.1 }}
-                className="flex gap-2 mt-4"
-              >
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
-                  onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`); toast.success("Copied!"); }}>
-                  <Copy className="h-3 w-3" /> Copy
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
-                  onClick={() => window.open(tweetUrl, '_blank')}>
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                  Share
-                </Button>
-              </motion.div>
-            </div>
-
-            {/* Hidden share card */}
-            <div className="sr-only" aria-hidden="true">
-              <div id="share-score-card" className="w-[400px] bg-[#0a0a0a] p-6 rounded-2xl border border-primary/20">
-                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3">santo.fm</p>
-                <p className="text-foreground font-bold text-lg">{title}</p>
-                <p className="text-5xl font-black mt-2" style={{ color: scoreColor(score) }}>{score}</p>
-                <span className={`inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-black border ${badge.cls}`}>{badge.label}</span>
+                {/* Share row */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 2 }}
+                  className="flex gap-2 mt-4 justify-center md:justify-start"
+                >
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
+                    onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/results?shared=true&score=${score}&title=${encodeURIComponent(title)}`); toast.success("Copied!"); }}>
+                    <Copy className="h-3 w-3" /> Copy
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs border-border h-8"
+                    onClick={() => window.open(tweetUrl, '_blank')}>
+                    <svg className="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    Share
+                  </Button>
+                </motion.div>
+              </div>
+              <div className="flex-shrink-0">
+                <ScoreGauge score={score} size="small" />
               </div>
             </div>
+
+            {/* 1B — #1 Fix */}
+            {oneChange && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+                className="mt-6 rounded-xl border-2 border-accent/40 bg-accent/[0.06] p-4"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🎯</span>
+                  <span className="text-sm font-black text-accent uppercase tracking-wider">Your Biggest Opportunity Right Now</span>
+                </div>
+                <p className="text-base font-bold text-foreground leading-relaxed">
+                  {oneChange}
+                </p>
+                <p className="text-sm text-accent font-semibold mt-2">
+                  → Estimated impact: +{oneChangeImpact} points on your viral score
+                </p>
+              </motion.div>
+            )}
+
+            {/* 1C — Confidence & Context */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.8 }}
+              className="text-xs text-muted-foreground mt-4 text-center"
+            >
+              Based on patterns from 500K+ tracks · Confidence: {confidence}% · {isRealAudio ? "Audio Analysis" : "Pattern Analysis"} {songGenre ? `· ${songGenre}` : ''}
+            </motion.p>
           </div>
         </Section>
 
@@ -1278,100 +954,156 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ 2. SNAPSHOT ═══ */}
-        <Section delay={2}>
-          <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4 text-center mb-3">
-            <motion.p className="text-3xl font-black text-primary tabular-nums"
-              initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ type: "spring" }}>
-              Top {100 - percentile}%
-            </motion.p>
-            <p className="text-sm text-foreground mt-0.5">You outperform <strong>{percentile}%</strong> of analyzed tracks</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-green-500/20 bg-green-500/[0.03] p-3.5">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <TrendingUp className="h-3.5 w-3.5 text-green-400" />
-                <span className="text-[10px] text-green-400 font-bold uppercase tracking-wider">Strongest</span>
-              </div>
-              <p className="text-sm font-bold text-foreground">{strongest.label}</p>
-              <p className="text-xs text-muted-foreground">{strongest.value}/10</p>
-            </div>
-            <div className="rounded-xl border border-red-500/15 bg-red-500/[0.03] p-3.5">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
-                <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Weakest</span>
-              </div>
-              <p className="text-sm font-bold text-foreground">{weakest.label}</p>
-              <p className="text-xs text-muted-foreground">{weakest.value}/10</p>
-            </div>
-          </div>
-        </Section>
-
-        {/* ═══ 3. HIT DNA ═══ */}
-        <Section delay={3}>
-          <SectionLabel title="Hit DNA Breakdown" icon={Layers} />
-          <div className="space-y-2.5">
-            <DNABar label="Hook Strength" value={hookStrength} max={10} explanation={hookAnalysis || "How catchy and memorable your hook is."} delay={0} />
-            <DNABar label="Replay Value" value={replayValue} max={10} explanation="How likely listeners are to hit replay." delay={1} />
-            <DNABar label="Emotional Impact" value={emotionalImpact} max={10} explanation={emotionalCore || "The emotional connection your track creates."} delay={2} />
-            <DNABar label="Structure Quality" value={structureQuality} max={10} explanation="How your structure matches hit patterns." delay={3} />
-            <DNABar label="Market Fit" value={marketFit} max={10} explanation="Alignment with current genre trends." delay={4} />
-            <DNABar label="Algorithm Fit" value={algorithmCompat} max={10} explanation="Match with platform recommendation signals." delay={5} />
+        {/* ═══ SECTION 2 — SCORE BREAKDOWN ═══ */}
+        <Section delay={2} id="breakdown">
+          <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+            Why You Scored {score}
+          </h2>
+          <div className="space-y-3">
+            {dnaScores.map((dna, i) => {
+              const badge = getStatusBadge(dna.value, dna.max);
+              const description = getDnaDescription(dna.label, dna.value, hookAnalysis, emotionalCore);
+              const ref = useRef<HTMLDivElement>(null);
+              const isInView = useInView(ref, { once: true, margin: "-30px" });
+              return (
+                <motion.div
+                  ref={ref}
+                  key={dna.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ delay: i * 0.06, duration: 0.35 }}
+                  className={`rounded-xl border ${badge.borderClass} ${badge.bgClass} p-4`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-base font-bold text-foreground">{dna.label}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-black tabular-nums text-foreground">{dna.value}<span className="text-xs text-muted-foreground font-normal">/{dna.max}</span></span>
+                      <span className={`text-xs font-bold ${badge.textClass}`}>{badge.emoji} {badge.label}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground/70 leading-relaxed">{description}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </Section>
 
-        {/* ═══ 4. CRITICAL ISSUES ═══ */}
+        {/* ═══ SECTION 3 — WHAT'S HOLDING YOU BACK ═══ */}
         {criticalIssues.length > 0 && (
-          <Section delay={4} id="issues">
-            <SectionLabel title="What's Holding You Back" icon={Crosshair} />
+          <Section delay={3} id="holding-back">
+            <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+              What's Holding You Back
+            </h2>
             <div className="space-y-3">
               {criticalIssues.map((issue, i) => (
-                <CriticalIssueCard key={i} index={i} {...issue} />
-              ))}
-            </div>
-            {oneChange && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="mt-3 rounded-xl border border-accent/30 bg-accent/[0.04] p-4 text-center"
-              >
-                <div className="flex items-center justify-center gap-1.5 mb-1.5">
-                  <Target className="h-3.5 w-3.5 text-accent" />
-                  <span className="text-[10px] text-accent font-bold uppercase tracking-wider">Priority Fix</span>
-                </div>
-                <p className="text-sm font-bold text-foreground leading-snug">{oneChange}</p>
-              </motion.div>
-            )}
-          </Section>
-        )}
-
-        {/* ═══ 5. OPPORTUNITIES ═══ */}
-        {opportunities.length > 0 && (
-          <Section delay={5} id="improve">
-            <SectionLabel title="Opportunities" icon={Flame} />
-            <div className="space-y-2.5">
-              {opportunities.map((opp, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}>
-                  <OpportunityCard {...opp} />
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06, duration: 0.35 }}
+                  className="rounded-xl border border-red-500/20 bg-red-500/[0.03] p-5 space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg flex-shrink-0">🔴</span>
+                    <h3 className="text-base font-bold text-foreground leading-snug">{issue.title}</h3>
+                  </div>
+                  <div className="pl-8 space-y-3">
+                    <div>
+                      <p className="text-[10px] text-red-400/80 font-bold uppercase tracking-widest mb-1">What this costs you</p>
+                      <p className="text-sm text-foreground/70 leading-relaxed">{issue.cost}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-green-400/80 font-bold uppercase tracking-widest mb-1">The fix</p>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{issue.fix}</p>
+                      <p className="text-sm text-accent font-semibold mt-1">→ {issue.impact}</p>
+                    </div>
+                    <button
+                      onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:text-accent/80 transition-colors"
+                    >
+                      Fix This With AI Remix <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </Section>
         )}
 
-        {/* ═══ 6. COMPARISON ═══ */}
-        <Section delay={6} id="compare">
-          <SectionLabel title="You vs Top Tracks" icon={BarChart3} />
-          <div className="rounded-xl border border-border bg-card/50 p-4 space-y-4">
-            {benchmarks.slice(0, 4).map((b, i) => (
-              <BenchmarkBar key={b.label} {...b} delay={i} />
-            ))}
+        {/* ═══ SECTION 4 — WHAT'S WORKING ═══ */}
+        {topStrengths.length > 0 && (
+          <Section delay={4} id="working">
+            <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+              What's Already Working For You 💪
+            </h2>
+            <div className="space-y-3">
+              {topStrengths.map((strength: string, i: number) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="rounded-xl border border-green-500/25 bg-green-500/[0.05] p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg flex-shrink-0">✅</span>
+                    <p className="text-sm font-medium text-foreground leading-relaxed">{strength}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* ═══ SECTION 5 — YOU VS TOP TRACKS ═══ */}
+        <Section delay={5} id="vs-top">
+          <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+            You vs Top Tracks
+          </h2>
+          <div className="rounded-xl border border-border bg-card/50 p-5 space-y-4">
+            {/* Gap Visual */}
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-foreground font-medium">You</span>
+                  <span className="font-bold tabular-nums text-foreground">{score}%</span>
+                </div>
+                <div className="h-3 rounded-full bg-muted overflow-hidden">
+                  <motion.div className="h-full rounded-full bg-primary" style={{ transformOrigin: "left" }}
+                    initial={{ scaleX: 0 }} whileInView={{ scaleX: score / 100 }} viewport={{ once: true }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground font-medium">Top Tracks</span>
+                  <span className="font-bold tabular-nums text-accent">{avgTopScore}%</span>
+                </div>
+                <div className="h-3 rounded-full bg-muted overflow-hidden">
+                  <motion.div className="h-full rounded-full bg-accent/60" style={{ transformOrigin: "left" }}
+                    initial={{ scaleX: 0 }} whileInView={{ scaleX: avgTopScore / 100 }} viewport={{ once: true }}
+                    transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm text-center font-semibold text-foreground/80">
+              {gap > 0
+                ? `${gap} points behind top tracks — fixable`
+                : "You're already performing at top-track level 🔥"
+              }
+            </p>
           </div>
+
+          {/* Similar songs — filter out "unknown" */}
           {similarSongs?.length > 0 && (
             <div className="mt-3 space-y-2.5">
-              {similarSongs.slice(0, 3).map((song: any, i: number) => (
+              {similarSongs
+                .filter((song: any) => song.streams && song.streams !== "unknown")
+                .slice(0, 3)
+                .map((song: any, i: number) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                   className="rounded-xl border border-border bg-card p-3.5 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
@@ -1381,55 +1113,119 @@ const Results = () => {
                     <p className="font-bold text-sm text-foreground truncate">{song.title}</p>
                     <p className="text-xs text-muted-foreground">{song.artist}</p>
                   </div>
-                  {song.streams && <span className="text-sm font-black text-accent tabular-nums flex-shrink-0">{song.streams}</span>}
+                  <span className="text-sm font-black text-accent tabular-nums flex-shrink-0">{song.streams}</span>
                 </motion.div>
               ))}
             </div>
           )}
         </Section>
 
-        {/* ═══ 7. ROADMAP ═══ */}
-        <Section delay={7} id="roadmap">
-          <SectionLabel title="Your Action Plan" icon={CheckCircle2} />
-          <div className="space-y-2">
-            {roadmap.map((item, i) => (
-              <motion.div key={i} initial={{ opacity: 0, x: -8 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
-                className="flex items-start gap-3 rounded-xl border border-border bg-card p-3.5">
-                <div className="mt-0.5 flex-shrink-0 h-6 w-6 rounded-full border-2 border-primary/40 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-primary">{i + 1}</span>
-                </div>
-                <p className="text-sm text-foreground/80 leading-snug">{item.action}</p>
-              </motion.div>
-            ))}
+        {/* ═══ SECTION 6 — 7-DAY PLAN ═══ */}
+        <Section delay={6} id="plan">
+          <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+            Your 7-Day Plan to Hit {targetScore}+
+          </h2>
+
+          <div className="space-y-3">
+            {/* Day 1-2 */}
+            <div className="rounded-xl border border-accent/20 bg-accent/[0.04] p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-black text-accent bg-accent/15 px-2 py-0.5 rounded-md">DAY 1–2</span>
+              </div>
+              <p className="text-sm font-bold text-foreground leading-relaxed">
+                {oneChange || (improvements?.[0] || "Fix the primary issue identified above")}
+              </p>
+              <p className="text-xs text-accent font-semibold mt-1">→ adds {oneChangeImpact}–{oneChangeImpact + 5} points</p>
+              <button
+                onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/15 border border-accent/25 text-accent text-xs font-bold hover:bg-accent/25 transition-colors"
+              >
+                <Rocket className="h-3.5 w-3.5" /> Try AI Remix <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+
+            {/* Day 3-4 */}
+            <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-black text-primary bg-primary/15 px-2 py-0.5 rounded-md">DAY 3–4</span>
+              </div>
+              <p className="text-sm font-bold text-foreground leading-relaxed">
+                {improvements?.[1] || "Punch up verse energy — add a riser or drum fill before chorus"}
+              </p>
+              <p className="text-xs text-primary font-semibold mt-1">→ adds 8–12 points</p>
+            </div>
+
+            {/* Day 5-7 */}
+            <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-black text-green-400 bg-green-500/15 px-2 py-0.5 rounded-md">DAY 5–7</span>
+              </div>
+              <p className="text-sm font-bold text-foreground leading-relaxed">
+                Re-upload and re-analyze to measure your improvement
+              </p>
+              <Button asChild variant="outline" size="sm" className="mt-3 gap-1.5 text-xs border-green-500/25 text-green-400 hover:bg-green-500/10 h-8">
+                <Link to="/analyze"><Upload className="h-3.5 w-3.5" /> Analyze Again <ArrowRight className="h-3 w-3" /></Link>
+              </Button>
+            </div>
           </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-sm font-bold text-center text-foreground/80 mt-4 p-3 rounded-lg bg-card border border-border"
+          >
+            Do all 3 → you're likely hitting {targetScore}–{Math.min(100, targetScore + 6)} by end of week.
+          </motion.p>
         </Section>
 
-        {/* ═══ 8. VIRAL CTA ═══ */}
-        <Section delay={8}>
+        {/* ═══ SECTION 7 — CONVERSION CTA ═══ */}
+        <Section delay={7}>
           {canRemix ? (
             <AiRemixSection uploadedFile={uploadedFile || null} existingS3Key={s3Key} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
           ) : (
-            <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 text-center relative overflow-hidden scroll-mt-24">
-              <div className="h-11 w-11 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
-                <Rocket className="h-5 w-5 text-accent" />
-              </div>
-              <h2 className="text-xl font-black font-heading text-foreground mb-1.5">Ready to Upgrade This Track?</h2>
-              <p className="text-sm text-muted-foreground mb-5 max-w-sm mx-auto">
-                Apply proven patterns from high-performing tracks. Score: <strong className="text-accent">{score}/100</strong>
-              </p>
+            <div id="viral-cta" className="rounded-2xl border border-accent/25 bg-gradient-to-b from-accent/[0.06] to-transparent p-6 md:p-8 text-center relative overflow-hidden scroll-mt-24">
+              <div className="max-w-md mx-auto space-y-5">
+                <div className="space-y-2">
+                  <p className="text-xl md:text-2xl font-black font-heading text-foreground">
+                    Your track scored {score}.
+                  </p>
+                  <p className="text-base text-foreground/80 leading-relaxed">
+                    Tracks like yours average <strong className="text-accent">{targetScore}</strong> after one AI Remix session.
+                  </p>
+                </div>
 
-              <motion.button onClick={() => setShowRemixPaywall(true)}
-                className="relative w-full max-w-xs mx-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden"
-                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
-                <span className="relative flex items-center justify-center gap-2">
-                  <Rocket className="h-4 w-4" /> Make This Track Viral <ArrowRight className="h-4 w-4" />
-                </span>
-              </motion.button>
-              <p className="text-[11px] text-muted-foreground mt-3">Pro — $19/month or $7 one-time</p>
+                <div className="flex flex-col gap-3">
+                  <motion.button
+                    onClick={() => setShowRemixPaywall(true)}
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base overflow-hidden"
+                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <Rocket className="h-5 w-5" /> Remix This Track — $7 one-time
+                    </span>
+                  </motion.button>
+                  <Link
+                    to="/pricing"
+                    className="w-full py-3.5 rounded-xl border border-primary/30 bg-primary/[0.06] text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors"
+                  >
+                    Get Unlimited Remixes — $19/mo
+                  </Link>
+                </div>
+
+                {/* Social proof */}
+                <div className="pt-2 border-t border-border/30">
+                  <p className="text-sm text-foreground/60 italic">
+                    "I went from 58 to 84 with one remix"
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">— @axelbeats</p>
+                </div>
+              </div>
             </div>
           )}
         </Section>
 
+        {/* Paywall modal */}
         <AnimatePresence>
           {showRemixPaywall && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowRemixPaywall(false)}>
@@ -1443,8 +1239,8 @@ const Results = () => {
           )}
         </AnimatePresence>
 
-        {/* ═══ 9. TRUST LAYER ═══ */}
-        <Section delay={9}>
+        {/* Trust layer */}
+        <Section delay={8}>
           <div className="rounded-xl border border-border bg-card/30 p-4 text-center space-y-2">
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Based on patterns from top-performing tracks across major platforms.
@@ -1459,24 +1255,34 @@ const Results = () => {
           </div>
         </Section>
 
-        {/* ═══ Bottom Actions ═══ */}
-        <Section delay={10} className="pb-8">
+        {/* Bottom actions */}
+        <Section delay={9} className="pb-8">
           <div className="flex flex-col items-center gap-3">
             <Button asChild size="lg" className="gradient-purple text-primary-foreground font-bold glow-purple w-full max-w-xs h-11 text-sm">
               <Link to="/analyze">Analyze Another Track</Link>
             </Button>
-            <Button asChild variant="outline" className="border-border w-full max-w-xs h-10 text-sm gap-2">
-              <a href={tweetUrl} target="_blank" rel="noopener noreferrer">
-                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                Share Score on X
-              </a>
-            </Button>
-            <Link to="/billing" className="text-xs text-accent hover:underline font-medium mt-1">
-              Upgrade to Pro <ArrowRight className="h-3 w-3 inline ml-0.5" />
-            </Link>
           </div>
         </Section>
       </div>
+
+      {/* Mobile sticky bottom CTA */}
+      {!canRemix && (
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2 }}
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-3 bg-background/95 backdrop-blur-lg border-t border-border/50"
+        >
+          <button
+            onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm flex items-center justify-center gap-2"
+            style={{ minHeight: 56 }}
+          >
+            <Rocket className="h-4 w-4" />
+            Remix This Track — From $7
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 };
