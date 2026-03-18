@@ -27,7 +27,7 @@ const plans = [
     ],
     cta: "Start Free",
     ctaLink: "/analyze",
-    ctaClass: "bg-white/10 hover:bg-white/20 text-white border border-white/10",
+    ctaClass: "gradient-purple text-primary-foreground rounded-full shadow-lg shadow-primary/25",
     highlighted: false,
     comingSoon: false,
   },
