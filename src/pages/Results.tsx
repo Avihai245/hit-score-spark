@@ -753,6 +753,31 @@ const AiRemixSection = ({
   );
 };
 
+/* ─── DNA Score Card (extracted for hooks compliance) ─── */
+const DnaCard = ({ dna, index, hookAnalysis, emotionalCore }: { dna: { label: string; value: number; max: number }; index: number; hookAnalysis?: string; emotionalCore?: string }) => {
+  const badge = getStatusBadge(dna.value, dna.max);
+  const description = getDnaDescription(dna.label, dna.value, hookAnalysis, emotionalCore);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-30px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 10 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ delay: index * 0.06, duration: 0.35 }}
+      className={`rounded-xl border ${badge.borderClass} ${badge.bgClass} p-4`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-base font-bold text-foreground">{dna.label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-black tabular-nums text-foreground">{dna.value}<span className="text-xs text-muted-foreground font-normal">/{dna.max}</span></span>
+          <span className={`text-xs font-bold ${badge.textClass}`}>{badge.emoji} {badge.label}</span>
+        </div>
+      </div>
+      <p className="text-sm text-foreground/70 leading-relaxed">{description}</p>
+    </motion.div>
+  );
+};
 
 /* ═══════════════════════════════════════════════
    MAIN RESULTS PAGE — REDESIGNED
