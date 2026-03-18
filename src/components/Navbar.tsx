@@ -1,10 +1,10 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
+import { Menu, X, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from "@/components/ViralizeLogo";
-import { useTheme } from "@/components/ThemeProvider";
+
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
 
@@ -47,7 +47,7 @@ const getAvatarColor = (userId?: string) => {
 };
 
 const Navbar = () => {
-  const { theme, toggleTheme } = useTheme();
+  
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, profile, signOut, loading } = useAuth();
@@ -131,13 +131,7 @@ const Navbar = () => {
 
           {/* Right — auth area (desktop) */}
           <div className="hidden md:flex items-center justify-end gap-3 flex-1">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-200"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+            
 
             {!loading && !user && (
               <>
@@ -248,13 +242,7 @@ const Navbar = () => {
 
           {/* Mobile right side */}
           <div className="flex-1 flex justify-end items-center gap-1 md:hidden">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
+            
             <button
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}
