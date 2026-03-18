@@ -8,6 +8,7 @@ import {
   Radio, Repeat, Timer, BarChart2, Sparkles, Rocket,
   Play, Shield, Globe, Eye,
 } from "lucide-react";
+import FreeTrialUpload from "@/components/FreeTrialUpload";
 
 /* ─── Animated Counter ─── */
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: { from: number; to: number; duration?: number; suffix?: string }) => {
@@ -425,6 +426,9 @@ const Index = () => {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* ═══════════ FREE TRIAL UPLOAD ═══════════ */}
+      <FreeTrialUpload />
 
       {/* ═══════════ SOCIAL PROOF STATS ═══════════ */}
       <section className="relative border-t border-border/30 py-20 px-4 overflow-hidden">
