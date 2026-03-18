@@ -49,7 +49,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What does "API access" mean in Studio?',
-    a: 'With Studio you get a personal API key to integrate Viralize directly into your workflow, DAW plugins, or custom tools. Rate limits: 500 analyses/day per key.',
+    a: 'With Studio you get a personal API key to integrate Santo directly into your workflow, DAW plugins, or custom tools. Rate limits: 500 analyses/day per key.',
   },
   {
     q: 'Do credits roll over?',
@@ -61,7 +61,7 @@ const FAQ_ITEMS = [
 const TESTIMONIALS = [
   {
     stars: 5,
-    quote: 'Went from 500 to 50K streams in 3 months. Viralize told me exactly what to fix.',
+    quote: 'Went from 500 to 50K streams in 3 months. Santo told me exactly what to fix.',
     handle: '@axelbeats',
     role: 'EDM Producer, Berlin',
   },
@@ -189,7 +189,7 @@ const Billing = () => {
             </span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Join 10,000+ artists who went viral with Viralize. One analysis could change your career.
+            Join 10,000+ artists who went viral with Santo. One analysis could change your career.
           </p>
         </motion.div>
 

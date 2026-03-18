@@ -63,7 +63,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
       <DialogContent className="bg-[#111111] border border-white/10 text-white max-w-md rounded-2xl p-0 overflow-hidden">
         <DialogHeader className="px-8 pt-8 pb-0">
           <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-[#8B5CF6] to-[#F59E0B] bg-clip-text text-transparent">
-            Welcome to Viralize
+            Welcome to Santo
           </DialogTitle>
           <p className="text-center text-sm text-white/50 mt-1">Your music's potential, unlocked</p>
         </DialogHeader>

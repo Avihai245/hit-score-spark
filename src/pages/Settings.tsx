@@ -315,7 +315,7 @@ export default function Settings() {
                     </div>
                     <div className="bg-card rounded-xl p-4 font-mono text-xs text-muted-foreground overflow-x-auto">
                       <pre>{`# Example usage
-curl -X POST https://api.viralize.app/v1/analyze \\
+curl -X POST https://api.santo.fm/v1/analyze \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"audio_url": "https://example.com/song.mp3"}'`}</pre>

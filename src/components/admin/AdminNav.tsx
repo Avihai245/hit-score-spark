@@ -98,7 +98,7 @@ export const AdminNav = ({ mobileOpen = false, onMobileClose }: AdminNavProps) =
             {(!collapsed || mobileOpen) && (
               <div>
                 <p className="text-[10px] font-semibold text-primary uppercase tracking-widest">Admin</p>
-                <p className="text-sm font-bold text-foreground">Viralize</p>
+                <p className="text-sm font-bold text-foreground">Santo</p>
               </div>
             )}
           </div>

@@ -74,7 +74,7 @@ export default function AdminSystem() {
           <div className="bg-card border border-border rounded-xl p-5">
             <h2 className="text-sm font-semibold mb-4">Environment</h2>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-muted-foreground">Platform</span><span className="text-foreground">Viralize v1.0</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Platform</span><span className="text-foreground">Santo v1.0</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Backend</span><span className="text-foreground">Supabase</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">AI Provider</span><span className="text-foreground">HitCheck API</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Payments</span><span className="text-foreground">Stripe</span></div>

@@ -205,7 +205,7 @@ const viralFeatures = [
 ];
 
 const testimonials = [
-  { quote: "I was about to release a 58/100 song. Viralize showed me one fix. Rereleased at 84. Now at 2M streams.", handle: "@axelbeats", metric: "+26 pts" },
+  { quote: "I was about to release a 58/100 song. Santo showed me one fix. Rereleased at 84. Now at 2M streams.", handle: "@axelbeats", metric: "+26 pts" },
   { quote: "The competitor match blew my mind. I found out exactly which hit songs my track resembles and what to fix.", handle: "@lunawave", metric: "3 hit matches" },
   { quote: "Saved me $300 in SubmitHub submissions by knowing exactly who to target.", handle: "@sonicpilot", metric: "100x ROI" },
 ];
@@ -474,7 +474,7 @@ const Index = () => {
               <Shield className="h-3 w-3" /> The Solution
             </span>
             <p className="text-lg text-muted-foreground max-w-lg mx-auto mt-3">
-              Viralize gives you the same data intelligence that major labels use — in 90 seconds, for any track.
+              Santo gives you the same data intelligence that major labels use — in 90 seconds, for any track.
             </p>
           </motion.div>
         </div>

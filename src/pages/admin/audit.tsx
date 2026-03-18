@@ -5,13 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 
 const MOCK_LOGS = [
-  { id: 1, action: 'User plan changed', details: 'user@email.com → Pro', actor: 'admin@viralize.app', type: 'billing', time: '10 min ago' },
-  { id: 2, action: 'Credits added', details: '+50 credits to producer@music.com', actor: 'admin@viralize.app', type: 'billing', time: '1 hour ago' },
-  { id: 3, action: 'Feature flag toggled', details: 'AI Remix → disabled', actor: 'admin@viralize.app', type: 'system', time: '2 hours ago' },
+  { id: 1, action: 'User plan changed', details: 'user@email.com → Pro', actor: 'admin@santo.fm', type: 'billing', time: '10 min ago' },
+  { id: 2, action: 'Credits added', details: '+50 credits to producer@music.com', actor: 'admin@santo.fm', type: 'billing', time: '1 hour ago' },
+  { id: 3, action: 'Feature flag toggled', details: 'AI Remix → disabled', actor: 'admin@santo.fm', type: 'system', time: '2 hours ago' },
   { id: 4, action: 'New user signup', details: 'artist@gmail.com registered', actor: 'system', type: 'user', time: '3 hours ago' },
   { id: 5, action: 'Analysis completed', details: '"Summer Vibes" scored 82', actor: 'system', type: 'analysis', time: '4 hours ago' },
-  { id: 6, action: 'User deleted', details: 'inactive@old.com removed', actor: 'admin@viralize.app', type: 'user', time: '1 day ago' },
-  { id: 7, action: 'Banner updated', details: 'Announcement banner enabled', actor: 'admin@viralize.app', type: 'system', time: '2 days ago' },
+  { id: 6, action: 'User deleted', details: 'inactive@old.com removed', actor: 'admin@santo.fm', type: 'user', time: '1 day ago' },
+  { id: 7, action: 'Banner updated', details: 'Announcement banner enabled', actor: 'admin@santo.fm', type: 'system', time: '2 days ago' },
 ];
 
 const TYPE_ICONS: Record<string, React.ReactNode> = {

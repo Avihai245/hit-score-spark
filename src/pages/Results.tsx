@@ -1067,7 +1067,7 @@ const Results = () => {
   const hasViralLine = viralLine && viralLine !== "none yet";
 
   const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    `My song "${title}" scored ${score}/100 on Viralize!\n\nCheck yours → viralize.app`
+    `My song "${title}" scored ${score}/100 on Santo!\n\nCheck yours → santo.fm`
   )}`;
 
   // Derive HIT DNA scores
@@ -1258,7 +1258,7 @@ const Results = () => {
             {/* Hidden share card */}
             <div className="sr-only" aria-hidden="true">
               <div id="share-score-card" className="w-[400px] bg-[#0a0a0a] p-6 rounded-2xl border border-primary/20">
-                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3">viralize.app</p>
+                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-3">santo.fm</p>
                 <p className="text-foreground font-bold text-lg">{title}</p>
                 <p className="text-5xl font-black mt-2" style={{ color: scoreColor(score) }}>{score}</p>
                 <span className={`inline-block mt-2 px-3 py-0.5 rounded-full text-[10px] font-black border ${badge.cls}`}>{badge.label}</span>

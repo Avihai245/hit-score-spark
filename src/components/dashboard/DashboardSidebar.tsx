@@ -78,7 +78,7 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
         <Link to="/" className="flex items-center gap-2.5 group">
           <LogoIcon size={24} className="transition-transform duration-300 group-hover:scale-110" />
           {!collapsed && (
-            <span className="font-bold text-foreground text-sm tracking-wide uppercase">Viralize</span>
+            <span className="font-bold text-foreground text-sm tracking-wide uppercase">SANTO</span>
           )}
         </Link>
       </div>
