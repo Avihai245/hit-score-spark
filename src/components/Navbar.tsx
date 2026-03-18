@@ -47,7 +47,7 @@ const getAvatarColor = (userId?: string) => {
 };
 
 const Navbar = () => {
-  const { theme, toggleTheme } = useTheme();
+  
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, profile, signOut, loading } = useAuth();
