@@ -1,0 +1,1 @@
+INSERT INTO admin_users (id, is_admin) VALUES ('bc6bd34e-9240-4f34-bfd5-c84240f20cf2', true)
