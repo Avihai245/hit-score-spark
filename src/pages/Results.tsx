@@ -87,36 +87,54 @@ const getStatusBadge = (value: number, max: number) => {
 
 /* ─── Plain-English descriptions for DNA metrics ─── */
 const getDnaDescription = (label: string, value: number, hookAnalysis?: string, emotionalCore?: string) => {
+  // Parse hook timing from raw analysis if available
+  const parseHookTime = (raw?: string) => {
+    if (!raw) return null;
+    const match = raw.match(/(\d+:\d{2})/);
+    return match ? match[1] : null;
+  };
+  const hookTime = parseHookTime(hookAnalysis);
+
   const descriptions: Record<string, Record<string, string>> = {
     "Hook Strength": {
-      high: hookAnalysis || "Your hook is memorable — listeners will want to hear it again.",
-      mid: "Your hook is decent but could be catchier to stick in people's heads.",
-      low: "Your hook isn't grabbing attention fast enough — listeners might skip.",
+      high: hookTime
+        ? `Your hook is strong and arrives at ${hookTime} — right in the window where listeners decide to stay.`
+        : "Your hook grabs attention quickly — listeners will want to keep playing.",
+      mid: hookTime
+        ? `Your hook arrives at ${hookTime} — a bit late for the 7-second window where listeners decide to stay or skip.`
+        : "Your hook is decent but could land earlier to catch listeners before they skip.",
+      low: hookTime
+        ? `Your hook arrives at ${hookTime} — that's well past the moment most listeners decide to skip.`
+        : "Your hook isn't grabbing attention fast enough — most listeners will skip before it lands.",
     },
     "Replay Value": {
-      high: "People will want to listen to this on repeat.",
-      mid: "It's enjoyable but doesn't quite create that addictive loop.",
-      low: "Listeners probably won't come back for a second play.",
+      high: "People will want to listen to this on repeat — that drives saves and algorithmic push.",
+      mid: "It's enjoyable, but doesn't quite create that addictive loop that drives replays.",
+      low: "Listeners probably won't come back for a second play — replays are what trigger algorithms.",
     },
     "Emotional Impact": {
-      high: emotionalCore || "This track hits hard emotionally — that's your superpower.",
-      mid: "There's feeling here, but it could hit deeper.",
-      low: "The emotional connection feels flat — try more contrast.",
+      high: emotionalCore
+        ? `Your track's "${emotionalCore}" energy connects emotionally — this is a real strength for playlist placement.`
+        : "The mood and feeling of your track connects emotionally — this is a real strength for playlist placement.",
+      mid: emotionalCore
+        ? `The "${emotionalCore}" feeling is there, but it could hit deeper to make listeners feel something stronger.`
+        : "There's feeling here, but it could hit deeper to create a real emotional connection.",
+      low: "The emotional connection feels flat — try adding more contrast between sections to make listeners feel something.",
     },
     "Structure Quality": {
-      high: "Your song structure follows patterns that hit songs use.",
-      mid: "The structure is okay but could flow better between sections.",
-      low: "The arrangement feels off — listeners might lose interest.",
+      high: "Your song structure follows the patterns that hit songs use — sections flow naturally.",
+      mid: "The structure is okay but could flow better between sections to keep listeners engaged.",
+      low: "The arrangement feels off — listeners might lose interest before the best parts arrive.",
     },
     "Market Fit": {
-      high: "This fits perfectly with what's trending right now.",
-      mid: "It's in the right space but needs tweaks to compete.",
-      low: "This doesn't match what's performing well in your genre.",
+      high: "This fits what's trending right now — you're in a great lane for discovery.",
+      mid: "You're in the right space but a few tweaks would help you compete with what's charting.",
+      low: "This doesn't match what's performing well in your genre right now.",
     },
     "Platform Readiness": {
-      high: "Streaming algorithms will love this track.",
-      mid: "Algorithms might pick this up, but it's not optimized.",
-      low: "This track won't get recommended in its current form.",
+      high: "Streaming algorithms will love this track — it's optimized for recommendations.",
+      mid: "Algorithms might pick this up, but it's not fully optimized for discovery yet.",
+      low: "This track won't get recommended in its current form — algorithms need clearer signals.",
     },
   };
   const tier = value >= 8 ? "high" : value >= 6 ? "mid" : "low";
@@ -217,11 +235,9 @@ const Section = ({ children, delay = 0, className = "", id }: { children: ReactN
 /* ─── Scroll-spy Nav ─── */
 const NAV_ITEMS = [
   { id: "hero", label: "Your Score" },
-  { id: "breakdown", label: "Score Details" },
   { id: "holding-back", label: "What to Fix" },
   { id: "working", label: "What's Working" },
-  { id: "vs-top", label: "vs Top Tracks" },
-  { id: "plan", label: "7-Day Plan" },
+  { id: "plan", label: "Your 7-Day Plan" },
 ];
 
 const ScrollNav = ({ activeSection }: { activeSection: string }) => (
@@ -979,8 +995,8 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ SECTION 2 — SCORE BREAKDOWN ═══ */}
-        <Section delay={2} id="breakdown">
+        {/* ═══ SCORE BREAKDOWN (merged into hero scroll target) ═══ */}
+        <Section delay={2}>
           <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
             Why You Scored {score}
           </h2>
@@ -1057,21 +1073,45 @@ const Results = () => {
                 </motion.div>
               ))}
             </div>
+            {/* CTA — turn strengths into action */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="mt-4 rounded-xl border border-green-500/15 bg-green-500/[0.03] p-4 text-center"
+            >
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                Use these strengths when pitching to playlists.{" "}
+                <button
+                  onClick={() => document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  className="inline-flex items-center gap-1 text-accent font-bold hover:text-accent/80 transition-colors"
+                >
+                  → See Your 7-Day Plan for how <ArrowRight className="h-3 w-3" />
+                </button>
+              </p>
+            </motion.div>
           </Section>
         )}
 
-        {/* ═══ SECTION 5 — YOU VS TOP TRACKS ═══ */}
-        <Section delay={5} id="vs-top">
-          <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
-            You vs Top Tracks
-          </h2>
+        {/* ═══ YOU VS TOP TRACKS (sub-section of What to Fix, no separate nav) ═══ */}
+        <Section delay={5}>
           <div className="rounded-xl border border-border bg-card/50 p-5 space-y-4">
+            <h3 className="text-base font-black font-heading text-foreground">
+              How You Compare
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Here's how your track compares to the top performers in your genre:
+            </p>
+            <p className="text-xs text-muted-foreground/70 font-medium">
+              Genre benchmark: {songGenre || "your genre"} top tracks
+            </p>
+
             {/* Gap Visual */}
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-foreground font-medium">You</span>
-                  <span className="font-bold tabular-nums text-foreground">{score}%</span>
+                  <span className="font-bold tabular-nums text-foreground">Your score: {score}/100</span>
                 </div>
                 <div className="h-3 rounded-full bg-muted overflow-hidden">
                   <motion.div className="h-full rounded-full bg-primary" style={{ transformOrigin: "left" }}
@@ -1082,7 +1122,7 @@ const Results = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground font-medium">Top Tracks</span>
-                  <span className="font-bold tabular-nums text-accent">{avgTopScore}%</span>
+                  <span className="font-bold tabular-nums text-accent">Top tracks avg: {avgTopScore}/100</span>
                 </div>
                 <div className="h-3 rounded-full bg-muted overflow-hidden">
                   <motion.div className="h-full rounded-full bg-accent/60" style={{ transformOrigin: "left" }}
@@ -1094,13 +1134,13 @@ const Results = () => {
 
             <p className="text-sm text-center font-semibold text-foreground/80">
               {gap > 0
-                ? `${gap} points behind top tracks — fixable`
+                ? `${gap} points behind top tracks — fixable with the steps below`
                 : "You're already performing at top-track level 🔥"
               }
             </p>
           </div>
 
-          {/* Similar songs — filter out "unknown" */}
+          {/* Similar songs with context */}
           {similarSongs?.length > 0 && (
             <div className="mt-3 space-y-2.5">
               {similarSongs
@@ -1113,8 +1153,8 @@ const Results = () => {
                     <SpotifyLogo className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-foreground truncate">{song.title}</p>
-                    <p className="text-xs text-muted-foreground">{song.artist}</p>
+                    <p className="font-bold text-sm text-foreground truncate">{song.title} ({song.artist})</p>
+                    <p className="text-xs text-muted-foreground">Used as structural benchmark for your genre</p>
                   </div>
                   <span className="text-sm font-black text-accent tabular-nums flex-shrink-0">{song.streams}</span>
                 </motion.div>
@@ -1131,20 +1171,31 @@ const Results = () => {
 
           <div className="space-y-3">
             {/* Day 1-2 */}
-            <div className="rounded-xl border border-accent/20 bg-accent/[0.04] p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black text-accent bg-accent/15 px-2 py-0.5 rounded-md">DAY 1–2</span>
+            <div className="rounded-xl border-2 border-accent/30 bg-accent/[0.06] p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-black text-accent bg-accent/15 px-2.5 py-1 rounded-md">DAY 1–2</span>
+                <span className="text-xs font-bold text-accent/70">· Highest impact</span>
               </div>
-              <p className="text-sm font-bold text-foreground leading-relaxed">
-                {oneChange || (improvements?.[0] || "Fix the primary issue identified above")}
+              <p className="text-base font-bold text-foreground leading-relaxed">
+                {hookAnalysis && hookAnalysis.match(/(\d+:\d{2})/)
+                  ? `Move your hook to 0:07. Right now it hits at ${hookAnalysis.match(/(\d+:\d{2})/)?.[1]} — that's past the moment most listeners decide to skip. Use AI Remix to shift it automatically.`
+                  : oneChange
+                    ? `${oneChange} Use AI Remix to fix this automatically.`
+                    : (improvements?.[0] || "Fix the primary issue identified above. Use AI Remix to handle it automatically.")
+                }
               </p>
-              <p className="text-xs text-accent font-semibold mt-1">→ adds {oneChangeImpact}–{oneChangeImpact + 5} points</p>
-              <button
+              <motion.button
                 onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/15 border border-accent/25 text-accent text-xs font-bold hover:bg-accent/25 transition-colors"
+                className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base overflow-hidden"
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               >
-                <Rocket className="h-3.5 w-3.5" /> Try AI Remix <ArrowRight className="h-3 w-3" />
-              </button>
+                <span className="flex items-center justify-center gap-2">
+                  <Rocket className="h-5 w-5" /> Try AI Remix <ArrowRight className="h-4 w-4" />
+                </span>
+              </motion.button>
+              <p className="text-xs text-center text-accent/70 font-medium mt-2">
+                Takes 2 minutes · adds an estimated {oneChangeImpact}–{oneChangeImpact + 5} points
+              </p>
             </div>
 
             {/* Day 3-4 */}
