@@ -621,7 +621,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
 };
 
 /* ─── AI Remix Section ─── */
-const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, analysisId }: { uploadedFile: File | null; songTitle: string; songGenre?: string; analysisData?: any; analysisId?: string }) => {
+const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, analysisData, analysisId }: { uploadedFile: File | null; existingS3Key?: string; songTitle: string; songGenre?: string; analysisData?: any; analysisId?: string }) => {
   const { user } = useAuth();
   const [status, setStatus] = useState<"idle" | "lyrics" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
@@ -636,39 +636,44 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
 
   const handleLyricsReady = (lyrics: string) => {
     setFinalLyrics(lyrics);
-    setStatus("idle");
+    // Immediately start remix with these lyrics — no extra click needed
+    startRemix(lyrics);
   };
 
   const LAMBDA_URL = "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze";
 
-  const startRemix = async () => {
+  const startRemix = async (overrideLyrics?: string) => {
     if (!user) { toast.error("Sign in to create remixes"); return; }
-    if (!file) { toast.error("No audio file found. Please re-upload."); return; }
 
     setStatus("uploading");
     setElapsed(0);
     setError("");
 
     try {
-      // 1. Get presigned S3 upload URL from Lambda
-      const uploadRes = await fetch(LAMBDA_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "get-upload-url", filename: file.name, contentType: file.type || "audio/mpeg" }),
-      });
-      if (!uploadRes.ok) throw new Error("Failed to get upload URL");
-      const { uploadUrl, s3Key } = await uploadRes.json();
+      let s3Key = existingS3Key || "";
 
-      // 2. Upload file to S3
-      await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "audio/mpeg" }, body: file });
+      // 1. If no existing S3 key — upload the file now
+      if (!s3Key) {
+        if (!file) { toast.error("No audio file found. Please re-upload."); setStatus("idle"); return; }
+        const urlRes = await fetch(LAMBDA_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get-upload-url", filename: file.name, contentType: file.type || "audio/mpeg" }),
+        });
+        if (!urlRes.ok) throw new Error("Failed to get upload URL");
+        const urlData = await urlRes.json();
+        s3Key = urlData.s3Key;
+        await fetch(urlData.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "audio/mpeg" }, body: file });
+      }
 
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
       // 3. Call suno-cover via Lambda — pass FULL analysisData + lyrics + style
+      const lyricsToUse = overrideLyrics !== undefined ? overrideLyrics : finalLyrics;
       const fullAnalysis = {
         ...(analysisData || {}),
-        customLyrics: finalLyrics || undefined,
+        customLyrics: lyricsToUse || undefined,
       };
       const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
@@ -925,7 +930,7 @@ const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songT
 const Results = () => {
   const location = useLocation();
   const _navigate = useNavigate();
-  const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string; analysisId?: string } | null;
+  const state = location.state as { results: any; title: string; goal?: string; uploadedFile?: File; songGenre?: string; analysisId?: string; s3Key?: string } | null;
 
   if (!state?.results) return <Navigate to="/analyze" replace />;
 
@@ -937,7 +942,7 @@ const Results = () => {
   const hasExhaustedFreeAnalysis = plan === 'free' && analysesUsed >= analysesLimit;
   const canRemix = plan !== 'free' || profile?.is_admin === true;
 
-  const { results, title, goal, uploadedFile, songGenre, analysisId } = state;
+  const { results, title, goal, uploadedFile, songGenre, analysisId, s3Key } = state;
   const {
     score, verdict, strengths, improvements, oneChange,
     hookTiming, bpmEstimate, energyLevel, dataSource, openingLyrics,
@@ -1291,7 +1296,7 @@ const Results = () => {
         {/* ═══ 8. VIRAL CTA ═══ */}
         <Section delay={8}>
           {canRemix ? (
-            <AiRemixSection uploadedFile={uploadedFile || null} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
+            <AiRemixSection uploadedFile={uploadedFile || null} existingS3Key={s3Key} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
           ) : (
             <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-6 text-center relative overflow-hidden scroll-mt-24">
               <div className="h-11 w-11 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-3">
