@@ -55,12 +55,12 @@ export const createCheckoutSession = async (
       window.location.href = result.data.url;
       return 'redirect';
     } else if (result.error) {
-      console.error('Checkout error:', result.error);
+      if (import.meta.env.DEV) console.error('Checkout error:', result.error);
       return null;
     }
     return null;
   } catch (err) {
-    console.error('Checkout failed:', err);
+    if (import.meta.env.DEV) console.error('Checkout failed:', err);
     return null;
   }
 };
@@ -86,12 +86,12 @@ export const openCustomerPortal = async (userId: string) => {
       window.location.href = result.data.url;
       return 'redirect';
     } else if (result.error) {
-      console.error('Portal error:', result.error);
+      if (import.meta.env.DEV) console.error('Portal error:', result.error);
       return null;
     }
     return null;
   } catch (err) {
-    console.error('Portal failed:', err);
+    if (import.meta.env.DEV) console.error('Portal failed:', err);
     return null;
   }
 };

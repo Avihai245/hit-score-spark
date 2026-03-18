@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, Chrome } from 'lucide-react';
+import { Eye, EyeOff, Chrome, Check, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthModalProps {
@@ -40,8 +40,25 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     navigate('/library');
   };
 
+  // Password strength for sign-up
+  const passwordChecks = useMemo(() => [
+    { label: 'At least 8 characters', met: password.length >= 8 },
+    { label: 'Uppercase letter', met: /[A-Z]/.test(password) },
+    { label: 'Lowercase letter', met: /[a-z]/.test(password) },
+    { label: 'Number', met: /[0-9]/.test(password) },
+    { label: 'Special character', met: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password) },
+  ], [password]);
+  const passwordStrength = passwordChecks.filter(c => c.met).length;
+  const isPasswordStrong = passwordStrength >= 4;
+
   const handleSignUp = async () => {
     setError(null);
+    if (password.length < 8) {
+      return setError('Password must be at least 8 characters');
+    }
+    if (!isPasswordStrong) {
+      return setError('Password is too weak. Please add uppercase, lowercase, numbers, or special characters.');
+    }
     setLoading(true);
     const { error } = await signUp(email, password);
     setLoading(false);
@@ -128,6 +145,32 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
                   </button>
                 </div>
               </div>
+
+              {/* Password strength meter — only on sign up */}
+              {tab === 'signup' && password.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <div
+                        key={i}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          i <= passwordStrength
+                            ? passwordStrength <= 2 ? 'bg-red-500' : passwordStrength <= 3 ? 'bg-yellow-500' : 'bg-emerald-500'
+                            : 'bg-white/10'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {passwordChecks.map(c => (
+                      <div key={c.label} className={`flex items-center gap-1.5 text-[11px] ${c.met ? 'text-emerald-400' : 'text-white/30'}`}>
+                        {c.met ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+                        {c.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {error && (
                 <div className="rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">

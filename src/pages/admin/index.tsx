@@ -225,7 +225,7 @@ export default function AdminDashboard() {
         .slice(0, 20);
       setTopUsers(top);
     } catch (err) {
-      console.error('Admin fetch error:', err);
+      if (import.meta.env.DEV) console.error('Admin fetch error:', err);
     } finally {
       setLoading(false);
       setLastUpdated(new Date());
