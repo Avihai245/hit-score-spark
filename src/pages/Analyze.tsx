@@ -703,7 +703,7 @@ const Analyze = () => {
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold">
-                  Song Title <span className="text-muted-foreground font-normal">(optional)</span>
+                  Song Title <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder="Enter your song title"
