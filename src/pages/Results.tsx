@@ -995,8 +995,8 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ SECTION 2 — SCORE BREAKDOWN ═══ */}
-        <Section delay={2} id="breakdown">
+        {/* ═══ SCORE BREAKDOWN (merged into hero scroll target) ═══ */}
+        <Section delay={2}>
           <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
             Why You Scored {score}
           </h2>
