@@ -3,7 +3,8 @@ import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { supabase } from '@/lib/supabase';
 import { validatePlan, validateCredits, updateUserPlanSchema, addCreditsSchema } from '@/lib/validation';
-import { Search, Trash2, CreditCard, ChevronDown, AlertCircle } from 'lucide-react';
+import { logAdminAction, createImpersonationSession } from '@/lib/adminAudit';
+import { Search, Trash2, CreditCard, ChevronDown, AlertCircle, LogIn } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -26,15 +27,55 @@ export default function AdminUsers() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [addCreditsUser, setAddCreditsUser] = useState<string | null>(null);
   const [creditAmount, setCreditAmount] = useState('');
+  const [impersonatingUser, setImpersonatingUser] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('viralize_users')
-      .select('*')
-      .order('created_at', { ascending: false });
-    setUsers(data ?? []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('viralize_users')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .throwOnError();
+
+      if (error) {
+        toast.error('Failed to load users', { description: error.message });
+        setUsers([]);
+      } else {
+        setUsers(data ?? []);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to load users';
+      toast.error('Error loading users', { description: msg });
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImpersonate = async (userId: string, userEmail: string) => {
+    try {
+      const { sessionToken, expiresAt } = await createImpersonationSession(
+        userId,
+        `Admin support session for ${userEmail}`
+      );
+
+      // Store token in session storage (not localStorage for security)
+      sessionStorage.setItem('adminImpersonationToken', sessionToken);
+      sessionStorage.setItem('adminImpersonationExpires', expiresAt);
+
+      toast.success('Impersonation session created', {
+        description: `You are now viewing as ${userEmail}. Session expires in 30 minutes.`,
+      });
+
+      // Redirect to home or dashboard with the impersonation token
+      window.location.href = `/?impersonation_token=${sessionToken}`;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to create impersonation session';
+      toast.error('Impersonation failed', { description: msg });
+    } finally {
+      setImpersonatingUser(null);
+    }
   };
 
   useEffect(() => { fetchUsers(); }, []);
@@ -47,6 +88,9 @@ export default function AdminUsers() {
 
   const handleChangePlan = async (userId: string, newPlan: string) => {
     try {
+      const user = users.find(u => u.id === userId);
+      const oldPlan = user?.plan;
+
       // Validate input
       const validation = updateUserPlanSchema.safeParse({ userId, newPlan });
       if (!validation.success) {
@@ -58,17 +102,41 @@ export default function AdminUsers() {
       const { error } = await supabase
         .from('viralize_users')
         .update({ plan: newPlan })
-        .eq('id', userId);
+        .eq('id', userId)
+        .throwOnError();
 
       if (error) {
+        await logAdminAction({
+          action: 'UPDATE_PLAN',
+          targetTable: 'viralize_users',
+          targetId: userId,
+          changes: { before: oldPlan, after: newPlan },
+          status: 'failed',
+          errorMessage: error.message,
+        });
         toast.error('Failed to change plan', { description: error.message });
         if (import.meta.env.DEV) console.error('Plan change error:', error);
       } else {
+        await logAdminAction({
+          action: 'UPDATE_PLAN',
+          targetTable: 'viralize_users',
+          targetId: userId,
+          changes: { before: oldPlan, after: newPlan },
+          status: 'success',
+        });
         toast.success('Plan updated successfully');
         fetchUsers();
       }
     } catch (err) {
-      toast.error('System error', { description: 'Failed to update plan' });
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update plan';
+      await logAdminAction({
+        action: 'UPDATE_PLAN',
+        targetTable: 'viralize_users',
+        targetId: userId,
+        status: 'failed',
+        errorMessage: errorMsg,
+      });
+      toast.error('System error', { description: errorMsg });
       if (import.meta.env.DEV) console.error('Unexpected error:', err);
     } finally {
       setChangingPlan(null);
@@ -93,20 +161,47 @@ export default function AdminUsers() {
         return;
       }
 
+      const oldCredits = user.credits ?? 0;
+      const newCredits = oldCredits + amount;
+
       const { error } = await supabase
         .from('viralize_users')
-        .update({ credits: (user?.credits ?? 0) + amount })
-        .eq('id', userId);
+        .update({ credits: newCredits })
+        .eq('id', userId)
+        .throwOnError();
 
       if (error) {
+        await logAdminAction({
+          action: 'ADD_CREDITS',
+          targetTable: 'viralize_users',
+          targetId: userId,
+          changes: { before: oldCredits, after: newCredits, amount },
+          status: 'failed',
+          errorMessage: error.message,
+        });
         toast.error('Failed to add credits', { description: error.message });
         if (import.meta.env.DEV) console.error('Credits error:', error);
       } else {
+        await logAdminAction({
+          action: 'ADD_CREDITS',
+          targetTable: 'viralize_users',
+          targetId: userId,
+          changes: { before: oldCredits, after: newCredits, amount },
+          status: 'success',
+        });
         toast.success(`Added ${amount} credits`);
         fetchUsers();
       }
     } catch (err) {
-      toast.error('System error', { description: 'Failed to add credits' });
+      const errorMsg = err instanceof Error ? err.message : 'Failed to add credits';
+      await logAdminAction({
+        action: 'ADD_CREDITS',
+        targetTable: 'viralize_users',
+        targetId: userId,
+        status: 'failed',
+        errorMessage: errorMsg,
+      });
+      toast.error('System error', { description: errorMsg });
       if (import.meta.env.DEV) console.error('Unexpected error:', err);
     } finally {
       setAddCreditsUser(null);
@@ -121,20 +216,46 @@ export default function AdminUsers() {
         return;
       }
 
+      const user = users.find(u => u.id === userId);
+
       const { error } = await supabase
         .from('viralize_users')
         .delete()
-        .eq('id', userId);
+        .eq('id', userId)
+        .throwOnError();
 
       if (error) {
+        await logAdminAction({
+          action: 'DELETE_USER',
+          targetTable: 'viralize_users',
+          targetId: userId,
+          changes: { email: user?.email },
+          status: 'failed',
+          errorMessage: error.message,
+        });
         toast.error('Failed to delete user', { description: error.message });
         if (import.meta.env.DEV) console.error('Delete error:', error);
       } else {
+        await logAdminAction({
+          action: 'DELETE_USER',
+          targetTable: 'viralize_users',
+          targetId: userId,
+          changes: { email: user?.email },
+          status: 'success',
+        });
         toast.success('User deleted successfully');
         fetchUsers();
       }
     } catch (err) {
-      toast.error('System error', { description: 'Failed to delete user' });
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete user';
+      await logAdminAction({
+        action: 'DELETE_USER',
+        targetTable: 'viralize_users',
+        targetId: userId,
+        status: 'failed',
+        errorMessage: errorMsg,
+      });
+      toast.error('System error', { description: errorMsg });
       if (import.meta.env.DEV) console.error('Unexpected error:', err);
     } finally {
       setDeleteConfirm(null);
@@ -304,13 +425,22 @@ export default function AdminUsers() {
                                 </button>
                               </>
                             ) : (
-                              <button
-                                onClick={() => setDeleteConfirm(u.id)}
-                                className="p-1.5 text-white/30 hover:text-red-400 transition-colors rounded hover:bg-red-400/10"
-                                title="Delete user"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleImpersonate(u.id, u.email)}
+                                  className="p-1.5 text-white/30 hover:text-blue-400 transition-colors rounded hover:bg-blue-400/10"
+                                  title={`Impersonate ${u.email}`}
+                                >
+                                  <LogIn className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => setDeleteConfirm(u.id)}
+                                  className="p-1.5 text-white/30 hover:text-red-400 transition-colors rounded hover:bg-red-400/10"
+                                  title="Delete user"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>

@@ -43,7 +43,7 @@ const NAV_SECTIONS = [
     label: 'System',
     items: [
       { href: '/admin/permissions', label: 'Permissions', icon: Shield },
-      { href: '/admin/audit', label: 'Audit Logs', icon: ScrollText },
+      { href: '/admin/audit-logs', label: 'Audit Logs', icon: ScrollText },
       { href: '/admin/system', label: 'System Config', icon: Settings },
     ],
   },

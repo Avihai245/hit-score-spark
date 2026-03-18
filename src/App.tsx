@@ -53,6 +53,7 @@ const AdminLifecycle = lazy(() => import("./pages/admin/lifecycle"));
 const AdminCoupons = lazy(() => import("./pages/admin/coupons"));
 const AdminPermissions = lazy(() => import("./pages/admin/permissions"));
 const AdminAudit = lazy(() => import("./pages/admin/audit"));
+const AdminAuditLogs = lazy(() => import("./pages/admin/audit-logs"));
 const AdminSystem = lazy(() => import("./pages/admin/system"));
 const AdminNotifications = lazy(() => import("./pages/admin/notifications"));
 
@@ -104,6 +105,7 @@ const AnimatedRoutes = () => {
           <Route path="/admin/coupons" element={<AdminCoupons />} />
           <Route path="/admin/permissions" element={<AdminPermissions />} />
           <Route path="/admin/audit" element={<AdminAudit />} />
+          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
           <Route path="/admin/system" element={<AdminSystem />} />
           <Route path="/admin/notifications" element={<AdminNotifications />} />
         </Routes>
