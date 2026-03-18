@@ -27,7 +27,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const hasPlayer = !!currentTrack;
+  const hasPlayer = true; // player bar always visible in dashboard
 
   useEffect(() => {
     if (!loading && !user) navigate('/');
