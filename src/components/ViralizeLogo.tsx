@@ -1,48 +1,53 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Santo Logo — halo + waveform
- * A glowing halo floating above rising sound bars.
- * Sacred × Musical × Premium.
+ * Santo Logo — stylized "S" waveform mark
+ * A bold, modern audio-wave "S" shape with purple-to-gold gradient.
  */
 const LogoIcon = ({ size = 28, className }: { size?: number; className?: string }) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 36"
+    viewBox="0 0 36 36"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
     <defs>
-      <linearGradient id="sg" x1="0" y1="0" x2="32" y2="36" gradientUnits="userSpaceOnUse">
-        <stop offset="0%"   stopColor="#FBBF24" />
-        <stop offset="50%"  stopColor="#F59E0B" />
-        <stop offset="100%" stopColor="#A78BFA" />
+      <linearGradient id="santo-g" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stopColor="hsl(258, 90%, 66%)" />
+        <stop offset="60%" stopColor="hsl(280, 80%, 60%)" />
+        <stop offset="100%" stopColor="hsl(38, 92%, 55%)" />
       </linearGradient>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="1.2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      <filter id="santo-glow">
+        <feGaussianBlur stdDeviation="1.5" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
       </filter>
     </defs>
 
-    {/* Halo — floating circle at top */}
-    <circle
-      cx="16" cy="7" r="5.5"
-      fill="none"
-      stroke="url(#sg)"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      opacity="0.95"
-      filter="url(#glow)"
-    />
+    {/* Background circle */}
+    <circle cx="18" cy="18" r="17" fill="url(#santo-g)" opacity="0.12" />
 
-    {/* Sound bars — graduated heights, centered below halo */}
-    <rect x="3"    y="21" width="3.5" rx="1.75" height="14" fill="url(#sg)" opacity="0.7" />
-    <rect x="9"    y="17" width="3.5" rx="1.75" height="18" fill="url(#sg)" opacity="0.85" />
-    <rect x="15"   y="13" width="3.5" rx="1.75" height="22" fill="url(#sg)" />
-    <rect x="21"   y="17" width="3.5" rx="1.75" height="18" fill="url(#sg)" opacity="0.85" />
-    <rect x="27"   y="21" width="3.5" rx="1.75" height="14" fill="url(#sg)" opacity="0.7" />
+    {/* Equalizer bars forming an abstract "S" flow */}
+    <rect x="6" y="18" width="3.2" rx="1.6" height="10" fill="url(#santo-g)" opacity="0.7" />
+    <rect x="11" y="14" width="3.2" rx="1.6" height="14" fill="url(#santo-g)" opacity="0.85" />
+    <rect x="16.4" y="8" width="3.2" rx="1.6" height="20" fill="url(#santo-g)" />
+    <rect x="21.8" y="14" width="3.2" rx="1.6" height="14" fill="url(#santo-g)" opacity="0.85" />
+    <rect x="27" y="8" width="3.2" rx="1.6" height="10" fill="url(#santo-g)" opacity="0.7" />
+
+    {/* Accent arc — subtle "S" curve connecting the bars */}
+    <path
+      d="M7.5 23 C12 20, 14 14, 18 15 C22 16, 24 12, 28.5 13"
+      stroke="url(#santo-g)"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      fill="none"
+      opacity="0.5"
+      filter="url(#santo-glow)"
+    />
   </svg>
 );
 
@@ -58,27 +63,29 @@ const ViralizeLogo = ({ variant = "navbar", className, showTagline }: SantoLogoP
   return (
     <div className={cn(
       "flex items-center select-none",
-      isStacked ? "flex-col gap-4" : "gap-2.5",
+      isStacked ? "flex-col gap-3" : "gap-2.5",
       className
     )}>
       <div className="relative group/logo flex-shrink-0">
-        <div className="absolute -inset-3 rounded-full opacity-0 group-hover/logo:opacity-50 transition-opacity duration-700 bg-amber-400/20 blur-2xl" />
+        {/* Glow effect on hover */}
+        <div className="absolute -inset-3 rounded-full opacity-0 group-hover/logo:opacity-60 transition-opacity duration-500 bg-primary/25 blur-2xl" />
         <LogoIcon
-          size={isStacked ? 48 : 28}
+          size={isStacked ? 52 : 30}
           className="relative z-10 transition-transform duration-300 ease-out group-hover/logo:scale-110"
         />
       </div>
-      <div className={cn("flex flex-col", isStacked ? "items-center gap-1.5" : "gap-0")}>
+      <div className={cn("flex flex-col", isStacked ? "items-center gap-1" : "gap-0")}>
         <span className={cn(
-          "font-heading font-semibold tracking-[0.12em] uppercase leading-none text-foreground",
-          isStacked ? "text-3xl tracking-[0.18em]" : "text-[15px]"
+          "font-heading font-bold tracking-[0.14em] uppercase leading-none",
+          isStacked ? "text-3xl tracking-[0.2em]" : "text-base",
+          "brand-gradient-text"
         )}>
           SANTO
         </span>
         {(showTagline || isStacked) && (
           <span className={cn(
-            "text-muted-foreground font-normal uppercase tracking-[0.3em]",
-            isStacked ? "text-[10px]" : "text-[7px] leading-none"
+            "text-muted-foreground font-medium uppercase tracking-[0.25em]",
+            isStacked ? "text-[10px]" : "text-[7.5px] leading-none"
           )}>
             AI Music Intelligence
           </span>
