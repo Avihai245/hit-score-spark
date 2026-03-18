@@ -48,7 +48,7 @@ const LogoIcon = ({ size = 28, className }: { size?: number; className?: string 
 );
 
 const LOGO_GRADIENT = {
-  background: "linear-gradient(135deg, hsl(258, 90%, 66%) 0%, hsl(38, 92%, 55%) 100%)",
+  background: "linear-gradient(180deg, hsl(258, 60%, 75%) 0%, hsl(0, 0%, 90%) 20%, hsl(0, 0%, 95%) 35%, hsl(258, 50%, 65%) 50%, hsl(0, 0%, 80%) 65%, hsl(38, 70%, 60%) 80%, hsl(0, 0%, 50%) 100%)",
   WebkitBackgroundClip: "text" as const,
   WebkitTextFillColor: "transparent" as const,
   backgroundClip: "text" as const,
