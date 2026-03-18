@@ -95,9 +95,15 @@ export default function FreeTrialUpload() {
         return;
       }
       setFile(f);
-    },
-    [toast],
-  );
+
+      // 🎉 Confetti burst on successful file selection
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#8B5CF6", "#F59E0B", "#22C55E", "#3B82F6"],
+      });
+      toast({ title: "🎵 Track uploaded!", description: `${f.name} is ready to analyze.` });
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
