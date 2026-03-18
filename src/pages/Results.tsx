@@ -1073,6 +1073,23 @@ const Results = () => {
                 </motion.div>
               ))}
             </div>
+            {/* CTA — turn strengths into action */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="mt-4 rounded-xl border border-green-500/15 bg-green-500/[0.03] p-4 text-center"
+            >
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                Use these strengths when pitching to playlists.{" "}
+                <button
+                  onClick={() => document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  className="inline-flex items-center gap-1 text-accent font-bold hover:text-accent/80 transition-colors"
+                >
+                  → See Your 7-Day Plan for how <ArrowRight className="h-3 w-3" />
+                </button>
+              </p>
+            </motion.div>
           </Section>
         )}
 
