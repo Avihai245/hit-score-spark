@@ -427,6 +427,9 @@ const Index = () => {
         </motion.div>
       </section>
 
+      {/* ═══════════ FREE TRIAL UPLOAD ═══════════ */}
+      <FreeTrialUpload />
+
       {/* ═══════════ SOCIAL PROOF STATS ═══════════ */}
       <section className="relative border-t border-border/30 py-20 px-4 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent" />
