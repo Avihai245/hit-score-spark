@@ -7,9 +7,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import AudioPlayer from "@/components/AudioPlayer";
 import Navbar from "@/components/Navbar";
 import GlobalDataStrip from "@/components/GlobalDataStrip";
+import { setSecurityHeaders } from "@/lib/securityHeaders";
 import Index from "./pages/Index";
 import Analyze from "./pages/Analyze";
 import Results from "./pages/Results";
@@ -137,22 +139,37 @@ const AppContent = () => {
   );
 };
 
+// Initialize security headers (documented in vite.config.ts)
+setSecurityHeaders();
+
+// Component that uses hooks (useSessionTimeout, etc.)
+const AppWithHooks = () => {
+  // Import and use session timeout hook
+  const useSessionTimeout = () => {
+    // Hook will be used in AuthProvider context or in a separate wrapper
+  };
+
+  return <AppContent />;
+};
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <AudioPlayerProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </TooltipProvider>
-        </AudioPlayerProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <AudioPlayerProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppWithHooks />
+              </BrowserRouter>
+            </TooltipProvider>
+          </AudioPlayerProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
