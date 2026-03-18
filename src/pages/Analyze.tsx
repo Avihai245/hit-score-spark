@@ -595,18 +595,30 @@ const Analyze = () => {
   }
 
   return (
-    <div className="min-h-screen px-4 pt-32 pb-12 bg-background">
-      <div className="container max-w-5xl">
+    <div className="min-h-screen px-4 pt-32 pb-12 bg-background relative overflow-hidden">
+      {/* Ambient background gradient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-accent/[0.03] blur-[100px]" />
+      </div>
+
+      <div className="container max-w-5xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-10 space-y-5"
         >
-          <h1 className="text-3xl md:text-4xl font-black font-heading text-center mb-2 text-foreground">Run Your Track Through Our Analysis Engine</h1>
-          <p className="text-center text-muted-foreground mb-3">
-            Upload your track and get data-driven insights in ~90 seconds
-          </p>
-          <p className="text-center text-[11px] text-muted-foreground/60 mb-10">
-            Based on patterns from top-performing tracks across Spotify • Apple Music • TikTok • YouTube
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/[0.08] border border-primary/20 text-sm font-semibold text-primary backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Global Music Intelligence Engine — Active
+          </span>
+          <h1 className="text-3xl md:text-5xl font-black font-heading text-foreground">
+            Run Your Track Through Our{" "}
+            <span className="gradient-text">Analysis Engine</span>
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Upload your track and get data-driven insights in ~90 seconds.
+            Based on patterns from top-performing tracks across Spotify • Apple Music • TikTok • YouTube.
           </p>
         </motion.div>
 

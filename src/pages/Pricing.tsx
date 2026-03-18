@@ -27,7 +27,7 @@ const plans = [
     ],
     cta: "Start Free",
     ctaLink: "/analyze",
-    ctaClass: "bg-white/10 hover:bg-white/20 text-white border border-white/10",
+    ctaClass: "gradient-purple text-primary-foreground rounded-full shadow-lg shadow-primary/25",
     highlighted: false,
     comingSoon: false,
   },
@@ -138,9 +138,9 @@ const plans = [
 ];
 
 const socialProof = [
-  { stat: "2,400+", label: "Songs analyzed" },
-  { stat: "87%", label: "Improved their score" },
-  { stat: "12", label: "Songs went viral" },
+  { stat: "50,000+", label: "Tracks Analyzed" },
+  { stat: "10,000+", label: "Artists Improved" },
+  { stat: "+25%", label: "Avg Viral Improvement" },
 ];
 
 const Pricing = () => {
@@ -156,16 +156,14 @@ const Pricing = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6 space-y-5"
         >
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/15 to-amber-500/15 border border-purple-500/20 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span className="text-purple-300">Simple pricing</span>
-            <span className="text-white/40">·</span>
-            <span className="text-amber-300">Serious results</span>
-          </div>
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/[0.08] border border-primary/20 text-sm font-semibold text-primary backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Simple Pricing — Serious Results
+          </span>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
             <span className="text-foreground">Invest in your music.</span>
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+            <span className="gradient-text">
               Get viral returns.
             </span>
           </h1>
@@ -300,9 +298,9 @@ const Pricing = () => {
               Our AI tells you exactly what to fix — for less than a coffee.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Button asChild className="px-8 py-4 h-auto rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-black text-base hover:from-amber-400 hover:to-yellow-300 shadow-lg shadow-amber-500/20">
+              <Button asChild className="px-8 py-4 h-auto rounded-full gradient-purple text-primary-foreground font-black text-base hover:opacity-90 shadow-lg shadow-primary/25">
                 <Link to="/analyze">
-                  Analyze Your Song Free <ArrowRight className="h-5 w-5 ml-2" />
+                  Analyze Your Track — Free <ArrowRight className="h-5 w-5 ml-2" />
                 </Link>
               </Button>
             </div>
