@@ -629,7 +629,7 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
   const [error, setError] = useState("");
   const [result, setResult] = useState<any>(null);
   const [file, setFile] = useState<File | null>(uploadedFile);
-  const [finalLyrics, setFinalLyrics] = useState("");
+  const [finalLyrics, setFinalLyrics] = useState(analysisData?.originalLyrics || "");
   const [playing, setPlaying] = useState<number | null>(null);
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -810,28 +810,47 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
             </Select>
           </div>
 
-          <div className="flex gap-2">
-            <motion.button
-              onClick={() => setStatus("lyrics")}
-              className="flex-1 py-3 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-secondary transition-colors flex items-center justify-center gap-2"
-              whileTap={{ scale: 0.98 }}
-            >
-              <Mic2 className="h-4 w-4" /> Edit Lyrics First
-            </motion.button>
-            <motion.button
-              onClick={() => startRemix()}
-              disabled={!file}
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-            >
-              <Rocket className="h-4 w-4" /> Create Remix
-            </motion.button>
+          {/* Lyrics editor — always visible */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="p-4 space-y-2">
+              <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Mic2 className="h-4 w-4 text-primary" /> Song Lyrics
+                <span className="text-[10px] text-muted-foreground font-normal ml-1">(optional — paste or edit before creating remix)</span>
+              </label>
+              <textarea
+                value={finalLyrics}
+                onChange={(e) => setFinalLyrics(e.target.value)}
+                placeholder="Paste your song lyrics here... The AI will use these lyrics for the remix. Leave empty to let AI generate lyrics."
+                className="w-full h-36 bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
+              />
+              {analysisData?.improvedLyrics && (
+                <button
+                  onClick={() => setFinalLyrics(analysisData.improvedLyrics)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
+                >
+                  <Sparkles className="h-3 w-3" /> Use AI-improved lyrics
+                </button>
+              )}
+              {analysisData?.originalLyrics && !finalLyrics && (
+                <button
+                  onClick={() => setFinalLyrics(analysisData.originalLyrics)}
+                  className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
+                >
+                  Load original lyrics
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
 
-      {status === "lyrics" && (
-        <LyricsEditor analysisData={analysisData} onLyricsReady={handleLyricsReady} />
+          <motion.button
+            onClick={() => startRemix(finalLyrics || undefined)}
+            disabled={!file}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+          >
+            <Rocket className="h-4 w-4" /> Create AI Remix
+          </motion.button>
+        </div>
       )}
 
       {status === "uploading" && (
