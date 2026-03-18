@@ -293,7 +293,7 @@ export default function FreeTrialUpload() {
             >
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                  Song Title <span className="text-muted-foreground font-normal">(optional)</span>
+                  Song Title <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder="Enter your song title"

@@ -261,6 +261,10 @@ const Analyze = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title.trim()) {
+      toast({ title: "Song title required", description: "Please enter your song title.", variant: "destructive" });
+      return;
+    }
     if (!file) {
       toast({ title: "No file", description: "Please upload an audio file.", variant: "destructive" });
       return;

@@ -124,12 +124,8 @@ const getDnaDescription = (label: string, value: number, hookAnalysis?: string, 
       low: "Listeners probably won't come back for a second play — replays are what trigger algorithms.",
     },
     "Emotional Impact": {
-      high: emotionalCore
-        ? `Your track's "${emotionalCore}" energy connects emotionally — this is a real strength for playlist placement.`
-        : "The mood and feeling of your track connects emotionally — this is a real strength for playlist placement.",
-      mid: emotionalCore
-        ? `The "${emotionalCore}" feeling is there, but it could hit deeper to make listeners feel something stronger.`
-        : "There's feeling here, but it could hit deeper to create a real emotional connection.",
+      high: "The emotional tone of your track connects — this is a real strength for playlist placement and audience targeting.",
+      mid: "There's feeling here, but it could hit deeper to create the kind of emotional connection that drives saves.",
       low: "The emotional connection feels flat — try adding more contrast between sections to make listeners feel something.",
     },
     "Structure Quality": {
