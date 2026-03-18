@@ -7,14 +7,23 @@ build/
 .env
 .env.local
 .env.*.local
+.env.production.local
+.env.development.local
 .env.production
 .env.development
+.env.*.private
 
-# Secrets
+# Secrets and sensitive files
 *.pem
 *.key
+*.p12
+*.pfx
 secrets/
 .secrets
+credentials.json
+service-account-key.json
+api-keys.json
+secrets.json
 
 # OS
 .DS_Store

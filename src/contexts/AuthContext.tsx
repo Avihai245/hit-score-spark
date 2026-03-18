@@ -59,8 +59,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           u.email?.split('@')[0] ||
           null;
 
-        // Check if admin email — give full access
-        const isAdmin = u.email === 'or3004@gmail.com' || u.email === 'office@sabatiers.com';
+        // Check if admin email — admins are managed via database, not hardcoded
+        // Security: Do NOT hardcode admin emails here
+        const isAdmin = false; // Default to non-admin, must be set in database
 
         const { data: newProfile, error: createError } = await supabase
           .from('viralize_users')

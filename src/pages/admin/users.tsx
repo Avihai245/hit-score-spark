@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { supabase } from '@/lib/supabase';
+import { validatePlan, validateCredits, updateUserPlanSchema, addCreditsSchema } from '@/lib/validation';
 import { Search, Trash2, CreditCard, ChevronDown, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -45,49 +46,99 @@ export default function AdminUsers() {
   });
 
   const handleChangePlan = async (userId: string, newPlan: string) => {
-    const { error } = await supabase
-      .from('viralize_users')
-      .update({ plan: newPlan })
-      .eq('id', userId);
-    if (error) {
-      toast.error('Failed to change plan', { description: error.message });
-    } else {
-      toast.success('Plan updated successfully');
-      fetchUsers();
+    try {
+      // Validate input
+      const validation = updateUserPlanSchema.safeParse({ userId, newPlan });
+      if (!validation.success) {
+        const errorMsg = validation.error.errors[0]?.message || 'Invalid input';
+        toast.error('Validation error', { description: errorMsg });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('viralize_users')
+        .update({ plan: newPlan })
+        .eq('id', userId);
+
+      if (error) {
+        toast.error('Failed to change plan', { description: error.message });
+        if (import.meta.env.DEV) console.error('Plan change error:', error);
+      } else {
+        toast.success('Plan updated successfully');
+        fetchUsers();
+      }
+    } catch (err) {
+      toast.error('System error', { description: 'Failed to update plan' });
+      if (import.meta.env.DEV) console.error('Unexpected error:', err);
+    } finally {
+      setChangingPlan(null);
     }
-    setChangingPlan(null);
   };
 
   const handleAddCredits = async (userId: string) => {
-    const amount = parseInt(creditAmount);
-    if (!amount || isNaN(amount)) return;
-    const user = users.find(u => u.id === userId);
-    const { error } = await supabase
-      .from('viralize_users')
-      .update({ credits: (user?.credits ?? 0) + amount })
-      .eq('id', userId);
-    if (error) {
-      toast.error('Failed to add credits', { description: error.message });
-    } else {
-      toast.success(`Added ${amount} credits`);
-      fetchUsers();
+    try {
+      const amount = parseInt(creditAmount, 10);
+
+      // Validate input
+      const validation = addCreditsSchema.safeParse({ userId, amount });
+      if (!validation.success) {
+        const errorMsg = validation.error.errors[0]?.message || 'Invalid input';
+        toast.error('Validation error', { description: errorMsg });
+        return;
+      }
+
+      const user = users.find(u => u.id === userId);
+      if (!user) {
+        toast.error('User not found');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('viralize_users')
+        .update({ credits: (user?.credits ?? 0) + amount })
+        .eq('id', userId);
+
+      if (error) {
+        toast.error('Failed to add credits', { description: error.message });
+        if (import.meta.env.DEV) console.error('Credits error:', error);
+      } else {
+        toast.success(`Added ${amount} credits`);
+        fetchUsers();
+      }
+    } catch (err) {
+      toast.error('System error', { description: 'Failed to add credits' });
+      if (import.meta.env.DEV) console.error('Unexpected error:', err);
+    } finally {
+      setAddCreditsUser(null);
+      setCreditAmount('');
     }
-    setAddCreditsUser(null);
-    setCreditAmount('');
   };
 
   const handleDelete = async (userId: string) => {
-    const { error } = await supabase
-      .from('viralize_users')
-      .delete()
-      .eq('id', userId);
-    if (error) {
-      toast.error('Failed to delete user', { description: error.message });
-    } else {
-      toast.success('User deleted');
-      fetchUsers();
+    try {
+      if (!userId || userId.length === 0) {
+        toast.error('Invalid user ID');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('viralize_users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        toast.error('Failed to delete user', { description: error.message });
+        if (import.meta.env.DEV) console.error('Delete error:', error);
+      } else {
+        toast.success('User deleted successfully');
+        fetchUsers();
+      }
+    } catch (err) {
+      toast.error('System error', { description: 'Failed to delete user' });
+      if (import.meta.env.DEV) console.error('Unexpected error:', err);
+    } finally {
+      setDeleteConfirm(null);
     }
-    setDeleteConfirm(null);
   };
 
   return (

@@ -2,13 +2,27 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+// CORS Configuration - restrict to allowed origins
+const allowedOrigins = [
+  "https://app.example.com",
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
+
+const getCorsHeaders = (origin: string | null) => {
+  const isAllowed = origin && allowedOrigins.includes(origin);
+  return {
+    "Access-Control-Allow-Origin": isAllowed ? origin : "null",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
 };
 
 serve(async (req) => {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -46,7 +60,7 @@ serve(async (req) => {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: profile.stripe_customer_id,
-      return_url: `${req.headers.get("origin") || "https://hit-score-spark.lovable.app"}/dashboard/billing`,
+      return_url: `${req.headers.get("origin") || "https://app.example.com"}/dashboard/billing`,
     });
 
     return new Response(

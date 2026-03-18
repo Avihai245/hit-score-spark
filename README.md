@@ -1,18 +1,14 @@
-# Welcome to your Lovable project
+# Hit Score Spark - Music Analysis & Remix Platform
+
+A modern music analysis and AI-powered remix platform with user authentication, billing, and an admin dashboard.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+**Type**: Web Application (React + Supabase + Stripe)
+**Status**: Development
+**License**: MIT
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
+## How to get started
 
 **Use your preferred IDE**
 
@@ -62,12 +58,43 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+This project uses:
+- **Frontend**: Vercel or Netlify
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Payments**: Stripe
 
-## Can I connect a custom domain to my Lovable project?
+### Environment Variables Required
 
-Yes, you can!
+Create `.env.local` with:
+```
+VITE_SUPABASE_URL=your_url
+VITE_SUPABASE_ANON_KEY=your_key
+VITE_STRIPE_PUBLISHABLE_KEY=your_key
+VITE_LAMBDA_URL=your_lambda_url
+VITE_SUNO_API=your_suno_url
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Deploy to Vercel
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```bash
+npm run build
+# Push to GitHub, connect to Vercel
+```
+
+### Deploy to Netlify
+
+```bash
+npm run build
+# Connect dist folder to Netlify
+```
+
+## Security
+
+⚠️ **Before Production**:
+- [ ] Rotate all API keys
+- [ ] Enable Supabase RLS policies
+- [ ] Configure CORS
+- [ ] Set up audit logging
+- [ ] Implement rate limiting
+
+See `SECURITY_AUDIT_REPORT.md` for full security checklist.
