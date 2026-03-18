@@ -12,14 +12,14 @@ const PLAN_COLORS: Record<string, string> = {
   free: 'text-gray-400',
   payg: 'text-blue-400',
   pro: 'text-purple-400',
-  studio: 'text-yellow-400',
+  studio: 'text-yellow-400'
 };
 
 const PLAN_LABELS: Record<string, string> = {
   free: 'Free',
   payg: 'Pay As You Go',
   pro: 'Pro',
-  studio: 'Studio',
+  studio: 'Studio'
 };
 
 const getInitials = (name?: string | null, email?: string | null) => {
@@ -33,12 +33,12 @@ const getInitials = (name?: string | null, email?: string | null) => {
 };
 
 const AVATAR_COLORS = [
-  'from-purple-500 to-blue-500',
-  'from-pink-500 to-purple-500',
-  'from-yellow-400 to-orange-500',
-  'from-green-400 to-cyan-500',
-  'from-blue-400 to-indigo-500',
-];
+'from-purple-500 to-blue-500',
+'from-pink-500 to-purple-500',
+'from-yellow-400 to-orange-500',
+'from-green-400 to-cyan-500',
+'from-blue-400 to-indigo-500'];
+
 
 const getAvatarColor = (userId?: string) => {
   if (!userId) return AVATAR_COLORS[0];
@@ -57,15 +57,15 @@ const Navbar = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
-    { to: "/analyze", label: "Analyze" },
-    { to: "/billing", label: "Pricing" },
-  ];
+  { to: "/analyze", label: "Analyze" },
+  { to: "/billing", label: "Pricing" }];
+
 
   const authNavLinks = [
-    { to: "/library", label: "Library" },
-    { to: "/analyze", label: "Analyze" },
-    { to: "/billing", label: "Pricing" },
-  ];
+  { to: "/library", label: "Library" },
+  { to: "/analyze", label: "Analyze" },
+  { to: "/billing", label: "Pricing" }];
+
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -95,19 +95,19 @@ const Navbar = () => {
         <div className="container flex h-14 md:h-16 items-center">
           {/* Left — nav links (desktop) */}
           <div className="hidden md:flex items-center gap-8 flex-1">
-            {(user ? authNavLinks : navLinks).map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className={cn(
-                  "text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 hover:text-foreground",
-                  pathname === l.to ? "text-foreground" : "text-muted-foreground",
-                  l.to === '/library' && "text-primary hover:text-primary/80"
-                )}
-              >
+            {(user ? authNavLinks : navLinks).map((l) =>
+            <Link
+              key={l.to}
+              to={l.to}
+              className={cn(
+                "text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 hover:text-foreground",
+                pathname === l.to ? "text-foreground" : "text-muted-foreground",
+                l.to === '/library' && "text-primary hover:text-primary/80"
+              )}>
+              
                 {l.label}
               </Link>
-            ))}
+            )}
           </div>
 
           {/* Center — Logo */}
@@ -115,15 +115,15 @@ const Navbar = () => {
             <span className="relative inline-block">
               <span
                 className="font-heading leading-none text-3xl"
-                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}
-              >
+                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}>
+                
                 SANTO
               </span>
               <span
                 className="font-heading leading-none text-3xl pointer-events-none"
                 style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
-                aria-hidden="true"
-              >
+                aria-hidden="true">
+                
                 SANTO
               </span>
             </span>
@@ -134,47 +134,47 @@ const Navbar = () => {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-200"
-              aria-label="Toggle theme"
-            >
+              aria-label="Toggle theme">
+              
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
 
-            {!loading && !user && (
-              <>
+            {!loading && !user &&
+            <>
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAuthModalOpen(true)}
-                  className="h-8 px-4 text-xs font-semibold text-muted-foreground hover:text-foreground"
-                >
+                variant="ghost"
+                size="sm"
+                onClick={() => setAuthModalOpen(true)}
+                className="h-8 px-4 text-xs font-semibold text-muted-foreground hover:text-foreground">
+                
                   Sign In
                 </Button>
                 <Button
-                  asChild
-                  size="sm"
-                  className="h-8 px-5 text-xs font-semibold tracking-wide uppercase rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-all duration-200 border-0"
-                >
+                asChild
+                size="sm"
+                className="h-8 px-5 text-xs font-semibold tracking-wide uppercase rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 transition-all duration-200 border-0">
+                
                   <Link to="/analyze">Analyze Free</Link>
                 </Button>
               </>
-            )}
+            }
 
-            {!loading && user && plan === 'free' && (
-              <Link
-                to="/billing"
-                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-gradient-to-r from-accent/20 to-yellow-500/20 border border-accent/30 text-accent hover:border-accent/60 hover:from-accent/30 hover:to-yellow-500/30 transition-all"
-              >
+            {!loading && user && plan === 'free' &&
+            <Link
+              to="/billing"
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-gradient-to-r from-accent/20 to-yellow-500/20 border border-accent/30 text-accent hover:border-accent/60 hover:from-accent/30 hover:to-yellow-500/30 transition-all">
+              
                 <Zap className="h-3.5 w-3.5" />
                 Upgrade
               </Link>
-            )}
+            }
 
-            {!loading && user && (
-              <div className="relative" ref={dropdownRef}>
+            {!loading && user &&
+            <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-white/5 transition-colors"
-                >
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-white/5 transition-colors">
+                
                   {/* Avatar */}
                   <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-xs font-bold`}>
                     {initials}
@@ -182,8 +182,8 @@ const Navbar = () => {
                   <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", dropdownOpen && "rotate-180")} />
                 </button>
 
-                {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-[#111111] border border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
+                {dropdownOpen &&
+              <div className="absolute right-0 top-full mt-2 w-56 bg-[#111111] border border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-white/10">
                       <p className="text-sm font-semibold text-white truncate">
@@ -198,34 +198,34 @@ const Navbar = () => {
                     {/* Menu items */}
                     <div className="p-1">
                       <Link
-                        to="/library"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
-                      >
+                    to="/library"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors">
+                    
                         <Library className="h-4 w-4 text-primary" />
                         My Library
                       </Link>
                       <Link
-                        to="/dashboard"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
-                      >
+                    to="/dashboard"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors">
+                    
                         <LayoutDashboard className="h-4 w-4 text-primary" />
                         Dashboard
                       </Link>
                       <Link
-                        to="/billing"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
-                      >
+                    to="/billing"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors">
+                    
                         <CreditCard className="h-4 w-4 text-accent" />
                         Billing & Plans
                       </Link>
                       <Link
-                        to="/settings"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors"
-                      >
+                    to="/settings"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 transition-colors">
+                    
                         <Settings className="h-4 w-4 text-muted-foreground" />
                         Settings
                       </Link>
@@ -233,17 +233,17 @@ const Navbar = () => {
 
                     <div className="border-t border-white/10 p-1">
                       <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                      >
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors">
+                    
                         <LogOut className="h-4 w-4" />
                         Sign Out
                       </button>
                     </div>
                   </div>
-                )}
+              }
               </div>
-            )}
+            }
           </div>
 
           {/* Mobile right side */}
@@ -251,92 +251,92 @@ const Navbar = () => {
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Toggle theme"
-            >
+              aria-label="Toggle theme">
+              
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
             <button
               className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
+              onClick={() => setMobileOpen(!mobileOpen)}>
+              
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
 
         {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-2xl px-6 py-5 space-y-1">
-            {(user ? authNavLinks : navLinks).map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
-                  pathname === l.to ? "text-foreground" : "text-muted-foreground",
-                  l.to === '/library' && "text-primary"
-                )}
-              >
+        {mobileOpen &&
+        <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-2xl px-6 py-5 space-y-1">
+            {(user ? authNavLinks : navLinks).map((l) =>
+          <Link
+            key={l.to}
+            to={l.to}
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
+              pathname === l.to ? "text-foreground" : "text-muted-foreground",
+              l.to === '/library' && "text-primary"
+            )}>
+            
                 {l.label}
               </Link>
-            ))}
-            {user && (
-              <Link
-                to="/dashboard"
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
-                  pathname === '/dashboard' ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
+          )}
+            {user &&
+          <Link
+            to="/dashboard"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
+              pathname === '/dashboard' ? "text-foreground" : "text-muted-foreground"
+            )}>
+            
                 Dashboard
               </Link>
-            )}
-            {user && (
-              <Link
-                to="/billing"
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
-                  pathname === '/billing' ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
+          }
+            {user &&
+          <Link
+            to="/billing"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
+              pathname === '/billing' ? "text-foreground" : "text-muted-foreground"
+            )}>
+            
                 Billing
               </Link>
-            )}
-            {user && (
-              <Link
-                to="/settings"
-                onClick={() => setMobileOpen(false)}
-                className={cn(
-                  "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
-                  pathname === '/settings' ? "text-foreground" : "text-muted-foreground"
-                )}
-              >
+          }
+            {user &&
+          <Link
+            to="/settings"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "block text-sm font-medium tracking-wide uppercase py-3 transition-colors border-b border-border/30",
+              pathname === '/settings' ? "text-foreground" : "text-muted-foreground"
+            )}>
+            
                 Settings
               </Link>
-            )}
+          }
             <div className="pt-3 flex flex-col gap-2">
-              {!user ? (
-                <>
+              {!user ?
+            <>
                   <Button
-                    variant="outline"
-                    onClick={() => { setMobileOpen(false); setAuthModalOpen(true); }}
-                    className="w-full h-10 text-xs font-semibold tracking-wide uppercase rounded-full"
-                  >
+                variant="outline"
+                onClick={() => {setMobileOpen(false);setAuthModalOpen(true);}}
+                className="w-full h-10 text-xs font-semibold tracking-wide uppercase rounded-full">
+                
                     Sign In
                   </Button>
                   <Button
-                    asChild
-                    size="sm"
-                    className="w-full h-10 text-xs font-semibold tracking-wide uppercase rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground border-0"
-                  >
+                asChild
+                size="sm"
+                className="w-full h-10 text-xs font-semibold tracking-wide uppercase rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+                
                     <Link to="/analyze" onClick={() => setMobileOpen(false)}>Analyze Free</Link>
                   </Button>
-                </>
-              ) : (
-                <div className="space-y-2">
+                </> :
+
+            <div className="space-y-2">
                   <div className="flex items-center gap-3 py-2 px-1">
                     <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white text-sm font-bold`}>
                       {initials}
@@ -347,22 +347,22 @@ const Navbar = () => {
                     </div>
                   </div>
                   <Button
-                    variant="outline"
-                    onClick={handleSignOut}
-                    className="w-full h-10 text-xs font-semibold tracking-wide uppercase rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10"
-                  >
+                variant="outline"
+                onClick={handleSignOut}
+                className="w-full h-10 text-xs font-semibold tracking-wide uppercase rounded-full border-red-500/30 text-red-400 hover:bg-red-500/10">
+                
                     Sign Out
                   </Button>
                 </div>
-              )}
+            }
             </div>
           </div>
-        )}
+        }
       </nav>
 
       <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
-    </>
-  );
+    </>);
+
 };
 
 export default Navbar;
