@@ -47,11 +47,12 @@ const LogoIcon = ({ size = 28, className }: { size?: number; className?: string 
   </svg>
 );
 
-const LOGO_GRADIENT = {
-  background: "linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(258, 60%, 80%) 25%, hsl(0, 0%, 95%) 40%, hsl(258, 50%, 70%) 55%, hsl(0, 0%, 90%) 70%, hsl(38, 80%, 65%) 85%, hsl(0, 0%, 75%) 100%)",
-  WebkitBackgroundClip: "text" as const,
-  WebkitTextFillColor: "transparent" as const,
-  backgroundClip: "text" as const,
+const LOGO_GRADIENT: React.CSSProperties = {
+  background: "linear-gradient(180deg, #e0e0e0 0%, #c4b5fd 18%, #f5f5f5 32%, #a78bfa 50%, #d4d4d4 65%, #c084fc 78%, #9ca3af 100%)",
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
+  backgroundClip: "text",
+  filter: "drop-shadow(0 0 8px rgba(139, 92, 246, 0.3))",
 };
 
 interface SantoLogoProps {
