@@ -665,50 +665,79 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-      // 3. Call suno-cover via Lambda
+      // 3. Call suno-cover via Lambda — pass FULL analysisData + lyrics + style
+      const fullAnalysis = {
+        ...(analysisData || {}),
+        customLyrics: finalLyrics || undefined,
+      };
       const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "suno-cover",
           s3Key,
-          analysisData: {
-            title: songTitle,
-            genre: songGenre || "pop",
-            style,
-            lyrics: finalLyrics || undefined,
-            userId: user.id,
-            analysisId,
-          },
+          title: songTitle,
+          genre: songGenre || analysisData?.genre || "pop",
+          style,
+          analysisData: fullAnalysis,
         }),
       });
       if (!coverRes.ok) throw new Error(await coverRes.text());
-      const { taskIdV1, taskIdV2 } = await coverRes.json();
+      const coverData = await coverRes.json();
+      if (coverData.error) throw new Error(coverData.error);
+      const { taskIdV1, taskIdV2, version1, version2 } = coverData;
+      if (!taskIdV1 || !taskIdV2) throw new Error("No task IDs returned from Suno");
 
-      // 4. Poll for results
+      // 4. Poll for BOTH versions — action: suno-cover with taskIdV1+taskIdV2
+      let attempts = 0;
       const poll = async (): Promise<any> => {
+        if (attempts++ > 40) throw new Error("Remix timed out. Please try again.");
         const pollRes = await fetch(LAMBDA_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "get-results", taskIdV1, taskIdV2 }),
+          body: JSON.stringify({ action: "suno-cover", taskIdV1, taskIdV2 }),
         });
-        if (!pollRes.ok) throw new Error("Polling failed");
         const data = await pollRes.json();
-        if (data.status === "complete" || data.tracks) return data;
-        if (data.status === "failed" || data.error) throw new Error(data.error || "Remix generation failed");
-        await new Promise(r => setTimeout(r, 5000));
+        if (data.status === "complete") return data;
+        if (data.status === "failed" || data.error) throw new Error(data.error || "Remix failed");
+        await new Promise(r => setTimeout(r, 8000));
         return poll();
       };
 
-      const data = await poll();
+      const finalData = await poll();
       clearInterval(timerRef.current);
 
-      // Normalize result to have tracks array with "Faithful Remix" and "Viral Edition"
-      const tracks = data.tracks || [];
-      if (tracks.length >= 2) {
-        tracks[0].title = tracks[0].title || "Faithful Remix";
-        tracks[1].title = tracks[1].title || "Viral Edition";
+      // Build tracks array from v1 + v2
+      const tracks = [];
+      if (finalData.v1?.audioUrl) tracks.push({
+        audio_url: finalData.v1.audioUrl,
+        audioUrl: finalData.v1.audioUrl,
+        imageUrl: finalData.v1.imageUrl,
+        title: version1?.label || "Faithful Remix",
+        label: version1?.label || "Faithful Remix",
+        description: version1?.description || "Production-upgraded, preserves original vibe",
+      });
+      if (finalData.v2?.audioUrl) tracks.push({
+        audio_url: finalData.v2.audioUrl,
+        audioUrl: finalData.v2.audioUrl,
+        imageUrl: finalData.v2.imageUrl,
+        title: version2?.label || "Viral Edition",
+        label: version2?.label || "Viral Edition",
+        description: version2?.description || "Trend-forward, maximum chart impact",
+      });
+
+      // Save remixes to Supabase
+      for (const track of tracks) {
+        await supabase.from("viralize_remixes").insert({
+          user_id: user.id,
+          analysis_id: analysisId || null,
+          audio_url: track.audioUrl,
+          suno_task_id: taskIdV1,
+          style,
+          version_label: track.label,
+        }).then(() => {});
       }
+
       setResult({ tracks });
       setStatus("complete");
     } catch (e: any) {
