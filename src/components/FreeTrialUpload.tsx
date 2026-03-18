@@ -116,7 +116,6 @@ export default function FreeTrialUpload() {
       if (f) acceptFile(f);
     },
     [acceptFile],
-    [toast],
   );
 
   const handleSubmit = () => {
