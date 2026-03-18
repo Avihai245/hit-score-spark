@@ -32,15 +32,26 @@ export const SECURITY_HEADERS = {
   // Content Security Policy (CSP)
   'Content-Security-Policy': [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com", // Consider removing 'unsafe-eval'
+    // script-src: Only self + Stripe for payment processing + Suno for remix
+    "script-src 'self' https://js.stripe.com https://api.suno.ai",
+    // style-src: Self + Google Fonts (required for design system)
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // font-src: Google Fonts
     "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
+    // img-src: Self + data URIs + HTTPS external
     "img-src 'self' data: https:",
-    "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+    // connect-src: Supabase, Stripe, Suno APIs
+    "connect-src 'self' https://*.supabase.co https://api.stripe.com https://api.suno.ai",
+    // frame-src: Stripe iframe only
     "frame-src 'self' https://js.stripe.com",
+    // Media
+    "media-src 'self' https:",
+    "object-src 'none'",
+    // CSP directives
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'self'",
+    "upgrade-insecure-requests",
   ].join(';'),
 };
 

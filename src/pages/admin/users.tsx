@@ -4,6 +4,7 @@ import { AdminGuard } from '@/components/admin/AdminGuard';
 import { supabase } from '@/lib/supabase';
 import { validatePlan, validateCredits, updateUserPlanSchema, addCreditsSchema } from '@/lib/validation';
 import { logAdminAction, createImpersonationSession } from '@/lib/adminAudit';
+import { createAdminRateLimiters, type AdminRateLimiters } from '@/lib/rateLimiter';
 import { Search, Trash2, CreditCard, ChevronDown, AlertCircle, LogIn } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ export default function AdminUsers() {
   const [addCreditsUser, setAddCreditsUser] = useState<string | null>(null);
   const [creditAmount, setCreditAmount] = useState('');
   const [impersonatingUser, setImpersonatingUser] = useState<string | null>(null);
+  const [rateLimiters] = useState<AdminRateLimiters>(() => createAdminRateLimiters('admin'));
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -55,6 +57,13 @@ export default function AdminUsers() {
 
   const handleImpersonate = async (userId: string, userEmail: string) => {
     try {
+      // Check rate limit
+      const limitCheck = rateLimiters.impersonate.check(`${userId}:impersonate`);
+      if (!limitCheck.allowed) {
+        toast.error('Rate limited', { description: limitCheck.message });
+        return;
+      }
+
       const { sessionToken, expiresAt } = await createImpersonationSession(
         userId,
         `Admin support session for ${userEmail}`
@@ -88,6 +97,13 @@ export default function AdminUsers() {
 
   const handleChangePlan = async (userId: string, newPlan: string) => {
     try {
+      // Check rate limit
+      const limitCheck = rateLimiters.planChange.check(`${userId}:planChange`);
+      if (!limitCheck.allowed) {
+        toast.error('Rate limited', { description: limitCheck.message });
+        return;
+      }
+
       const user = users.find(u => u.id === userId);
       const oldPlan = user?.plan;
 
@@ -145,6 +161,13 @@ export default function AdminUsers() {
 
   const handleAddCredits = async (userId: string) => {
     try {
+      // Check rate limit
+      const limitCheck = rateLimiters.addCredits.check(`${userId}:addCredits`);
+      if (!limitCheck.allowed) {
+        toast.error('Rate limited', { description: limitCheck.message });
+        return;
+      }
+
       const amount = parseInt(creditAmount, 10);
 
       // Validate input
@@ -211,6 +234,13 @@ export default function AdminUsers() {
 
   const handleDelete = async (userId: string) => {
     try {
+      // Check rate limit (strict)
+      const limitCheck = rateLimiters.deleteUser.check(`${userId}:delete`);
+      if (!limitCheck.allowed) {
+        toast.error('Rate limited', { description: limitCheck.message });
+        return;
+      }
+
       if (!userId || userId.length === 0) {
         toast.error('Invalid user ID');
         return;
