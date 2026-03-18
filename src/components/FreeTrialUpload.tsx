@@ -119,6 +119,10 @@ export default function FreeTrialUpload() {
   );
 
   const handleSubmit = () => {
+    if (!title.trim()) {
+      toast({ title: "Song title required", description: "Please enter your song title.", variant: "destructive" });
+      return;
+    }
     if (!file) return;
     localStorage.setItem(FREE_TRIAL_KEY, "true");
     navigate("/analyze", {
