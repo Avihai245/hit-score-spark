@@ -1093,18 +1093,25 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ SECTION 5 — YOU VS TOP TRACKS ═══ */}
-        <Section delay={5} id="vs-top">
-          <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
-            You vs Top Tracks
-          </h2>
+        {/* ═══ YOU VS TOP TRACKS (sub-section of What to Fix, no separate nav) ═══ */}
+        <Section delay={5}>
           <div className="rounded-xl border border-border bg-card/50 p-5 space-y-4">
+            <h3 className="text-base font-black font-heading text-foreground">
+              How You Compare
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Here's how your track compares to the top performers in your genre:
+            </p>
+            <p className="text-xs text-muted-foreground/70 font-medium">
+              Genre benchmark: {songGenre || "your genre"} top tracks
+            </p>
+
             {/* Gap Visual */}
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-foreground font-medium">You</span>
-                  <span className="font-bold tabular-nums text-foreground">{score}%</span>
+                  <span className="font-bold tabular-nums text-foreground">Your score: {score}/100</span>
                 </div>
                 <div className="h-3 rounded-full bg-muted overflow-hidden">
                   <motion.div className="h-full rounded-full bg-primary" style={{ transformOrigin: "left" }}
@@ -1115,7 +1122,7 @@ const Results = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground font-medium">Top Tracks</span>
-                  <span className="font-bold tabular-nums text-accent">{avgTopScore}%</span>
+                  <span className="font-bold tabular-nums text-accent">Top tracks avg: {avgTopScore}/100</span>
                 </div>
                 <div className="h-3 rounded-full bg-muted overflow-hidden">
                   <motion.div className="h-full rounded-full bg-accent/60" style={{ transformOrigin: "left" }}
@@ -1127,13 +1134,13 @@ const Results = () => {
 
             <p className="text-sm text-center font-semibold text-foreground/80">
               {gap > 0
-                ? `${gap} points behind top tracks — fixable`
+                ? `${gap} points behind top tracks — fixable with the steps below`
                 : "You're already performing at top-track level 🔥"
               }
             </p>
           </div>
 
-          {/* Similar songs — filter out "unknown" */}
+          {/* Similar songs with context */}
           {similarSongs?.length > 0 && (
             <div className="mt-3 space-y-2.5">
               {similarSongs
@@ -1146,8 +1153,8 @@ const Results = () => {
                     <SpotifyLogo className="h-3.5 w-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-foreground truncate">{song.title}</p>
-                    <p className="text-xs text-muted-foreground">{song.artist}</p>
+                    <p className="font-bold text-sm text-foreground truncate">{song.title} ({song.artist})</p>
+                    <p className="text-xs text-muted-foreground">Used as structural benchmark for your genre</p>
                   </div>
                   <span className="text-sm font-black text-accent tabular-nums flex-shrink-0">{song.streams}</span>
                 </motion.div>
