@@ -156,12 +156,10 @@ const Pricing = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-6 space-y-5"
         >
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-500/15 to-amber-500/15 border border-purple-500/20 text-sm font-semibold">
-            <Sparkles className="h-4 w-4 text-amber-400" />
-            <span className="text-purple-300">Simple pricing</span>
-            <span className="text-white/40">·</span>
-            <span className="text-amber-300">Serious results</span>
-          </div>
+          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/[0.08] border border-primary/20 text-sm font-semibold text-primary backdrop-blur-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Simple Pricing — Serious Results
+          </span>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
             <span className="text-foreground">Invest in your music.</span>
             <br />
