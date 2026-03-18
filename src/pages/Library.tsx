@@ -1,9 +1,10 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { supabase } from '@/lib/supabase';
+import { loadRemixesFromLocalStorage, clearLocalRemix } from '@/lib/remixStorage';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,10 +29,13 @@ interface Remix {
   remix_title?: string;    // new schema column
   original_title?: string;
   audio_url: string;
+  image_url?: string;
   style?: string;
   genre?: string;
   created_at: string;
   analysis_id?: string;
+  suno_task_id?: string;
+  _isLocal?: boolean;
 }
 
 /* ─── Helpers ─── */
@@ -165,6 +169,8 @@ const RemixCard = ({ remix, onDelete }: { remix: Remix; onDelete: (id: string) =
       id: remix.id,
       title: remix.remix_title || remix.title || 'AI Remix',
       audioUrl: remix.audio_url,
+      imageUrl: remix.image_url || undefined,
+      sourceTitle: remix.original_title || undefined,
     });
   };
 
@@ -198,30 +204,55 @@ const RemixCard = ({ remix, onDelete }: { remix: Remix; onDelete: (id: string) =
       exit={{ opacity: 0, scale: 0.95 }}
       className="group relative bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 hover:-translate-y-1 transition-all duration-200 overflow-hidden"
     >
-      {/* Waveform gradient art */}
-      <div className="relative h-32 bg-gradient-to-br from-yellow-500/30 to-purple-600/30 flex items-center justify-center overflow-hidden">
-        {/* Fake waveform */}
-        <div className="flex items-end gap-[3px] h-16 absolute inset-x-4">
-          {Array.from({ length: 40 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="flex-1 rounded-sm bg-white/20"
-              style={{ height: `${20 + Math.sin(i * 0.5) * 30 + Math.random() * 30}%` }}
-              animate={isCurrentlyPlaying ? { scaleY: [0.5, 1, 0.5] } : {}}
-              transition={isCurrentlyPlaying ? { repeat: Infinity, duration: 0.4 + (i % 5) * 0.1, delay: i * 0.02 } : {}}
-            />
-          ))}
+      {/* Cover art / waveform */}
+      <div className="relative h-36 bg-gradient-to-br from-yellow-500/30 to-purple-600/30 flex items-center justify-center overflow-hidden">
+        {/* Cover image from Suno if available */}
+        {remix.image_url ? (
+          <img src={remix.image_url} alt={remix.remix_title || 'Remix'} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          /* Animated waveform when no cover */
+          <div className="flex items-end gap-[3px] h-16 absolute inset-x-4">
+            {Array.from({ length: 40 }).map((_, i) => (
+              <motion.div
+                key={i}
+                className="flex-1 rounded-sm bg-white/20"
+                style={{ height: `${20 + Math.sin(i * 0.5) * 30 + Math.random() * 30}%` }}
+                animate={isCurrentlyPlaying ? { scaleY: [0.5, 1, 0.5] } : {}}
+                transition={isCurrentlyPlaying ? { repeat: Infinity, duration: 0.4 + (i % 5) * 0.1, delay: i * 0.02 } : {}}
+              />
+            ))}
+          </div>
+        )}
+        {/* Overlay for play button */}
+        <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isCurrentlyPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          <button
+            onClick={handlePlay}
+            className="w-14 h-14 rounded-full bg-white/90 hover:bg-white transition-colors flex items-center justify-center shadow-2xl"
+          >
+            {isCurrentlyPlaying ? (
+              <Pause className="h-6 w-6 text-black" />
+            ) : (
+              <Play className="h-6 w-6 text-black ml-0.5" />
+            )}
+          </button>
         </div>
-        <button
-          onClick={handlePlay}
-          className="relative z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur hover:bg-white/30 transition-colors flex items-center justify-center"
-        >
-          {isCurrentlyPlaying ? (
-            <Pause className="h-5 w-5 text-white" />
-          ) : (
+        {/* Always visible small play button */}
+        {!isCurrentlyPlaying && (
+          <button
+            onClick={handlePlay}
+            className="relative z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur hover:bg-white/30 transition-colors flex items-center justify-center border border-white/20"
+          >
             <Play className="h-5 w-5 text-white ml-0.5" />
-          )}
-        </button>
+          </button>
+        )}
+        {isCurrentlyPlaying && (
+          <button
+            onClick={handlePlay}
+            className="relative z-10 w-12 h-12 rounded-full bg-white/20 backdrop-blur hover:bg-white/30 transition-colors flex items-center justify-center border border-white/20"
+          >
+            <Pause className="h-5 w-5 text-white" />
+          </button>
+        )}
         {/* Delete */}
         <button
           onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
@@ -324,9 +355,35 @@ export default function Library() {
           supabase.from('viralize_remixes').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
         ]);
         setAnalyses(a || []);
-        setRemixes(r || []);
+
+        // Merge Supabase remixes with localStorage (avoid duplicates by suno_task_id)
+        const dbRemixes: Remix[] = (r || []).map((row: any) => ({
+          id: row.id,
+          remix_title: row.remix_title,
+          title: row.remix_title,
+          original_title: row.original_title,
+          audio_url: row.audio_url,
+          image_url: row.image_url,
+          genre: row.genre,
+          created_at: row.created_at,
+          analysis_id: row.analysis_id,
+          suno_task_id: row.suno_task_id,
+        }));
+        const localRemixes = loadRemixesFromLocalStorage(user.id);
+        const dbTaskIds = new Set(dbRemixes.map((r: Remix) => r.suno_task_id).filter(Boolean));
+        const localOnly = localRemixes.filter(lr =>
+          !dbTaskIds.has(lr.suno_task_id) && lr.audio_url
+        );
+        // Combine: DB first (authoritative), then local-only extras
+        const all = [...dbRemixes, ...localOnly].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setRemixes(all);
       } catch (err) {
-        console.warn('Failed to load library:', err);
+        console.warn('Failed to load from Supabase, using localStorage:', err);
+        // Full fallback to localStorage only
+        const localRemixes = loadRemixesFromLocalStorage(user.id);
+        setRemixes(localRemixes.filter(lr => lr.audio_url));
       } finally {
         setDataLoading(false);
       }
@@ -350,13 +407,18 @@ export default function Library() {
 
   const handleDeleteRemix = async (id: string) => {
     setRemixes(prev => prev.filter(r => r.id !== id));
-    const { error } = await supabase.from('viralize_remixes').delete().eq('id', id);
-    if (error) {
-      toast.error('Failed to delete remix');
-      const { data } = await supabase.from('viralize_remixes').select('*').eq('user_id', user!.id).order('created_at', { ascending: false });
-      setRemixes(data || []);
+    // Clear from localStorage too
+    if (user) clearLocalRemix(user.id, id);
+    // Only hit Supabase for non-local IDs
+    if (!id.startsWith('local_')) {
+      const { error } = await supabase.from('viralize_remixes').delete().eq('id', id);
+      if (error) {
+        toast.error('Failed to delete from library');
+      } else {
+        toast.success('Song removed from library');
+      }
     } else {
-      toast.success('Remix deleted');
+      toast.success('Song removed');
     }
   };
 

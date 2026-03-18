@@ -3,6 +3,8 @@ import { motion, useMotionValue, useTransform, animate, AnimatePresence, useInVi
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { PLAN_LIMITS } from "@/lib/supabase";
+import { useAudioPlayer } from "@/contexts/AudioPlayerContext";
+import { saveRemixesToLocalStorage } from "@/lib/remixStorage";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -632,6 +634,7 @@ const AiRemixSection = ({
   analysisId?: string;
 }) => {
   const { user } = useAuth();
+  const { playTrack } = useAudioPlayer();
   const LAMBDA_URL = "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze";
 
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
@@ -734,21 +737,64 @@ const AiRemixSection = ({
         accent: "purple",
       });
 
-      // Save to Supabase (use correct column names from schema)
-      for (const track of tracks) {
-        const { error: saveErr } = await supabase.from("viralize_remixes").insert({
-          user_id: user.id,
-          analysis_id: analysisId || null,
-          audio_url: track.audioUrl,
-          image_url: track.imageUrl || null,
-          suno_task_id: taskIdV1,
-          genre: songGenre || analysisData?.genre || null,
-          original_title: songTitle || null,
-          remix_title: track.label || 'AI Remix',
-          status: 'complete',
+      // ── 1. Build localStorage entries (bulletproof backup, always works) ──
+      const localEntries = tracks.map((track: any, i: number) => ({
+        id: `local_${Date.now()}_${i}`,
+        remix_title: track.label || 'AI Remix',
+        original_title: songTitle || null,
+        audio_url: track.audioUrl,
+        image_url: track.imageUrl || null,
+        genre: songGenre || analysisData?.genre || null,
+        created_at: new Date().toISOString(),
+        analysis_id: analysisId || null,
+        suno_task_id: taskIdV1,
+        description: track.description,
+        accent: track.accent,
+      }));
+      if (user) saveRemixesToLocalStorage(user.id, localEntries);
+
+      // ── 2. Auto-play first track via AudioPlayerContext → bottom player appears ──
+      if (tracks[0]?.audioUrl) {
+        playTrack({
+          id: `remix_${Date.now()}_0`,
+          title: `${songTitle || 'AI Song'} – ${tracks[0].label || 'Remix'}`,
+          audioUrl: tracks[0].audioUrl,
+          imageUrl: tracks[0].imageUrl || undefined,
+          sourceTitle: songTitle || undefined,
         });
-        if (saveErr) console.warn('Failed to save remix to library:', saveErr);
-        else console.log('✅ Saved remix to library:', track.label);
+      }
+
+      // ── 3. Save to Supabase (async, non-blocking) ──
+      if (user && tracks.length > 0) {
+        let savedCount = 0;
+        for (const track of tracks) {
+          try {
+            const { error: saveErr } = await supabase.from("viralize_remixes").insert({
+              user_id: user.id,
+              analysis_id: analysisId || null,
+              audio_url: track.audioUrl,
+              image_url: track.imageUrl || null,
+              suno_task_id: taskIdV1,
+              genre: songGenre || analysisData?.genre || null,
+              original_title: songTitle || null,
+              remix_title: track.label || 'AI Remix',
+              status: 'complete',
+            });
+            if (!saveErr) savedCount++;
+            else console.warn('Supabase save error:', saveErr.message, saveErr.code);
+          } catch (e) {
+            console.warn('Supabase save exception:', e);
+          }
+        }
+        if (savedCount > 0) {
+          toast.success(`✅ ${savedCount} song${savedCount > 1 ? 's' : ''} saved to your library!`, {
+            action: { label: 'View Library', onClick: () => window.location.href = '/library' }
+          });
+        } else {
+          toast.info('Songs ready! Saved locally — find them in your Library.', {
+            action: { label: 'View Library', onClick: () => window.location.href = '/library' }
+          });
+        }
       }
 
       setResult({ tracks });
@@ -894,11 +940,22 @@ const AiRemixSection = ({
       {/* ── COMPLETE — 2 versions ── */}
       {status === "complete" && result?.tracks?.length > 0 && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-400" />
-            <h3 className="text-base font-bold text-foreground">Your AI Remixes Are Ready</h3>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-400" />
+                <h3 className="text-base font-bold text-foreground">🎉 Your AI Songs Are Ready!</h3>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Two unique versions — playing automatically below ↓</p>
+            </div>
+            <Link
+              to="/library"
+              className="text-xs text-primary hover:text-primary/80 border border-primary/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 flex-shrink-0 ml-3"
+            >
+              <Headphones className="h-3.5 w-3.5" />
+              My Library
+            </Link>
           </div>
-          <p className="text-xs text-muted-foreground -mt-2">Two unique versions — listen and choose your favorite</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {result.tracks.map((track: any, i: number) => (
@@ -916,23 +973,45 @@ const AiRemixSection = ({
                 {track.imageUrl && (
                   <img src={track.imageUrl} alt={track.label} className="w-full h-28 object-cover rounded-lg mb-3" />
                 )}
+                {/* Play button → triggers bottom AudioPlayer */}
+                <div className="flex gap-2 mb-2">
+                  <button
+                    onClick={() => {
+                      playTrack({
+                        id: `remix_${Date.now()}_${i}`,
+                        title: `${songTitle || 'AI Song'} – ${track.label || 'Remix'}`,
+                        audioUrl: track.audioUrl,
+                        sourceTitle: songTitle || undefined,
+                      });
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all
+                      ${i === 0
+                        ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30'
+                        : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30'
+                      }`}
+                  >
+                    <Play className="h-4 w-4" />
+                    Play Now
+                  </button>
+                  <a
+                    href={track.audioUrl}
+                    download={`${songTitle}_${(track.label || 'remix').replace(/\s+/g, "_")}.mp3`}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs border border-border/40 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5" /> MP3
+                  </a>
+                </div>
+                {/* Native audio as fallback */}
                 <audio
                   ref={el => { audioRefs.current[i] = el; }}
                   src={track.audioUrl}
+                  className="w-full h-8 opacity-50 hover:opacity-100 transition-opacity"
                   controls
-                  className="w-full mb-2"
                   onPlay={() => {
                     audioRefs.current.forEach((a, idx) => { if (a && idx !== i) a.pause(); });
                     setPlaying(i);
                   }}
                 />
-                <a
-                  href={track.audioUrl}
-                  download={`${songTitle}_${track.label.replace(/\s+/g, "_")}.mp3`}
-                  className="block text-center text-xs text-muted-foreground hover:text-foreground py-2 border border-border/40 rounded-lg transition-colors"
-                >
-                  ⬇️ Download {track.label}
-                </a>
               </div>
             ))}
           </div>

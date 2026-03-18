@@ -76,15 +76,21 @@ export const AudioPlayer = () => {
           <div className="max-w-6xl mx-auto flex items-center gap-4">
             {/* Track info */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 border border-border/30 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                {isPlaying && (
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                  />
+              <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 to-accent/30 border border-border/30 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                {currentTrack.imageUrl ? (
+                  <img src={currentTrack.imageUrl} alt={currentTrack.title} className="absolute inset-0 w-full h-full object-cover" />
+                ) : (
+                  <>
+                    {isPlaying && (
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                      />
+                    )}
+                    <Music className="h-4 w-4 text-primary relative z-10" />
+                  </>
                 )}
-                <Music className="h-4 w-4 text-primary relative z-10" />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate">{currentTrack.title}</p>

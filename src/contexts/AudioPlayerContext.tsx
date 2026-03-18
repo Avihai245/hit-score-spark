@@ -4,6 +4,7 @@ export interface Track {
   id: string;
   title: string;
   audioUrl: string;
+  imageUrl?: string;    // cover art from Suno
   sourceTitle?: string; // analysis title it came from
   analysisId?: string;
 }

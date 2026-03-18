@@ -105,7 +105,7 @@ const ExistingRemixCard = ({ remix }: { remix: any }) => {
   return (
     <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
       <button
-        onClick={() => playTrack({ id: remix.id, title: remix.remix_title || remix.title || 'AI Remix', audioUrl: remix.audio_url })}
+        onClick={() => playTrack({ id: remix.id, title: remix.remix_title || remix.title || 'AI Remix', audioUrl: remix.audio_url, imageUrl: remix.image_url || undefined, sourceTitle: remix.original_title || undefined })}
         className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center hover:bg-primary/30 transition-colors"
       >
         {isCurrentlyPlaying ? <Pause className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary ml-0.5" />}
