@@ -21,7 +21,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("viralize-theme", "dark");
   }, []);
 
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {}; // no-op, dark mode only
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
