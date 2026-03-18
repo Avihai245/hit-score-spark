@@ -639,6 +639,8 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
     setStatus("idle");
   };
 
+  const LAMBDA_URL = "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze";
+
   const startRemix = async () => {
     if (!user) { toast.error("Sign in to create remixes"); return; }
     if (!file) { toast.error("No audio file found. Please re-upload."); return; }
@@ -648,34 +650,66 @@ const AiRemixSection = ({ uploadedFile, songTitle, songGenre, analysisData, anal
     setError("");
 
     try {
-      const ext = file.name.split('.').pop() || 'mp3';
-      const path = `remixes/${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('audio').upload(path, file);
-      if (upErr) throw upErr;
-      const { data: { publicUrl } } = supabase.storage.from('audio').getPublicUrl(path);
+      // 1. Get presigned S3 upload URL from Lambda
+      const uploadRes = await fetch(LAMBDA_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "get-upload-url", filename: file.name, contentType: file.type || "audio/mpeg" }),
+      });
+      if (!uploadRes.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, s3Key } = await uploadRes.json();
+
+      // 2. Upload file to S3
+      await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "audio/mpeg" }, body: file });
 
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-      const res = await fetch("https://hitcheck-api.vercel.app/api/remix", {
+      // 3. Call suno-cover via Lambda
+      const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          audioUrl: publicUrl,
-          title: songTitle,
-          genre: songGenre || "pop",
-          style,
-          lyrics: finalLyrics || undefined,
-          userId: user.id,
-          analysisId,
+          action: "suno-cover",
+          s3Key,
+          analysisData: {
+            title: songTitle,
+            genre: songGenre || "pop",
+            style,
+            lyrics: finalLyrics || undefined,
+            userId: user.id,
+            analysisId,
+          },
         }),
       });
+      if (!coverRes.ok) throw new Error(await coverRes.text());
+      const { taskIdV1, taskIdV2 } = await coverRes.json();
 
+      // 4. Poll for results
+      const poll = async (): Promise<any> => {
+        const pollRes = await fetch(LAMBDA_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "get-results", taskIdV1, taskIdV2 }),
+        });
+        if (!pollRes.ok) throw new Error("Polling failed");
+        const data = await pollRes.json();
+        if (data.status === "complete" || data.tracks) return data;
+        if (data.status === "failed" || data.error) throw new Error(data.error || "Remix generation failed");
+        await new Promise(r => setTimeout(r, 5000));
+        return poll();
+      };
+
+      const data = await poll();
       clearInterval(timerRef.current);
-      if (!res.ok) throw new Error(await res.text());
 
-      const data = await res.json();
-      setResult(data);
+      // Normalize result to have tracks array with "Faithful Remix" and "Viral Edition"
+      const tracks = data.tracks || [];
+      if (tracks.length >= 2) {
+        tracks[0].title = tracks[0].title || "Faithful Remix";
+        tracks[1].title = tracks[1].title || "Viral Edition";
+      }
+      setResult({ tracks });
       setStatus("complete");
     } catch (e: any) {
       clearInterval(timerRef.current);
