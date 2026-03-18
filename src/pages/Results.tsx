@@ -734,16 +734,21 @@ const AiRemixSection = ({
         accent: "purple",
       });
 
-      // Save to Supabase
+      // Save to Supabase (use correct column names from schema)
       for (const track of tracks) {
-        await supabase.from("viralize_remixes").insert({
+        const { error: saveErr } = await supabase.from("viralize_remixes").insert({
           user_id: user.id,
           analysis_id: analysisId || null,
           audio_url: track.audioUrl,
+          image_url: track.imageUrl || null,
           suno_task_id: taskIdV1,
-          style,
-          version_label: track.label,
-        }).then(() => {});
+          genre: songGenre || analysisData?.genre || null,
+          original_title: songTitle || null,
+          remix_title: track.label || 'AI Remix',
+          status: 'complete',
+        });
+        if (saveErr) console.warn('Failed to save remix to library:', saveErr);
+        else console.log('✅ Saved remix to library:', track.label);
       }
 
       setResult({ tracks });

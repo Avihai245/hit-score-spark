@@ -105,13 +105,13 @@ const ExistingRemixCard = ({ remix }: { remix: any }) => {
   return (
     <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 hover:border-white/20 transition-colors">
       <button
-        onClick={() => playTrack({ id: remix.id, title: remix.title, audioUrl: remix.audio_url })}
+        onClick={() => playTrack({ id: remix.id, title: remix.remix_title || remix.title || 'AI Remix', audioUrl: remix.audio_url })}
         className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center hover:bg-primary/30 transition-colors"
       >
         {isCurrentlyPlaying ? <Pause className="h-4 w-4 text-primary" /> : <Play className="h-4 w-4 text-primary ml-0.5" />}
       </button>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-white truncate">{remix.title}</p>
+        <p className="text-sm font-semibold text-white truncate">{remix.remix_title || remix.title || 'AI Remix'}</p>
         <p className="text-xs text-white/40">{new Date(remix.created_at).toLocaleDateString()}</p>
       </div>
       <button
@@ -122,7 +122,7 @@ const ExistingRemixCard = ({ remix }: { remix: any }) => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${remix.title || 'remix'}.mp3`;
+            a.download = `${remix.remix_title || remix.title || 'remix'}.mp3`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

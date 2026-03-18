@@ -24,9 +24,12 @@ interface Analysis {
 
 interface Remix {
   id: string;
-  title: string;
+  title?: string;          // legacy field (may not exist in new rows)
+  remix_title?: string;    // new schema column
+  original_title?: string;
   audio_url: string;
   style?: string;
+  genre?: string;
   created_at: string;
   analysis_id?: string;
 }
@@ -160,7 +163,7 @@ const RemixCard = ({ remix, onDelete }: { remix: Remix; onDelete: (id: string) =
   const handlePlay = () => {
     playTrack({
       id: remix.id,
-      title: remix.title,
+      title: remix.remix_title || remix.title || 'AI Remix',
       audioUrl: remix.audio_url,
     });
   };
@@ -172,7 +175,7 @@ const RemixCard = ({ remix, onDelete }: { remix: Remix; onDelete: (id: string) =
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${remix.title || 'remix'}.mp3`;
+      a.download = `${remix.remix_title || remix.title || 'remix'}.mp3`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -230,9 +233,9 @@ const RemixCard = ({ remix, onDelete }: { remix: Remix; onDelete: (id: string) =
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="font-bold text-white truncate">{remix.title || 'AI Remix'}</h3>
+        <h3 className="font-bold text-white truncate">{remix.remix_title || remix.title || 'AI Remix'}</h3>
         <p className="text-xs text-white/50 mt-0.5">
-          AI Remix • {formatDate(remix.created_at)}
+          {remix.original_title ? `${remix.original_title} • ` : ''}{formatDate(remix.created_at)}
         </p>
 
         <div className="flex gap-2 mt-3">
