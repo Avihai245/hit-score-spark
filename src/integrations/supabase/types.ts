@@ -14,6 +14,116 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          changes: Json | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          ip_address: unknown
+          status: string | null
+          target_id: string | null
+          target_table: string
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          changes?: Json | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown
+          status?: string | null
+          target_id?: string | null
+          target_table: string
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          changes?: Json | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown
+          status?: string | null
+          target_id?: string | null
+          target_table?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "viralize_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_impersonation_sessions: {
+        Row: {
+          admin_id: string
+          created_at: string | null
+          customer_id: string
+          ended_at: string | null
+          expires_at: string | null
+          id: string
+          ip_address: unknown
+          is_active: boolean | null
+          reason: string | null
+          session_token: string
+          starts_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string | null
+          customer_id: string
+          ended_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          reason?: string | null
+          session_token: string
+          starts_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string | null
+          customer_id?: string
+          ended_at?: string | null
+          expires_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_active?: boolean | null
+          reason?: string | null
+          session_token?: string
+          starts_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_impersonation_sessions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "viralize_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_impersonation_sessions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "viralize_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_settings: {
         Row: {
           key: string
@@ -240,10 +350,40 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_audit_logs_detailed: {
+        Row: {
+          action: string | null
+          admin_email: string | null
+          admin_id: string | null
+          changes: Json | null
+          created_at: string | null
+          error_message: string | null
+          id: string | null
+          ip_address: unknown
+          status: string | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "viralize_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      validate_impersonation_token: {
+        Args: { token: string }
+        Returns: {
+          admin_id: string
+          customer_id: string
+          is_valid: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
