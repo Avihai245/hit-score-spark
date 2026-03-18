@@ -819,7 +819,7 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
               <Mic2 className="h-4 w-4" /> Edit Lyrics First
             </motion.button>
             <motion.button
-              onClick={startRemix}
+              onClick={() => startRemix()}
               disabled={!file}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
