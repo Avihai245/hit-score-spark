@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sun, Moon, LogOut, Settings, LayoutDashboard, ChevronDown, Zap, CreditCard, Library } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { LogoIcon, LOGO_GRADIENT } from "@/components/ViralizeLogo";
+import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from "@/components/ViralizeLogo";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthModal from "@/components/AuthModal";
@@ -112,11 +112,20 @@ const Navbar = () => {
 
           {/* Center — Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 group">
-            <span
-              className="font-heading leading-none text-3xl"
-              style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}
-            >
-              SANTO
+            <span className="relative inline-block">
+              <span
+                className="font-heading leading-none text-3xl"
+                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}
+              >
+                SANTO
+              </span>
+              <span
+                className="font-heading leading-none text-3xl pointer-events-none"
+                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
+                aria-hidden="true"
+              >
+                SANTO
+              </span>
             </span>
           </Link>
 
