@@ -195,18 +195,34 @@ const saveAnalysisToSupabase = async (userId: string, data: {
 
 const Analyze = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
+  const prefill = (location.state as any)?.prefill;
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [file, setFile] = useState<File | null>(null);
-  const [title, setTitle] = useState("");
-  const [genre, setGenre] = useState("");
-  const [goal, setGoal] = useState("");
+  const [file, setFile] = useState<File | null>(prefill?.file || null);
+  const [title, setTitle] = useState(prefill?.title || "");
+  const [genre, setGenre] = useState(prefill?.genre || "");
+  const [goal, setGoal] = useState(prefill?.goal || "");
   const [dragOver, setDragOver] = useState(false);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoSubmitRef = useRef(false);
+
+  // Auto-submit if coming from free trial with a file
+  useEffect(() => {
+    if (prefill?.freeTrial && prefill?.file && !autoSubmitRef.current) {
+      autoSubmitRef.current = true;
+      // Small delay to let the component mount
+      const timer = setTimeout(() => {
+        const form = document.querySelector('form');
+        if (form) form.requestSubmit();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [prefill]);
 
   useEffect(() => {
     if (loading) {
