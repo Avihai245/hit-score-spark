@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import confetti from "canvas-confetti";
 import { motion, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,15 @@ export default function FreeTrialUpload() {
         return;
       }
       setFile(f);
+
+      // 🎉 Confetti burst on successful file selection
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#8B5CF6", "#F59E0B", "#22C55E", "#3B82F6"],
+      });
+      toast({ title: "🎵 Track uploaded!", description: `${f.name} is ready to analyze.` });
     },
     [toast],
   );
