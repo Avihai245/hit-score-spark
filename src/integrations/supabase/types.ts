@@ -394,6 +394,20 @@ export type Database = {
       }
     }
     Functions: {
+      get_user_protected_fields: {
+        Args: { _user_id: string }
+        Returns: {
+          p_analyses_this_month: number
+          p_analyses_used: number
+          p_credits: number
+          p_is_admin: boolean
+          p_plan: string
+          p_remixes_this_month: number
+          p_remixes_used: number
+          p_subscription_status: string
+        }[]
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
       validate_impersonation_token: {
         Args: { token: string }
         Returns: {

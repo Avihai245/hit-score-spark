@@ -50,6 +50,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', u.id)
         .single();
 
+      // Graceful fallback for RLS infinite recursion
+      if (error?.message?.includes('infinite recursion')) {
+        console.warn('RLS recursion detected — using auth.user() fallback');
+        return {
+          id: u.id,
+          email: u.email || '',
+          display_name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || null,
+          plan: 'free' as Plan,
+          analyses_used: 0,
+          remixes_used: 0,
+          remixes_this_month: 0,
+          analyses_this_month: 0,
+          credits: 0,
+          api_key: null,
+          created_at: new Date().toISOString(),
+          is_admin: false,
+          stripe_customer_id: null,
+          stripe_subscription_id: null,
+          subscription_status: null,
+          plan_expires_at: null,
+        } as ViralizeProfile;
+      }
+
       // PGRST116 = no rows found
       if (error && error.code === 'PGRST116') {
         // Profile doesn't exist yet — create it
