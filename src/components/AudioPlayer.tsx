@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, X, Download, Music } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, X, Download, Music, Disc3 } from 'lucide-react';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
-import { Slider } from '@/components/ui/slider';
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const formatTime = (s: number) => {
   if (!s || isNaN(s)) return '0:00';
@@ -14,6 +14,8 @@ const formatTime = (s: number) => {
 export const AudioPlayer = () => {
   const { currentTrack, isPlaying, progress, duration, currentTime, volume, togglePlay, seek, setVolume, closePlayer } = useAudioPlayer();
   const [showVolume, setShowVolume] = useState(false);
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/dashboard');
 
   const handleDownload = async () => {
     if (!currentTrack?.audioUrl) return;
@@ -33,6 +35,34 @@ export const AudioPlayer = () => {
     }
   };
 
+  // Empty state for dashboard — always show the bar
+  if (!currentTrack) {
+    if (!isDashboard) return null;
+    return (
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--card))]/95 backdrop-blur-xl border-t border-border/30 px-4 py-2.5">
+        <div className="max-w-6xl mx-auto flex items-center gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
+              <Disc3 className="h-4 w-4 text-muted-foreground/40" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">No track playing</p>
+              <p className="text-xs text-muted-foreground/50">Select a song from your library to start listening</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <button disabled className="text-muted-foreground/20"><SkipBack className="h-4 w-4" /></button>
+            <button disabled className="w-9 h-9 rounded-full bg-muted/30 flex items-center justify-center">
+              <Play className="h-4 w-4 text-muted-foreground/30 ml-0.5" />
+            </button>
+            <button disabled className="text-muted-foreground/20"><SkipForward className="h-4 w-4" /></button>
+          </div>
+          <div className="flex-1" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AnimatePresence>
       {currentTrack && (
@@ -41,18 +71,25 @@ export const AudioPlayer = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[#111111]/95 backdrop-blur-xl border-t border-white/10 px-4 py-3"
+          className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--card))]/95 backdrop-blur-xl border-t border-border/30 px-4 py-3"
         >
           <div className="max-w-6xl mx-auto flex items-center gap-4">
             {/* Track info */}
             <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/30 to-yellow-500/30 border border-white/10 flex-shrink-0 flex items-center justify-center">
-                <Music className="h-4 w-4 text-primary" />
+              <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 border border-border/30 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                {isPlaying && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                  />
+                )}
+                <Music className="h-4 w-4 text-primary relative z-10" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{currentTrack.title}</p>
+                <p className="text-sm font-semibold text-foreground truncate">{currentTrack.title}</p>
                 {currentTrack.sourceTitle && (
-                  <p className="text-xs text-white/40 truncate">{currentTrack.sourceTitle}</p>
+                  <p className="text-xs text-muted-foreground truncate">{currentTrack.sourceTitle}</p>
                 )}
               </div>
             </div>
@@ -62,23 +99,23 @@ export const AudioPlayer = () => {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => seek(Math.max(0, progress - 5))}
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <SkipBack className="h-4 w-4" />
                 </button>
                 <button
                   onClick={togglePlay}
-                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors"
+                  className="w-9 h-9 rounded-full bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors"
                 >
                   {isPlaying ? (
-                    <Pause className="h-4 w-4 text-black" />
+                    <Pause className="h-4 w-4 text-primary-foreground" />
                   ) : (
-                    <Play className="h-4 w-4 text-black ml-0.5" />
+                    <Play className="h-4 w-4 text-primary-foreground ml-0.5" />
                   )}
                 </button>
                 <button
                   onClick={() => seek(Math.min(100, progress + 5))}
-                  className="text-white/50 hover:text-white transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <SkipForward className="h-4 w-4" />
                 </button>
@@ -86,7 +123,7 @@ export const AudioPlayer = () => {
 
               {/* Seek bar */}
               <div className="w-full flex items-center gap-2">
-                <span className="text-[10px] text-white/40 tabular-nums w-8 text-right">{formatTime(currentTime)}</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{formatTime(currentTime)}</span>
                 <div className="flex-1 relative group">
                   <input
                     type="range"
@@ -94,17 +131,17 @@ export const AudioPlayer = () => {
                     max={100}
                     value={progress}
                     onChange={(e) => seek(Number(e.target.value))}
-                    className="w-full h-1 rounded-full appearance-none bg-white/20 cursor-pointer
+                    className="w-full h-1 rounded-full appearance-none bg-secondary cursor-pointer
                       [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                      [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white
+                      [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary
                       [&::-webkit-slider-thumb]:opacity-0 group-hover:[&::-webkit-slider-thumb]:opacity-100
                       [&::-webkit-slider-runnable-track]:rounded-full"
                     style={{
-                      background: `linear-gradient(to right, #8B5CF6 0%, #8B5CF6 ${progress}%, rgba(255,255,255,0.2) ${progress}%, rgba(255,255,255,0.2) 100%)`
+                      background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${progress}%, hsl(var(--secondary)) ${progress}%, hsl(var(--secondary)) 100%)`
                     }}
                   />
                 </div>
-                <span className="text-[10px] text-white/40 tabular-nums w-8">{formatTime(duration)}</span>
+                <span className="text-[10px] text-muted-foreground tabular-nums w-8">{formatTime(duration)}</span>
               </div>
             </div>
 
@@ -114,12 +151,12 @@ export const AudioPlayer = () => {
               <div className="relative">
                 <button
                   onClick={() => setShowVolume(!showVolume)}
-                  className="text-white/50 hover:text-white transition-colors p-1"
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
                 >
                   {volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
                 {showVolume && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-[#1a1a1a] border border-white/10 rounded-xl p-3 w-32">
+                  <div className="absolute bottom-full right-0 mb-2 bg-card border border-border rounded-xl p-3 w-32">
                     <input
                       type="range"
                       min={0}
@@ -127,11 +164,11 @@ export const AudioPlayer = () => {
                       step={0.05}
                       value={volume}
                       onChange={(e) => setVolume(Number(e.target.value))}
-                      className="w-full h-1 rounded-full appearance-none bg-white/20 cursor-pointer
+                      className="w-full h-1 rounded-full appearance-none bg-secondary cursor-pointer
                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
                       style={{
-                        background: `linear-gradient(to right, #8B5CF6 0%, #8B5CF6 ${volume * 100}%, rgba(255,255,255,0.2) ${volume * 100}%, rgba(255,255,255,0.2) 100%)`
+                        background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${volume * 100}%, hsl(var(--secondary)) ${volume * 100}%, hsl(var(--secondary)) 100%)`
                       }}
                     />
                   </div>
@@ -141,7 +178,7 @@ export const AudioPlayer = () => {
               {/* Download */}
               <button
                 onClick={handleDownload}
-                className="text-white/50 hover:text-white transition-colors p-1"
+                className="text-muted-foreground hover:text-foreground transition-colors p-1"
                 title="Download MP3"
               >
                 <Download className="h-4 w-4" />
@@ -150,7 +187,7 @@ export const AudioPlayer = () => {
               {/* Close */}
               <button
                 onClick={closePlayer}
-                className="text-white/30 hover:text-white transition-colors p-1"
+                className="text-muted-foreground/50 hover:text-foreground transition-colors p-1"
               >
                 <X className="h-4 w-4" />
               </button>
