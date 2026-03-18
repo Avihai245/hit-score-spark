@@ -1171,20 +1171,31 @@ const Results = () => {
 
           <div className="space-y-3">
             {/* Day 1-2 */}
-            <div className="rounded-xl border border-accent/20 bg-accent/[0.04] p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black text-accent bg-accent/15 px-2 py-0.5 rounded-md">DAY 1–2</span>
+            <div className="rounded-xl border-2 border-accent/30 bg-accent/[0.06] p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-black text-accent bg-accent/15 px-2.5 py-1 rounded-md">DAY 1–2</span>
+                <span className="text-xs font-bold text-accent/70">· Highest impact</span>
               </div>
-              <p className="text-sm font-bold text-foreground leading-relaxed">
-                {oneChange || (improvements?.[0] || "Fix the primary issue identified above")}
+              <p className="text-base font-bold text-foreground leading-relaxed">
+                {hookAnalysis && hookAnalysis.match(/(\d+:\d{2})/)
+                  ? `Move your hook to 0:07. Right now it hits at ${hookAnalysis.match(/(\d+:\d{2})/)?.[1]} — that's past the moment most listeners decide to skip. Use AI Remix to shift it automatically.`
+                  : oneChange
+                    ? `${oneChange} Use AI Remix to fix this automatically.`
+                    : (improvements?.[0] || "Fix the primary issue identified above. Use AI Remix to handle it automatically.")
+                }
               </p>
-              <p className="text-xs text-accent font-semibold mt-1">→ adds {oneChangeImpact}–{oneChangeImpact + 5} points</p>
-              <button
+              <motion.button
                 onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-accent/15 border border-accent/25 text-accent text-xs font-bold hover:bg-accent/25 transition-colors"
+                className="mt-4 w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base overflow-hidden"
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               >
-                <Rocket className="h-3.5 w-3.5" /> Try AI Remix <ArrowRight className="h-3 w-3" />
-              </button>
+                <span className="flex items-center justify-center gap-2">
+                  <Rocket className="h-5 w-5" /> Try AI Remix <ArrowRight className="h-4 w-4" />
+                </span>
+              </motion.button>
+              <p className="text-xs text-center text-accent/70 font-medium mt-2">
+                Takes 2 minutes · adds an estimated {oneChangeImpact}–{oneChangeImpact + 5} points
+              </p>
             </div>
 
             {/* Day 3-4 */}
