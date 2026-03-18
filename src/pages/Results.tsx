@@ -1185,7 +1185,13 @@ const Results = () => {
 
         {/* ═══ Paywall ═══ */}
         {user && hasExhaustedFreeAnalysis && (
-          <Section delay={1}><PaywallBanner score={score} /></Section>
+          <Section delay={1}>
+            <div className="rounded-xl border border-primary/30 bg-primary/[0.06] p-6 text-center space-y-3">
+              <p className="text-sm font-bold text-primary">🔒 Upgrade to unlock full analysis</p>
+              <p className="text-xs text-muted-foreground">Your score: {score}/100 — Get detailed insights with a Pro plan</p>
+              <a href="/pricing" className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition">View Plans</a>
+            </div>
+          </Section>
         )}
 
         {/* ═══ 2. SNAPSHOT ═══ */}
