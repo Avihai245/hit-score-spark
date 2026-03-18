@@ -58,12 +58,12 @@ const LOGO_GRADIENT: React.CSSProperties = {
 const LOGO_SCAN_STYLE: React.CSSProperties = {
   position: 'absolute',
   inset: 0,
-  background: "linear-gradient(105deg, transparent 0%, transparent 35%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.15) 55%, transparent 65%, transparent 100%)",
+  background: "linear-gradient(105deg, transparent 0%, transparent 30%, rgba(255,255,255,0.25) 40%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.25) 60%, transparent 70%, transparent 100%)",
   backgroundSize: "200% 100%",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
   backgroundClip: "text",
-  animation: "logo-scan 4s ease-in-out infinite",
+  animation: "logo-scan 3s ease-in-out infinite",
 };
 
 interface SantoLogoProps {
