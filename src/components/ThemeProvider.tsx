@@ -17,9 +17,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem("viralize-theme", theme);
-  }, [theme]);
+    root.classList.add("dark");
+    localStorage.setItem("viralize-theme", "dark");
+  }, []);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
