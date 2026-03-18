@@ -22,4 +22,10 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: ["react", "react-dom", "react/jsx-runtime", "@tanstack/react-query"],
   },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/, /opt\/template-node-modules/],
+      transformMixedEsModules: true,
+    },
+  },
 }));
