@@ -87,36 +87,54 @@ const getStatusBadge = (value: number, max: number) => {
 
 /* ─── Plain-English descriptions for DNA metrics ─── */
 const getDnaDescription = (label: string, value: number, hookAnalysis?: string, emotionalCore?: string) => {
+  // Parse hook timing from raw analysis if available
+  const parseHookTime = (raw?: string) => {
+    if (!raw) return null;
+    const match = raw.match(/(\d+:\d{2})/);
+    return match ? match[1] : null;
+  };
+  const hookTime = parseHookTime(hookAnalysis);
+
   const descriptions: Record<string, Record<string, string>> = {
     "Hook Strength": {
-      high: hookAnalysis || "Your hook is memorable — listeners will want to hear it again.",
-      mid: "Your hook is decent but could be catchier to stick in people's heads.",
-      low: "Your hook isn't grabbing attention fast enough — listeners might skip.",
+      high: hookTime
+        ? `Your hook is strong and arrives at ${hookTime} — right in the window where listeners decide to stay.`
+        : "Your hook grabs attention quickly — listeners will want to keep playing.",
+      mid: hookTime
+        ? `Your hook arrives at ${hookTime} — a bit late for the 7-second window where listeners decide to stay or skip.`
+        : "Your hook is decent but could land earlier to catch listeners before they skip.",
+      low: hookTime
+        ? `Your hook arrives at ${hookTime} — that's well past the moment most listeners decide to skip.`
+        : "Your hook isn't grabbing attention fast enough — most listeners will skip before it lands.",
     },
     "Replay Value": {
-      high: "People will want to listen to this on repeat.",
-      mid: "It's enjoyable but doesn't quite create that addictive loop.",
-      low: "Listeners probably won't come back for a second play.",
+      high: "People will want to listen to this on repeat — that drives saves and algorithmic push.",
+      mid: "It's enjoyable, but doesn't quite create that addictive loop that drives replays.",
+      low: "Listeners probably won't come back for a second play — replays are what trigger algorithms.",
     },
     "Emotional Impact": {
-      high: emotionalCore || "This track hits hard emotionally — that's your superpower.",
-      mid: "There's feeling here, but it could hit deeper.",
-      low: "The emotional connection feels flat — try more contrast.",
+      high: emotionalCore
+        ? `Your track's "${emotionalCore}" energy connects emotionally — this is a real strength for playlist placement.`
+        : "The mood and feeling of your track connects emotionally — this is a real strength for playlist placement.",
+      mid: emotionalCore
+        ? `The "${emotionalCore}" feeling is there, but it could hit deeper to make listeners feel something stronger.`
+        : "There's feeling here, but it could hit deeper to create a real emotional connection.",
+      low: "The emotional connection feels flat — try adding more contrast between sections to make listeners feel something.",
     },
     "Structure Quality": {
-      high: "Your song structure follows patterns that hit songs use.",
-      mid: "The structure is okay but could flow better between sections.",
-      low: "The arrangement feels off — listeners might lose interest.",
+      high: "Your song structure follows the patterns that hit songs use — sections flow naturally.",
+      mid: "The structure is okay but could flow better between sections to keep listeners engaged.",
+      low: "The arrangement feels off — listeners might lose interest before the best parts arrive.",
     },
     "Market Fit": {
-      high: "This fits perfectly with what's trending right now.",
-      mid: "It's in the right space but needs tweaks to compete.",
-      low: "This doesn't match what's performing well in your genre.",
+      high: "This fits what's trending right now — you're in a great lane for discovery.",
+      mid: "You're in the right space but a few tweaks would help you compete with what's charting.",
+      low: "This doesn't match what's performing well in your genre right now.",
     },
     "Platform Readiness": {
-      high: "Streaming algorithms will love this track.",
-      mid: "Algorithms might pick this up, but it's not optimized.",
-      low: "This track won't get recommended in its current form.",
+      high: "Streaming algorithms will love this track — it's optimized for recommendations.",
+      mid: "Algorithms might pick this up, but it's not fully optimized for discovery yet.",
+      low: "This track won't get recommended in its current form — algorithms need clearer signals.",
     },
   };
   const tier = value >= 8 ? "high" : value >= 6 ? "mid" : "low";
