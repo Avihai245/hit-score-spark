@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import type { AuthUser as User, AuthSession as Session } from '@supabase/supabase-js';
 import { supabase, Plan } from '@/lib/supabase';
 
 export interface ViralizeProfile {
