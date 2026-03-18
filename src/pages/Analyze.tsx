@@ -261,6 +261,10 @@ const Analyze = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title.trim()) {
+      toast({ title: "Song title required", description: "Please enter your song title.", variant: "destructive" });
+      return;
+    }
     if (!file) {
       toast({ title: "No file", description: "Please upload an audio file.", variant: "destructive" });
       return;
@@ -703,7 +707,7 @@ const Analyze = () => {
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold">
-                  Song Title <span className="text-muted-foreground font-normal">(optional)</span>
+                  Song Title <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder="Enter your song title"

@@ -96,29 +96,36 @@ const getDnaDescription = (label: string, value: number, hookAnalysis?: string, 
   const hookTime = parseHookTime(hookAnalysis);
 
   const descriptions: Record<string, Record<string, string>> = {
-    "Hook Strength": {
-      high: hookTime
-        ? `Your hook is strong and arrives at ${hookTime} — right in the window where listeners decide to stay.`
-        : "Your hook grabs attention quickly — listeners will want to keep playing.",
-      mid: hookTime
-        ? `Your hook arrives at ${hookTime} — a bit late for the 7-second window where listeners decide to stay or skip.`
-        : "Your hook is decent but could land earlier to catch listeners before they skip.",
-      low: hookTime
-        ? `Your hook arrives at ${hookTime} — that's well past the moment most listeners decide to skip.`
-        : "Your hook isn't grabbing attention fast enough — most listeners will skip before it lands.",
-    },
+    "Hook Strength": (() => {
+      // Calculate how late the hook is past the 0:07 decision window
+      const parseSeconds = (t?: string) => {
+        if (!t) return null;
+        const m = t.match(/(\d+):(\d{2})/);
+        return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : null;
+      };
+      const hookSec = parseSeconds(hookTime ?? undefined);
+      const lateness = hookSec !== null ? hookSec - 7 : null;
+
+      return {
+        high: hookTime
+          ? `Your hook is strong and arrives at ${hookTime} — right in the window where listeners decide to stay.`
+          : "Your hook grabs attention quickly — listeners will want to keep playing.",
+        mid: hookTime && lateness !== null && lateness > 0
+          ? `Your hook is strong, but it arrives at ${hookTime} — ${lateness} seconds after the window where listeners decide to stay or skip.`
+          : "Your hook is decent but could land earlier to catch listeners before they skip.",
+        low: hookTime && lateness !== null && lateness > 0
+          ? `Your hook arrives at ${hookTime} — ${lateness} seconds after the moment most listeners decide to skip.`
+          : "Your hook isn't grabbing attention fast enough — most listeners will skip before it lands.",
+      };
+    })(),
     "Replay Value": {
       high: "People will want to listen to this on repeat — that drives saves and algorithmic push.",
       mid: "It's enjoyable, but doesn't quite create that addictive loop that drives replays.",
       low: "Listeners probably won't come back for a second play — replays are what trigger algorithms.",
     },
     "Emotional Impact": {
-      high: emotionalCore
-        ? `Your track's "${emotionalCore}" energy connects emotionally — this is a real strength for playlist placement.`
-        : "The mood and feeling of your track connects emotionally — this is a real strength for playlist placement.",
-      mid: emotionalCore
-        ? `The "${emotionalCore}" feeling is there, but it could hit deeper to make listeners feel something stronger.`
-        : "There's feeling here, but it could hit deeper to create a real emotional connection.",
+      high: "The emotional tone of your track connects — this is a real strength for playlist placement and audience targeting.",
+      mid: "There's feeling here, but it could hit deeper to create the kind of emotional connection that drives saves.",
       low: "The emotional connection feels flat — try adding more contrast between sections to make listeners feel something.",
     },
     "Structure Quality": {

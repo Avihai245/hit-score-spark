@@ -119,6 +119,10 @@ export default function FreeTrialUpload() {
   );
 
   const handleSubmit = () => {
+    if (!title.trim()) {
+      toast({ title: "Song title required", description: "Please enter your song title.", variant: "destructive" });
+      return;
+    }
     if (!file) return;
     localStorage.setItem(FREE_TRIAL_KEY, "true");
     navigate("/analyze", {
@@ -293,7 +297,7 @@ export default function FreeTrialUpload() {
             >
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-foreground">
-                  Song Title <span className="text-muted-foreground font-normal">(optional)</span>
+                  Song Title <span className="text-destructive">*</span>
                 </label>
                 <Input
                   placeholder="Enter your song title"
