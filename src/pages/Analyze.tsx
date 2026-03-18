@@ -298,7 +298,7 @@ const Analyze = () => {
               fullResult: analysisData,
             });
           }
-          navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId } });
+          navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
           return;
         }
         throw new Error("No jobId received from server");
@@ -352,7 +352,7 @@ const Analyze = () => {
             }
             setTimeout(() => {
               setLoading(false);
-              navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId } });
+              navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
             }, 600);
           } else if (data.status === "error") {
             setLoading(false);
