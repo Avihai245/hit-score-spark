@@ -1,0 +1,54 @@
+name: Deploy to Amplify
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_LAMBDA_URL: ${{ secrets.VITE_LAMBDA_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+
+      - name: Zip dist
+        run: cd dist && zip -r /tmp/deploy.zip . -q
+
+      - name: Deploy to Amplify
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: eu-west-1
+          AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+        run: |
+          DEPLOY=$(aws amplify create-deployment \
+            --app-id "$AMPLIFY_APP_ID" \
+            --branch-name main)
+          
+          JOB_ID=$(echo "$DEPLOY" | python3 -c "import json,sys; print(json.load(sys.stdin)['jobId'])")
+          ZIP_URL=$(echo "$DEPLOY" | python3 -c "import json,sys; print(json.load(sys.stdin)['zipUploadUrl'])")
+          
+          curl -s -X PUT -H "Content-Type: application/zip" \
+            --data-binary @/tmp/deploy.zip "$ZIP_URL"
+          
+          aws amplify start-deployment \
+            --app-id "$AMPLIFY_APP_ID" \
+            --branch-name main \
+            --job-id "$JOB_ID"
+          
+          echo "✅ Deployed job $JOB_ID to Amplify app $AMPLIFY_APP_ID"
