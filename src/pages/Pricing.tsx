@@ -138,9 +138,9 @@ const plans = [
 ];
 
 const socialProof = [
-  { stat: "2,400+", label: "Songs analyzed" },
-  { stat: "87%", label: "Improved their score" },
-  { stat: "12", label: "Songs went viral" },
+  { stat: "50,000+", label: "Tracks Analyzed" },
+  { stat: "10,000+", label: "Artists Improved" },
+  { stat: "+25%", label: "Avg Viral Improvement" },
 ];
 
 const Pricing = () => {
