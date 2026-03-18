@@ -960,31 +960,9 @@ const Results = () => {
             Why You Scored {score}
           </h2>
           <div className="space-y-3">
-            {dnaScores.map((dna, i) => {
-              const badge = getStatusBadge(dna.value, dna.max);
-              const description = getDnaDescription(dna.label, dna.value, hookAnalysis, emotionalCore);
-              const ref = useRef<HTMLDivElement>(null);
-              const isInView = useInView(ref, { once: true, margin: "-30px" });
-              return (
-                <motion.div
-                  ref={ref}
-                  key={dna.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ delay: i * 0.06, duration: 0.35 }}
-                  className={`rounded-xl border ${badge.borderClass} ${badge.bgClass} p-4`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-base font-bold text-foreground">{dna.label}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-black tabular-nums text-foreground">{dna.value}<span className="text-xs text-muted-foreground font-normal">/{dna.max}</span></span>
-                      <span className={`text-xs font-bold ${badge.textClass}`}>{badge.emoji} {badge.label}</span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-foreground/70 leading-relaxed">{description}</p>
-                </motion.div>
-              );
-            })}
+            {dnaScores.map((dna, i) => (
+              <DnaCard key={dna.label} dna={dna} index={i} hookAnalysis={hookAnalysis} emotionalCore={emotionalCore} />
+            ))}
           </div>
         </Section>
 
