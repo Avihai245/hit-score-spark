@@ -621,40 +621,46 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
 };
 
 /* ─── AI Remix Section ─── */
-const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, analysisData, analysisId }: { uploadedFile: File | null; existingS3Key?: string; songTitle: string; songGenre?: string; analysisData?: any; analysisId?: string }) => {
+const AiRemixSection = ({
+  uploadedFile, existingS3Key, songTitle, songGenre, analysisData, analysisId
+}: {
+  uploadedFile: File | null;
+  existingS3Key?: string;
+  songTitle: string;
+  songGenre?: string;
+  analysisData?: any;
+  analysisId?: string;
+}) => {
   const { user } = useAuth();
-  const [status, setStatus] = useState<"idle" | "lyrics" | "uploading" | "processing" | "complete" | "error">("idle");
+  const LAMBDA_URL = "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze";
+
+  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
   const [style, setStyle] = useState("same");
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState("");
   const [result, setResult] = useState<any>(null);
   const [file, setFile] = useState<File | null>(uploadedFile);
-  const [finalLyrics, setFinalLyrics] = useState(analysisData?.originalLyrics || "");
+  const [lyrics, setLyrics] = useState<string>(analysisData?.originalLyrics || "");
   const [playing, setPlaying] = useState<number | null>(null);
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
-  const handleLyricsReady = (lyrics: string) => {
-    setFinalLyrics(lyrics);
-    // Immediately start remix with these lyrics — no extra click needed
-    startRemix(lyrics);
-  };
+  useEffect(() => { return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
 
-  const LAMBDA_URL = "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze";
+  const canCreate = !!(file || existingS3Key);
 
-  const startRemix = async (overrideLyrics?: string) => {
+  const startRemix = async () => {
     if (!user) { toast.error("Sign in to create remixes"); return; }
+    if (!canCreate) { toast.error("No audio file. Please re-upload."); return; }
 
     setStatus("uploading");
     setElapsed(0);
     setError("");
 
     try {
+      // Step 1 — get S3 key (reuse existing or upload fresh)
       let s3Key = existingS3Key || "";
-
-      // 1. If no existing S3 key — upload the file now
-      if (!s3Key) {
-        if (!file) { toast.error("No audio file found. Please re-upload."); setStatus("idle"); return; }
+      if (!s3Key && file) {
         const urlRes = await fetch(LAMBDA_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -663,17 +669,17 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
         if (!urlRes.ok) throw new Error("Failed to get upload URL");
         const urlData = await urlRes.json();
         s3Key = urlData.s3Key;
-        await fetch(urlData.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "audio/mpeg" }, body: file });
+        const putRes = await fetch(urlData.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type || "audio/mpeg" }, body: file });
+        if (!putRes.ok) throw new Error("File upload failed");
       }
 
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-      // 3. Call suno-cover via Lambda — pass FULL analysisData + lyrics + style
-      const lyricsToUse = overrideLyrics !== undefined ? overrideLyrics : finalLyrics;
+      // Step 2 — call suno-cover with FULL analysis data + user lyrics
       const fullAnalysis = {
         ...(analysisData || {}),
-        customLyrics: lyricsToUse || undefined,
+        customLyrics: lyrics.trim() || undefined,
       };
       const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
@@ -687,13 +693,12 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
           analysisData: fullAnalysis,
         }),
       });
-      if (!coverRes.ok) throw new Error(await coverRes.text());
       const coverData = await coverRes.json();
       if (coverData.error) throw new Error(coverData.error);
       const { taskIdV1, taskIdV2, version1, version2 } = coverData;
       if (!taskIdV1 || !taskIdV2) throw new Error("No task IDs returned from Suno");
 
-      // 4. Poll for BOTH versions — action: suno-cover with taskIdV1+taskIdV2
+      // Step 3 — poll until both versions are ready
       let attempts = 0;
       const poll = async (): Promise<any> => {
         if (attempts++ > 40) throw new Error("Remix timed out. Please try again.");
@@ -712,26 +717,24 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
       const finalData = await poll();
       clearInterval(timerRef.current);
 
-      // Build tracks array from v1 + v2
-      const tracks = [];
+      // Build tracks
+      const tracks: any[] = [];
       if (finalData.v1?.audioUrl) tracks.push({
-        audio_url: finalData.v1.audioUrl,
         audioUrl: finalData.v1.audioUrl,
         imageUrl: finalData.v1.imageUrl,
-        title: version1?.label || "Faithful Remix",
         label: version1?.label || "Faithful Remix",
         description: version1?.description || "Production-upgraded, preserves original vibe",
+        accent: "blue",
       });
       if (finalData.v2?.audioUrl) tracks.push({
-        audio_url: finalData.v2.audioUrl,
         audioUrl: finalData.v2.audioUrl,
         imageUrl: finalData.v2.imageUrl,
-        title: version2?.label || "Viral Edition",
         label: version2?.label || "Viral Edition",
         description: version2?.description || "Trend-forward, maximum chart impact",
+        accent: "purple",
       });
 
-      // Save remixes to Supabase
+      // Save to Supabase
       for (const track of tracks) {
         await supabase.from("viralize_remixes").insert({
           user_id: user.id,
@@ -747,26 +750,15 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
       setStatus("complete");
     } catch (e: any) {
       clearInterval(timerRef.current);
-      setError(e.message || "Remix failed");
+      setError(e.message || "Remix failed. Please try again.");
       setStatus("error");
     }
   };
 
-  const togglePlay = (index: number) => {
-    const audio = audioRefs.current[index];
-    if (!audio) return;
-    if (playing === index) { audio.pause(); setPlaying(null); }
-    else {
-      audioRefs.current.forEach(a => { if (a) a.pause(); });
-      audio.play(); setPlaying(index);
-    }
-  };
-
-  useEffect(() => { return () => { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
-
   return (
     <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-5 md:p-6 relative overflow-hidden scroll-mt-24">
-      <div className="flex items-center gap-2.5 mb-4">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 mb-5">
         <div className="h-9 w-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
           <Rocket className="h-4 w-4 text-accent" />
         </div>
@@ -776,20 +768,17 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
         </div>
       </div>
 
+      {/* ── IDLE FORM ── */}
       {status === "idle" && (
         <div className="space-y-4">
-          {!file && (
-            <div className="border-2 border-dashed border-border rounded-xl p-4 text-center">
-              <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-2">Re-upload your audio file</p>
-              <label className="inline-block cursor-pointer">
-                <span className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 transition-colors">Choose File</span>
-                <input type="file" accept="audio/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setFile(e.target.files[0]); }} />
-              </label>
-            </div>
-          )}
 
-          {file && (
+          {/* File indicator / re-upload */}
+          {existingS3Key ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/20">
+              <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+              <p className="text-sm text-green-300 font-medium">Audio file ready from your scan ✓</p>
+            </div>
+          ) : file ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
               <Music className="h-4 w-4 text-accent flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -798,8 +787,18 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
               </div>
               <button onClick={() => setFile(null)} className="text-xs text-muted-foreground hover:text-foreground">Change</button>
             </div>
+          ) : (
+            <div className="border-2 border-dashed border-border rounded-xl p-4 text-center">
+              <Upload className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground mb-2">Upload your audio file</p>
+              <label className="inline-block cursor-pointer">
+                <span className="px-4 py-2 rounded-lg bg-secondary text-foreground text-sm font-medium hover:bg-secondary/80 transition-colors">Choose File</span>
+                <input type="file" accept="audio/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) setFile(e.target.files[0]); }} />
+              </label>
+            </div>
           )}
 
+          {/* Style selector */}
           <div>
             <label className="text-sm font-bold text-foreground mb-1.5 block">Remix Style</label>
             <Select value={style} onValueChange={setStyle}>
@@ -810,138 +809,141 @@ const AiRemixSection = ({ uploadedFile, existingS3Key, songTitle, songGenre, ana
             </Select>
           </div>
 
-          {/* Lyrics editor — always visible */}
+          {/* ── LYRICS — always visible, no separate window ── */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="p-4 space-y-2">
-              <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Mic2 className="h-4 w-4 text-primary" /> Song Lyrics
-                <span className="text-[10px] text-muted-foreground font-normal ml-1">(optional — paste or edit before creating remix)</span>
-              </label>
+            <div className="px-4 pt-4 pb-2">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Mic2 className="h-4 w-4 text-primary" />
+                  Your Lyrics
+                  <span className="text-[10px] text-muted-foreground font-normal">(edit here — goes directly to AI)</span>
+                </label>
+                <div className="flex gap-1.5">
+                  {analysisData?.originalLyrics && (
+                    <button
+                      onClick={() => setLyrics(analysisData.originalLyrics)}
+                      className="text-[10px] px-2 py-1 rounded border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
+                    >
+                      Original
+                    </button>
+                  )}
+                  {analysisData?.improvedLyrics && (
+                    <button
+                      onClick={() => setLyrics(analysisData.improvedLyrics)}
+                      className="text-[10px] px-2 py-1 rounded border border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
+                    >
+                      <Sparkles className="h-2.5 w-2.5" /> AI-improved
+                    </button>
+                  )}
+                </div>
+              </div>
               <textarea
-                value={finalLyrics}
-                onChange={(e) => setFinalLyrics(e.target.value)}
-                placeholder="Paste your song lyrics here... The AI will use these lyrics for the remix. Leave empty to let AI generate lyrics."
-                className="w-full h-36 bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
+                value={lyrics}
+                onChange={(e) => setLyrics(e.target.value)}
+                placeholder="Your song lyrics appear here automatically from the scan. Edit freely — these exact lyrics will be sent to the AI remix engine."
+                className="w-full h-40 bg-muted/50 border border-border rounded-lg p-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono"
               />
-              {analysisData?.improvedLyrics && (
-                <button
-                  onClick={() => setFinalLyrics(analysisData.improvedLyrics)}
-                  className="text-xs px-3 py-1.5 rounded-md border border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
-                >
-                  <Sparkles className="h-3 w-3" /> Use AI-improved lyrics
-                </button>
-              )}
-              {analysisData?.originalLyrics && !finalLyrics && (
-                <button
-                  onClick={() => setFinalLyrics(analysisData.originalLyrics)}
-                  className="text-xs px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
-                >
-                  Load original lyrics
-                </button>
-              )}
+              <p className="text-[10px] text-muted-foreground mt-1.5 pb-2">
+                {lyrics.length > 0 ? `✓ ${lyrics.length} characters — will be sent to AI` : "No lyrics yet — AI will generate from your song analysis"}
+              </p>
             </div>
           </div>
 
+          {/* Create button */}
           <motion.button
-            onClick={() => startRemix(finalLyrics || undefined)}
-            disabled={!file}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
-            whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+            onClick={startRemix}
+            disabled={!canCreate}
+            className="w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            whileHover={canCreate ? { scale: 1.01 } : {}}
+            whileTap={canCreate ? { scale: 0.98 } : {}}
           >
-            <Rocket className="h-4 w-4" /> Create AI Remix
+            <Rocket className="h-4 w-4" />
+            {lyrics.trim() ? "Create AI Remix with My Lyrics" : "Create AI Remix"}
           </motion.button>
         </div>
       )}
 
+      {/* ── UPLOADING ── */}
       {status === "uploading" && (
         <div className="text-center py-8">
           <Loader2 className="h-8 w-8 text-accent mx-auto animate-spin mb-3" />
           <p className="text-sm font-medium text-foreground">Uploading your track...</p>
+          <p className="text-xs text-muted-foreground mt-1">Preparing audio for AI analysis</p>
         </div>
       )}
 
+      {/* ── PROCESSING ── */}
       {status === "processing" && <RemixProcessingUI elapsed={elapsed} />}
 
+      {/* ── ERROR ── */}
       {status === "error" && (
         <div className="text-center py-6 space-y-3">
           <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
           <p className="text-sm text-destructive font-medium">{error}</p>
-          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="gap-2 border-border">Try Again</Button>
+          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="gap-2 border-border">
+            Try Again
+          </Button>
         </div>
       )}
 
-      {status === "complete" && result && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <div className="text-center py-3">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
-            <h3 className="text-lg font-black text-foreground">Your Viral Remix is Ready!</h3>
+      {/* ── COMPLETE — 2 versions ── */}
+      {status === "complete" && result?.tracks?.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-green-400" />
+            <h3 className="text-base font-bold text-foreground">Your AI Remixes Are Ready</h3>
           </div>
+          <p className="text-xs text-muted-foreground -mt-2">Two unique versions — listen and choose your favorite</p>
 
-          <div className="space-y-3">
-            {(result.tracks || [result]).map((track: any, i: number) => (
-              <div key={i} className="rounded-xl border border-border bg-card p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <button onClick={() => togglePlay(i)} className="h-10 w-10 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
-                    {playing === i ? <Pause className="h-4 w-4 text-accent" /> : <Play className="h-4 w-4 text-accent ml-0.5" />}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground truncate">{track.title || `Remix ${i + 1}`}</p>
-                    <p className="text-xs text-muted-foreground">{track.style || style} version</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {result.tracks.map((track: any, i: number) => (
+              <div
+                key={i}
+                className={`rounded-xl border p-4 ${i === 0 ? "border-blue-500/30 bg-blue-500/5" : "border-purple-500/30 bg-purple-500/5"}`}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-lg">{i === 0 ? "🎸" : "🚀"}</span>
+                  <div>
+                    <p className={`text-sm font-bold ${i === 0 ? "text-blue-300" : "text-purple-300"}`}>{track.label}</p>
+                    <p className="text-xs text-muted-foreground leading-snug">{track.description}</p>
                   </div>
                 </div>
-                <audio ref={el => { audioRefs.current[i] = el; }} src={track.audio_url || track.audioUrl} onEnded={() => setPlaying(null)} preload="none" />
-                <div className="flex gap-2">
-                  <Button onClick={() => downloadTrack(track.audio_url || track.audioUrl, `${songTitle}_remix_${i + 1}.mp3`)} variant="outline" size="sm" className="flex-1 gap-1.5 text-xs border-border">
-                    <Download className="h-3 w-3" /> Download MP3
-                  </Button>
-                </div>
+                {track.imageUrl && (
+                  <img src={track.imageUrl} alt={track.label} className="w-full h-28 object-cover rounded-lg mb-3" />
+                )}
+                <audio
+                  ref={el => { audioRefs.current[i] = el; }}
+                  src={track.audioUrl}
+                  controls
+                  className="w-full mb-2"
+                  onPlay={() => {
+                    audioRefs.current.forEach((a, idx) => { if (a && idx !== i) a.pause(); });
+                    setPlaying(i);
+                  }}
+                />
+                <a
+                  href={track.audioUrl}
+                  download={`${songTitle}_${track.label.replace(/\s+/g, "_")}.mp3`}
+                  className="block text-center text-xs text-muted-foreground hover:text-foreground py-2 border border-border/40 rounded-lg transition-colors"
+                >
+                  ⬇️ Download {track.label}
+                </a>
               </div>
             ))}
           </div>
-          <div className="flex justify-center">
-            <Button onClick={() => { setStatus("idle"); setResult(null); setElapsed(0); }} variant="outline" className="gap-2 border-border"><Sparkles className="h-4 w-4" /> Remix Again</Button>
-          </div>
-        </motion.div>
+
+          <button
+            onClick={() => { setStatus("idle"); setResult(null); setError(""); }}
+            className="w-full py-2 text-xs text-muted-foreground hover:text-foreground border border-border/30 rounded-lg transition-colors"
+          >
+            ↩ Create another version
+          </button>
+        </div>
       )}
     </div>
   );
 };
 
-/* ─── Paywall ─── */
-const PaywallBanner = ({ score }: { score: number }) => (
-  <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
-    className="w-full rounded-xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-red-500/10 p-6 text-center">
-    <div className="h-10 w-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto mb-3"><Zap className="h-5 w-5 text-orange-400" /></div>
-    <h3 className="text-lg font-black text-foreground mb-1.5">You've used your free analysis</h3>
-    <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">Upgrade to Pro for unlimited analyses + 10 AI remixes/month. Your song scored <strong className="text-foreground">{score}/100</strong>.</p>
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
-      <Link to="/billing"><motion.button className="relative px-7 py-3 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-        <span className="relative">Upgrade to Pro — $19/month</span>
-      </motion.button></Link>
-      <Link to="/billing"><button className="px-5 py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Analysis — $3</button></Link>
-    </div>
-  </motion.div>
-);
-
-const RemixPaywallModal = ({ score, songTitle, onClose }: { score: number; songTitle: string; onClose: () => void }) => (
-  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
-    <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-      className="relative max-w-md w-full rounded-2xl border border-accent/30 bg-card p-7 text-center" onClick={(e) => e.stopPropagation()}>
-      <div className="h-10 w-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-3"><Headphones className="h-5 w-5 text-primary" /></div>
-      <h3 className="text-xl font-black text-foreground mb-1.5">AI Remix — Pro Feature</h3>
-      <p className="text-sm text-muted-foreground mb-1">Your song <strong className="text-foreground">"{songTitle}"</strong> scored <strong className="text-accent text-lg">{score}/100</strong>.</p>
-      <p className="text-sm text-muted-foreground mb-6">Create an AI remix with stronger hooks and viral energy.</p>
-      <div className="flex flex-col gap-2.5">
-        <Link to="/billing" onClick={onClose}><motion.button className="relative w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm overflow-hidden" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <span className="relative">Upgrade to Pro — $19/month</span>
-        </motion.button></Link>
-        <Link to="/billing" onClick={onClose}><button className="w-full py-2.5 rounded-xl border border-border text-foreground text-sm font-semibold hover:bg-secondary transition-colors">Buy Single Remix — $7</button></Link>
-        <button onClick={onClose} className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-1">Maybe later</button>
-      </div>
-    </motion.div>
-  </motion.div>
-);
 
 /* ═══════════════════════════════════════════════
    MAIN RESULTS PAGE
