@@ -111,8 +111,10 @@ const toggleLike = (userId: string, id: string): boolean => {
 };
 
 /* ─── Helpers ─── */
-const getTitle = (item: SongItem) =>
-  item.type === 'analysis' ? (item.data.title || 'Untitled') : (item.data.remix_title || item.data.title || 'AI Song');
+const getTitle = (item: SongItem): string =>
+  item.type === 'analysis'
+    ? (item.data.title || '🎵 Scanned Track')
+    : (item.data.remix_title || (item.data as any).original_title || '⚡ Algorithm Hit');
 
 const getStyleTags = (item: SongItem): string => {
   if (item.type === 'remix') return item.data.genre || '';
@@ -296,6 +298,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
   const progress = Math.min(96, Math.round((elapsed / 90) * 100));
   const feedIdx = Math.min(Math.floor(elapsed / 5), INJECT_FEED.length - 1);
   const currentStage = VIRAL_STAGES[currentStageIdx];
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const resolvedGenre = genre || 'your genre';
 
@@ -304,12 +307,12 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
 
       {/* Waveform — orange/amber for creation */}
       <div className="flex items-end justify-center gap-[1.5px] h-12">
-        {Array.from({ length: 24 }).map((_, i) => (
+        {Array.from({ length: isMobile ? 16 : 24 }).map((_, i) => (
           <motion.div key={i}
             className="rounded-full bg-gradient-to-t from-orange-500 via-amber-400 to-yellow-300"
             style={{ width: 3, height: '100%', transformOrigin: 'bottom' }}
             animate={{ scaleY: [0.08, 0.3 + Math.abs(Math.sin(i * 0.5)) * 0.7, 0.08] }}
-            transition={{ repeat: Infinity, duration: 0.5 + (i % 4) * 0.07, delay: i * 0.04 }}
+            transition={{ repeat: Infinity, duration: isMobile ? 0.1 : (0.5 + (i % 4) * 0.07), delay: i * 0.04 }}
           />
         ))}
       </div>
@@ -704,7 +707,7 @@ const CreditsModal = ({ onClose, onBuy, loading }: CreditsModalProps) => {
     { id: 'credits_700', credits: 700, price: 39, label: 'Best Value' },
   ];
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-black text-foreground">Buy Credits</h2>
@@ -1487,7 +1490,7 @@ export default function Workspace() {
                   )}
                 </div>
               </div>
-              <div className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border">
+              <div className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border">
                 {(r.improvedLyrics || r.originalLyrics).split('\n').map((line: string, idx: number) => {
                   const isSection = /^\[.+\]$/.test(line.trim());
                   return (
@@ -1544,7 +1547,8 @@ export default function Workspace() {
           loading={creditsModalLoading}
         />
       )}
-      <div className="flex flex-col h-[calc(100vh-56px)] overflow-hidden">
+      <div className="-m-4 lg:-m-6 -mb-6 overflow-hidden">
+      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
         {/* 3-column row — LEFT | CENTER | RIGHT */}
         <div className="flex flex-1 overflow-hidden min-h-0">
 
@@ -1567,8 +1571,21 @@ export default function Workspace() {
             </div>
           )}
 
+          {/* Step indicator */}
+          <div className="flex items-center gap-1 px-3 pt-2 pb-1">
+            <div className={`flex items-center gap-1 text-[9px] font-bold ${leftMode === 'analyze' ? 'text-primary' : 'text-muted-foreground/40'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] ${leftMode === 'analyze' ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>1</span>
+              Scan
+            </div>
+            <div className={`w-6 h-px ${(lastAnalysisResult || activeItem) ? 'bg-primary' : 'bg-border'}`} />
+            <div className={`flex items-center gap-1 text-[9px] font-bold ${leftMode === 'create' ? 'text-orange-400' : 'text-muted-foreground/40'}`}>
+              <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] ${leftMode === 'create' ? 'bg-orange-500 text-black' : 'bg-muted text-muted-foreground'}`}>2</span>
+              Hit
+            </div>
+          </div>
+
           {/* Mode tabs */}
-          <div className="px-3 pt-3 pb-2 shrink-0">
+          <div className="px-3 pt-1 pb-2 shrink-0">
             <div className="flex p-1 bg-muted/50 rounded-xl gap-1 shrink-0">
               {(['analyze', 'create'] as const).map(m => (
                 <button key={m} onClick={() => setLeftMode(m)}
@@ -1595,6 +1612,10 @@ export default function Workspace() {
               ) : lastAnalysisResult ? (
                 /* ── Analysis Results ── */
                 <div className="space-y-3">
+                  {/* Song title at top */}
+                  <p className="text-xs font-bold text-foreground truncate mb-3">
+                    📁 {lastAnalysisResult.dbRecord?.title || lastAnalysisResult.title || songTitle || 'Your Song'}
+                  </p>
                   {/* Score card */}
                   <div className={`rounded-2xl p-4 text-center border ${
                     lastAnalysisResult.score >= 80 ? 'bg-emerald-500/10 border-emerald-500/30' :
@@ -1764,7 +1785,7 @@ export default function Workspace() {
                 <UpgradeGate />
               ) : generating ? (
                 <ViralCreatePanel elapsed={generateElapsed} genre={activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop'} />
-              ) : !activeItem && !createFile ? (
+              ) : !activeItem && !createFile && !lastScanS3Key ? (
                 <div className="flex-1 flex flex-col items-center justify-center px-4 text-center space-y-4 py-8">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
                     <Sparkles className="w-8 h-8 text-black" />
@@ -2028,23 +2049,23 @@ export default function Workspace() {
         ═══════════════════════════════ */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0 border-r border-border/40">
 
-          {/* Brand data tagline */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10 shrink-0">
-            <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
-            <p className="text-[11px] text-primary/80 font-medium">
-              Every song powered by <strong>500M+ real chart data points</strong> — Spotify · Apple Music · Deezer · YouTube
+          {/* Data credibility strip */}
+          <div className="px-4 py-1.5 bg-primary/5 border-b border-primary/10 flex items-center gap-2 shrink-0">
+            <Zap className="w-3 h-3 text-primary shrink-0" />
+            <p className="text-[10px] text-primary/70 font-medium truncate">
+              Powered by <strong>500M+ songs</strong> — Spotify · Apple Music · Deezer · YouTube live data
             </p>
           </div>
 
           {/* Tab bar — Suno style */}
           <div className="flex items-center gap-0.5 px-3 py-2 border-b border-border/40 shrink-0">
             {([
-              { id: 'all', label: 'All' },
+              { id: 'all', label: `All (${analyses.length + remixes.length})` },
               { id: 'liked', label: '❤ Liked' },
-              { id: 'uploads', label: '🔍 Scanned' },
-              { id: 'created', label: '⚡ My Hits' },
+              { id: 'uploads', label: `🔍 Scanned (${analyses.length})` },
+              { id: 'created', label: `⚡ My Hits (${remixes.length})` },
             ] as const).map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
+              <button key={t.id} onClick={() => setTab(t.id as CenterTab)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === t.id ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
                 {t.label}
                 {t.id === 'liked' && likes.size > 0 && (
@@ -2431,6 +2452,7 @@ export default function Workspace() {
 
         <WorkspacePlayer />
       </div>{/* end outer flex-col */}
+      </div>{/* end negative margin wrapper */}
     </DashboardLayout>
   );
 }
