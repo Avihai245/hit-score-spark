@@ -29,7 +29,7 @@ import {
   BarChart2, Headphones, CheckCircle2, Heart, Share2, MoreHorizontal,
   ChevronDown, ChevronRight, RotateCcw, Bookmark, Eye, TrendingUp,
   Flame, Target, FileText, Volume2, Shuffle, SkipBack, SkipForward,
-  Repeat, Copy, Check,
+  Repeat, Copy, Check, Globe, GitBranch,
 } from 'lucide-react';
 
 const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
@@ -141,6 +141,23 @@ const STYLE_SUGGESTIONS = [
   'dark', 'emotional', 'danceable', 'energetic', 'melodic', 'chill',
   'rock dance', 'cool chord progression', 'trap', 'lo-fi', 'dreamy',
 ];
+
+const VIRAL_STYLE_CHIPS = [
+  'viral hook at 0:20', 'TikTok ready', 'stadium chorus',
+  'dark trap', 'melodic pop', 'upbeat energy', 'emotional build',
+  'indie aesthetic', 'R&B smooth', 'hip-hop flow', 'EDM drop',
+  'acoustic raw', 'synth-pop', 'drill beat', 'afrobeats',
+  'latin rhythm', 'country crossover', 'cinematic score',
+];
+
+const shuffleArray = <T,>(arr: T[]): T[] => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
 
 /* ─── Waveform ─── */
 /* ─── Built-in Workspace Player (no overlap ever) ─── */
@@ -731,6 +748,12 @@ export default function Workspace() {
   const [generating, setGenerating] = useState(false);
   const [generateElapsed, setGenerateElapsed] = useState(0);
   const generateTimerRef = useRef<ReturnType<typeof setInterval>>();
+  const [sunoVersion, setSunoVersion] = useState<'v5' | 'v4.5'>('v5');
+  const [enhanceLyricsPrompt, setEnhanceLyricsPrompt] = useState('');
+  const [enhancingLyrics, setEnhancingLyrics] = useState(false);
+  const [shownChips, setShownChips] = useState<string[]>(() => shuffleArray(VIRAL_STYLE_CHIPS).slice(0, 10));
+  const [songMoreMenuId, setSongMoreMenuId] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<Record<string, Record<string, number>>>({});
 
   /* ─── Load data ─── */
   const loadData = useCallback(async () => {
@@ -990,6 +1013,7 @@ export default function Workspace() {
           title: activeItem?.type === 'analysis' ? activeItem.data.title : (createFile?.name || 'My Song'),
           genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop',
           style: createStyle || 'same', analysisData,
+          sunoVersion,
         }) });
       const coverData = await coverRes.json();
       if (coverData.error) throw new Error(coverData.error);
@@ -1033,6 +1057,57 @@ export default function Workspace() {
     } catch (e: any) {
       clearInterval(generateTimerRef.current); setGenerating(false);
       toast.error(e.message || 'Generation failed');
+    }
+  };
+
+  /* ─── ENHANCE LYRICS ─── */
+  const handleEnhanceLyrics = async () => {
+    if (!enhanceLyricsPrompt.trim()) return;
+    setEnhancingLyrics(true);
+    try {
+      const res = await fetch(LAMBDA_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'enhance-lyrics', lyrics: createLyrics, instruction: enhanceLyricsPrompt }),
+      });
+      const data = await res.json();
+      if (data.enhanced || data.lyrics) {
+        setCreateLyrics(data.enhanced || data.lyrics);
+        setEnhanceLyricsPrompt('');
+        toast.success('✨ Lyrics enhanced!');
+      } else {
+        // Graceful client-side fallback: just append the instruction as a note
+        setCreateLyrics(prev => prev + `\n\n[Style note: ${enhanceLyricsPrompt}]`);
+        setEnhanceLyricsPrompt('');
+        toast.success('Style note added to lyrics');
+      }
+    } catch {
+      // Graceful fallback
+      setCreateLyrics(prev => prev + `\n\n[Style note: ${enhanceLyricsPrompt}]`);
+      setEnhanceLyricsPrompt('');
+      toast.success('Style note added to lyrics');
+    } finally {
+      setEnhancingLyrics(false);
+    }
+  };
+
+  /* ─── REACTION handler ─── */
+  const handleReaction = (itemId: string, emoji: string) => {
+    setReactions(prev => {
+      const item = prev[itemId] || {};
+      return { ...prev, [itemId]: { ...item, [emoji]: (item[emoji] || 0) + 1 } };
+    });
+  };
+
+  /* ─── PUBLISH handler ─── */
+  const handlePublish = async (item: SongItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (item.type !== 'remix') return;
+    try {
+      await supabase.from('viralize_remixes').update({ status: 'public' }).eq('id', item.data.id);
+      toast.success('🌐 Song published!', { duration: 2000 });
+    } catch {
+      toast.error('Failed to publish');
     }
   };
 
@@ -1156,22 +1231,81 @@ export default function Workspace() {
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
 
-          {/* Score for analyses */}
+          {/* Score + badges for analyses */}
           {activeItem.type === 'analysis' && (
-            <div className="rounded-xl border border-border bg-card/50 p-3 flex items-center gap-3">
-              <div className={`text-3xl font-black ${activeItem.data.score >= 80 ? 'text-primary' : activeItem.data.score >= 65 ? 'text-emerald-400' : activeItem.data.score >= 40 ? 'text-accent' : 'text-destructive'}`}>
-                {activeItem.data.score}
+            <div className="space-y-2">
+              <div className="rounded-xl border border-border bg-card/50 p-3 flex items-center gap-3">
+                <div className={`text-3xl font-black ${activeItem.data.score >= 80 ? 'text-primary' : activeItem.data.score >= 65 ? 'text-emerald-400' : activeItem.data.score >= 40 ? 'text-accent' : 'text-destructive'}`}>
+                  {activeItem.data.score}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-muted-foreground">Viral Score</p>
+                  <p className="text-xs text-foreground/80 leading-snug mt-0.5 line-clamp-2">
+                    {r.verdict || activeItem.data.verdict || '—'}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-muted-foreground">Viral Score</p>
-                <p className="text-xs text-foreground/80 leading-snug mt-0.5 line-clamp-2">
-                  {r.verdict || activeItem.data.verdict || '—'}
-                </p>
-              </div>
+              {/* BPM / Key / Score badges row */}
+              {(r.bpmEstimate || r.musicalKey || activeItem.data.genre) && (
+                <div className="flex flex-wrap gap-1.5">
+                  {r.bpmEstimate && (
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold">
+                      {r.bpmEstimate}
+                    </span>
+                  )}
+                  {r.musicalKey && (
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-bold">
+                      {r.musicalKey}
+                    </span>
+                  )}
+                  {activeItem.data.genre && (
+                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground font-bold">
+                      {activeItem.data.genre}
+                    </span>
+                  )}
+                </div>
+              )}
+              {/* Remix this button */}
+              <button
+                onClick={() => {
+                  const fr = activeItem.data.full_result || {};
+                  const viralStyle: string[] = [];
+                  if (activeItem.data.genre) viralStyle.push(activeItem.data.genre.toLowerCase());
+                  if (fr.bpmEstimate) viralStyle.push(fr.bpmEstimate.toLowerCase());
+                  if (fr.musicalKey) viralStyle.push(fr.musicalKey.toLowerCase());
+                  setCreateStyle(viralStyle.slice(0, 4).join(', '));
+                  if (fr.improvedLyrics) setCreateLyrics(fr.improvedLyrics);
+                  setLeftMode('create');
+                }}
+                className="w-full py-2 rounded-xl border border-dashed border-primary/30 text-primary text-[11px] font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-1.5">
+                <GitBranch className="w-3.5 h-3.5" /> Remix this
+              </button>
             </div>
           )}
 
-          {/* Lyrics */}
+          {/* Reaction emojis */}
+          <div>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Reactions</p>
+            <div className="flex flex-wrap gap-1.5">
+              {['🔥', '😍', '😱', '🙌', '👍', '👎', '😢'].map(emoji => {
+                const count = reactions[activeItem.data.id]?.[emoji] || 0;
+                return (
+                  <button key={emoji}
+                    onClick={() => handleReaction(activeItem.data.id, emoji)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-full border text-[11px] transition-all ${
+                      count > 0
+                        ? 'bg-primary/10 border-primary/30 text-foreground'
+                        : 'border-border bg-muted/20 text-muted-foreground hover:border-primary/20 hover:bg-primary/5'
+                    }`}>
+                    <span>{emoji}</span>
+                    {count > 0 && <span className="text-[9px] font-bold text-primary">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Lyrics — with section markers */}
           {(r.originalLyrics || r.improvedLyrics) && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -1191,8 +1325,15 @@ export default function Workspace() {
                   )}
                 </div>
               </div>
-              <div className="text-xs text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border">
-                {r.improvedLyrics || r.originalLyrics}
+              <div className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border">
+                {(r.improvedLyrics || r.originalLyrics).split('\n').map((line: string, idx: number) => {
+                  const isSection = /^\[.+\]$/.test(line.trim());
+                  return (
+                    <span key={idx} className={isSection ? 'block text-primary font-bold text-[10px] uppercase tracking-wider mt-2 mb-0.5' : 'block text-muted-foreground'}>
+                      {line || '\u00A0'}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -1429,6 +1570,22 @@ export default function Workspace() {
                 <ViralCreatePanel elapsed={generateElapsed} genre={activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop'} />
               ) : (
                 <>
+                  {/* Version selector — Suno style */}
+                  <div className="flex items-center gap-1 pt-0.5">
+                    <span className="text-[10px] text-muted-foreground font-semibold shrink-0">Version</span>
+                    <div className="flex gap-0.5 bg-muted/40 rounded-lg p-0.5 ml-1">
+                      {(['v5', 'v4.5'] as const).map(v => (
+                        <button key={v} onClick={() => setSunoVersion(v)}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                            sunoVersion === v
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}>
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {/* Dynamic: show selected song OR prompt to select */}
                   {activeItem ? (
                     <div className={`rounded-xl border p-3 space-y-2 ${
@@ -1546,9 +1703,30 @@ export default function Workspace() {
                       </div>
                     </button>
                     {lyricsExpanded && (
-                      <textarea value={createLyrics} onChange={e => setCreateLyrics(e.target.value)}
-                        placeholder="Write some lyrics or a prompt — or leave blank for instrumental"
-                        className="w-full h-28 bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono leading-relaxed mt-1" />
+                      <div className="mt-1 space-y-1.5">
+                        <textarea value={createLyrics} onChange={e => setCreateLyrics(e.target.value)}
+                          placeholder="Write some lyrics or a prompt — or leave blank for instrumental"
+                          className="w-full h-28 bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono leading-relaxed" />
+                        {/* Enhance lyrics */}
+                        <div className="flex gap-1">
+                          <div className="relative flex-1">
+                            <Sparkles className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/50" />
+                            <input
+                              value={enhanceLyricsPrompt}
+                              onChange={e => setEnhanceLyricsPrompt(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') handleEnhanceLyrics(); }}
+                              placeholder="make it sound happier, more energetic…"
+                              className="w-full bg-muted/30 border border-border rounded-lg pl-6 pr-2 py-1.5 text-[10px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 transition-colors"
+                            />
+                          </div>
+                          <button
+                            onClick={handleEnhanceLyrics}
+                            disabled={!enhanceLyricsPrompt.trim() || enhancingLyrics}
+                            className="px-2 py-1.5 rounded-lg bg-primary/20 hover:bg-primary/30 text-primary text-[10px] font-bold transition-all disabled:opacity-40 shrink-0 flex items-center gap-1">
+                            {enhancingLyrics ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -1575,15 +1753,21 @@ export default function Workspace() {
                           placeholder="afro soul, chill, afrobeat, 120 BPM, minor key…"
                           rows={2}
                           className="w-full bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono" />
-                        {/* Style suggestion chips */}
-                        <div className="flex flex-wrap gap-1">
-                          {STYLE_SUGGESTIONS.slice(0, 8).map(tag => (
-                            <button key={tag}
-                              onClick={() => setCreateStyle(prev => prev ? `${prev}, ${tag}` : tag)}
-                              className="text-[9px] px-2 py-0.5 rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary bg-muted/30 transition-colors">
-                              {tag}
+                        {/* Viral style chips — shuffleable */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {shownChips.map(chip => (
+                            <button key={chip}
+                              onClick={() => setCreateStyle(s => s ? `${s}, ${chip}` : chip)}
+                              className="px-2 py-0.5 rounded-full text-[10px] bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all">
+                              {chip}
                             </button>
                           ))}
+                          <button
+                            onClick={() => setShownChips(shuffleArray(VIRAL_STYLE_CHIPS).slice(0, 10))}
+                            className="px-2 py-0.5 rounded-full text-[10px] bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground transition-all"
+                            title="Shuffle suggestions">
+                            🔀
+                          </button>
                         </div>
                       </div>
                     )}
@@ -1826,6 +2010,66 @@ export default function Workspace() {
                             <Music2 className="w-3 h-3" />
                             Cover
                           </button>
+
+                          {/* Remix 🎸 */}
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setActiveItem(item);
+                              setLeftMode('create');
+                              setCreateStyle('same');
+                              if (!rightOpen) setRightOpen(true);
+                              toast.success(`🎸 "${title}" loaded for remix`);
+                            }}
+                            className="flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/15 hover:bg-purple-500/30 text-purple-400 text-[9px] font-bold transition-all">
+                            <GitBranch className="w-3 h-3" />
+                            Remix
+                          </button>
+
+                          {/* Publish 🌐 */}
+                          {item.type === 'remix' && (
+                            <button
+                              onClick={e => handlePublish(item, e)}
+                              className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 text-[9px] font-bold transition-all">
+                              <Globe className="w-3 h-3" />
+                              Publish
+                            </button>
+                          )}
+
+                          {/* More ··· */}
+                          <div className="relative">
+                            <button
+                              onClick={e => { e.stopPropagation(); setSongMoreMenuId(prev => prev === item.data.id ? null : item.data.id); }}
+                              className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/30 hover:bg-muted/60 text-muted-foreground text-[9px] font-bold transition-all">
+                              <MoreHorizontal className="w-3 h-3" />
+                            </button>
+                            {songMoreMenuId === item.data.id && (
+                              <div className="absolute right-0 bottom-full mb-1 z-30 bg-card border border-border rounded-xl shadow-xl min-w-[130px] py-1 overflow-hidden">
+                                {item.type === 'analysis' && (
+                                  <Link to={`/song/${item.data.id}`} onClick={e => e.stopPropagation()}
+                                    className="flex items-center gap-2 px-3 py-2 text-[11px] text-foreground hover:bg-muted/60 transition-colors">
+                                    <Eye className="w-3 h-3" /> View Report
+                                  </Link>
+                                )}
+                                <button onClick={e => { e.stopPropagation(); handleShare(item, e); setSongMoreMenuId(null); }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-foreground hover:bg-muted/60 transition-colors">
+                                  <Copy className="w-3 h-3" /> Copy link
+                                </button>
+                                <button onClick={async e => {
+                                  e.stopPropagation();
+                                  setSongMoreMenuId(null);
+                                  const table = item.type === 'remix' ? 'viralize_remixes' : 'viralize_analyses';
+                                  await supabase.from(table).delete().eq('id', item.data.id);
+                                  await loadData();
+                                  if (activeItem?.data.id === item.data.id) setActiveItem(null);
+                                  toast.success('Deleted');
+                                }}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-[11px] text-destructive hover:bg-destructive/10 transition-colors">
+                                  <X className="w-3 h-3" /> Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
