@@ -203,7 +203,7 @@ export default function AdminUsers() {
                           {u.remixes_used ?? 0}
                         </td>
                         {/* Credits */}
-                        <td className="px-4 py-3">
+                         <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             <span className="text-yellow-400">{u.credits ?? 0}</span>
                             <button
