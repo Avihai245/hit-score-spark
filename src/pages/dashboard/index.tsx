@@ -819,6 +819,7 @@ export default function Workspace() {
   const [enhancingLyrics, setEnhancingLyrics] = useState(false);
   const [shownChips, setShownChips] = useState<string[]>(() => shuffleArray(VIRAL_STYLE_CHIPS).slice(0, 10));
   const [songMoreMenuId, setSongMoreMenuId] = useState<string | null>(null);
+  const [feedSearch, setFeedSearch] = useState('');
   const [reactions, setReactions] = useState<Record<string, Record<string, number>>>({});
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [creditsModalLoading, setCreditsModalLoading] = useState<string | null>(null);
@@ -949,11 +950,20 @@ export default function Workspace() {
       b.type === 'analysis' ? b.data.created_at : b.data.created_at || ''
     ).getTime()).reverse();
 
-    if (tab === 'liked') return all.filter(i => likes.has(i.data.id));
-    if (tab === 'uploads') return all.filter(i => i.type === 'analysis');
-    if (tab === 'created') return all.filter(i => i.type === 'remix');
-    return all;
-  }, [analyses, remixes, tab, likes]);
+    const filtered = feedSearch.trim()
+      ? all.filter(i => {
+          const t = getTitle(i).toLowerCase();
+          const g = getStyleTags(i).toLowerCase();
+          const q = feedSearch.toLowerCase();
+          return t.includes(q) || g.includes(q);
+        })
+      : all;
+
+    if (tab === 'liked') return filtered.filter(i => likes.has(i.data.id));
+    if (tab === 'uploads') return filtered.filter(i => i.type === 'analysis');
+    if (tab === 'created') return filtered.filter(i => i.type === 'remix');
+    return filtered;
+  }, [analyses, remixes, tab, likes, feedSearch]);
 
   /* ─── Like handler ─── */
   const handleLike = (id: string, e: React.MouseEvent) => {
@@ -1633,11 +1643,11 @@ export default function Workspace() {
                   </div>
 
                   {/* Key metrics */}
-                  {lastAnalysisResult.bpm && (
+                  {(lastAnalysisResult.bpmEstimate || lastAnalysisResult.musicalKey) && (
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { label: 'BPM', value: lastAnalysisResult.bpm },
-                        { label: 'Key', value: lastAnalysisResult.key || '—' },
+                        { label: 'BPM', value: lastAnalysisResult.bpmEstimate || '—' },
+                        { label: 'Key', value: lastAnalysisResult.musicalKey || '—' },
                         { label: 'Genre', value: lastAnalysisResult.genre || '—' },
                       ].map(m => (
                         <div key={m.label} className="rounded-xl bg-muted/40 border border-border/60 p-2 text-center">
@@ -1645,6 +1655,27 @@ export default function Workspace() {
                           <p className="text-xs font-bold text-foreground truncate">{m.value}</p>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Hook timing */}
+                  {lastAnalysisResult.hookTiming && lastAnalysisResult.hookTiming !== 'unknown' && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/30 border border-border/40">
+                      <span className="text-[10px] text-muted-foreground">🎣 Hook at</span>
+                      <span className="text-xs font-bold text-foreground">{lastAnalysisResult.hookTiming}</span>
+                      {lastAnalysisResult.viralLine && (
+                        <span className="text-[10px] text-primary/70 truncate ml-auto">"{lastAnalysisResult.viralLine}"</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Transcribed lyrics preview */}
+                  {lastAnalysisResult.originalLyrics && (
+                    <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">Transcribed Lyrics ✓</p>
+                      <p className="text-[11px] text-foreground/70 font-mono leading-relaxed line-clamp-3">
+                        {lastAnalysisResult.originalLyrics}
+                      </p>
                     </div>
                   )}
 
@@ -1947,6 +1978,9 @@ export default function Workspace() {
                       className="flex items-center justify-between w-full py-1">
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                         <Mic2 className="w-3 h-3" /> Lyrics
+                        {createLyrics && lastScanS3Key && (
+                          <span className="text-[9px] text-emerald-400 font-bold">✓ imported from scan</span>
+                        )}
                       </span>
                       <div className="flex items-center gap-1">
                         <button className="text-muted-foreground hover:text-foreground p-0.5 rounded">
@@ -2084,6 +2118,12 @@ export default function Workspace() {
               </button>
             ))}
             <div className="flex-1" />
+            <input
+              value={feedSearch}
+              onChange={e => setFeedSearch(e.target.value)}
+              placeholder="Search songs..."
+              className="flex-none w-[120px] bg-muted/40 border border-border/60 rounded-lg px-2.5 py-1 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40"
+            />
             <Link to="/analyze"
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-lg hover:bg-muted/50 transition-colors">
               <Upload className="w-3.5 h-3.5" /> Upload
@@ -2248,6 +2288,19 @@ export default function Workspace() {
                             </span>
                           )}
                         </div>
+                        {/* Score progression for remix cards */}
+                        {item.type === 'remix' && item.data.analysis_id && (
+                          (() => {
+                            const origAnalysis = analyses.find(a => a.id === item.data.analysis_id);
+                            if (!origAnalysis) return null;
+                            return (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[9px] text-muted-foreground/50 line-through">{origAnalysis.score}</span>
+                                <span className="text-[9px] text-emerald-400 font-bold">→ Hit ⚡</span>
+                              </div>
+                            );
+                          })()
+                        )}
                       </div>
 
                       {/* Suno-style action menu — appears on hover */}
@@ -2344,6 +2397,23 @@ export default function Workspace() {
                               className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-400 text-[9px] font-bold transition-all">
                               <Globe className="w-3 h-3" />
                               Publish
+                            </button>
+                          )}
+
+                          {/* Re-scan — for generated tracks */}
+                          {item.type === 'remix' && item.data.audio_url && (
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                setActiveItem(item);
+                                setLeftMode('analyze');
+                                setSongTitle((item.data.remix_title || 'Algorithm Hit') + ' (re-scan)');
+                                setSongGenre(item.data.genre || '');
+                                if (!rightOpen) setRightOpen(true);
+                              }}
+                              className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-[9px] font-bold transition-all">
+                              <BarChart2 className="w-3 h-3" />
+                              Re-scan
                             </button>
                           )}
 

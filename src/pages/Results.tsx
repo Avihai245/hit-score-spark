@@ -1249,9 +1249,12 @@ const Results = () => {
               <div className="max-w-md mx-auto space-y-5">
                 <div className="space-y-2">
                   <p className="text-xl md:text-2xl font-black font-heading text-foreground">
-                    Your track scored {score}.
+                    ⚡ Turn This Into an Algorithm Hit
                   </p>
                   <p className="text-base text-foreground/80 leading-relaxed">
+                    Your scan data is already imported. One click to generate.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
                     Tracks like yours average <strong className="text-accent">{targetScore}</strong> after one AI Remix session.
                   </p>
                 </div>
