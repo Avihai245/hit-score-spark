@@ -37,6 +37,7 @@ import DashboardCompare from "./pages/dashboard/Compare";
 // Admin pages
 import AdminDashboard from "./pages/admin/index";
 import AdminUsers from "./pages/admin/users";
+import AdminUserDetail from "./pages/admin/UserDetail";
 import AdminAnalytics from "./pages/admin/analytics";
 import AdminRevenue from "./pages/admin/revenue";
 import AdminContent from "./pages/admin/content";
@@ -68,6 +69,7 @@ const AnimatedRoutes = () => {
       <Routes location={location}>
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/users/:userId" element={<AdminUserDetail />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
         <Route path="/admin/revenue" element={<AdminRevenue />} />
         <Route path="/admin/content" element={<AdminContent />} />

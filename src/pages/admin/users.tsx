@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { supabase } from '@/lib/supabase';
@@ -17,6 +18,7 @@ function Skeleton({ className = '' }: { className?: string }) {
 }
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -152,7 +154,7 @@ export default function AdminUsers() {
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {filtered.map((u) => (
-                      <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                      <tr key={u.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => navigate(`/admin/users/${u.id}`)}>
                         {/* Avatar + Email */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
@@ -166,7 +168,7 @@ export default function AdminUsers() {
                           </div>
                         </td>
                         {/* Plan */}
-                        <td className="px-4 py-3">
+                         <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="relative">
                             <button
                               onClick={() => setChangingPlan(changingPlan === u.id ? null : u.id)}
@@ -201,7 +203,7 @@ export default function AdminUsers() {
                           {u.remixes_used ?? 0}
                         </td>
                         {/* Credits */}
-                        <td className="px-4 py-3">
+                         <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             <span className="text-yellow-400">{u.credits ?? 0}</span>
                             <button
@@ -235,7 +237,7 @@ export default function AdminUsers() {
                           {format(new Date(u.created_at), 'MMM d, yyyy')}
                         </td>
                         {/* Actions */}
-                        <td className="px-4 py-3">
+                         <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             {deleteConfirm === u.id ? (
                               <>
