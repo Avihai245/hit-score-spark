@@ -7,17 +7,17 @@ export const stripePromise = loadStripe(
 
 // ═══════════════════════════════════════════════════════
 // STRIPE PRICE IDs — must match supabase/functions/stripe-webhook/index.ts
-// Pro $29/mo | Studio $49/mo
-// Credit packs: 100cr=$9 | 300cr=$19 | 700cr=$39
+// Pro $19/mo 600cr | Studio $39/mo 1800cr
+// Credit packs: 100cr=$12 | 250cr=$25 | 600cr=$49
 // ═══════════════════════════════════════════════════════
 export const PRICES = {
   // Subscriptions
-  pro_monthly:    import.meta.env.VITE_STRIPE_PRO_PRICE_ID    || 'price_1TBQ1y5OzmHXa8O4fyUQRzop',
-  studio_monthly: import.meta.env.VITE_STRIPE_STUDIO_PRICE_ID || 'price_1TBQ1z5OzmHXa8O454UWomQK',
+  pro_monthly:    import.meta.env.VITE_STRIPE_PRO_PRICE_ID    || 'price_1TBQ1y5OzmHXa8O4fyUQRzop',  // $19/mo 600cr
+  studio_monthly: import.meta.env.VITE_STRIPE_STUDIO_PRICE_ID || 'price_1TBQ1z5OzmHXa8O454UWomQK',  // $39/mo 1800cr
   // Credit packs (one-time)
-  credits_100:    import.meta.env.VITE_STRIPE_CREDITS_100     || 'price_1TBQ205OzmHXa8O4coeEIBLP', // 100cr $9
-  credits_300:    import.meta.env.VITE_STRIPE_CREDITS_300     || 'price_1TBQ215OzmHXa8O4pcXnxbNC', // 300cr $19
-  credits_700:    import.meta.env.VITE_STRIPE_CREDITS_700     || 'price_1TBQ225OzmHXa8O4VD8qGIUo', // 700cr $39
+  credits_100:    import.meta.env.VITE_STRIPE_CREDITS_100     || 'price_1TBQ205OzmHXa8O4coeEIBLP',  // 100cr $12
+  credits_300:    import.meta.env.VITE_STRIPE_CREDITS_300     || 'price_1TBQ215OzmHXa8O4pcXnxbNC',  // 250cr $25
+  credits_700:    import.meta.env.VITE_STRIPE_CREDITS_700     || 'price_1TBQ225OzmHXa8O4VD8qGIUo',  // 600cr $49
   // Legacy aliases (backward compat)
   analysis_credit: import.meta.env.VITE_STRIPE_CREDITS_100    || 'price_1TBQ205OzmHXa8O4coeEIBLP',
   analysis_5pack:  import.meta.env.VITE_STRIPE_CREDITS_300    || 'price_1TBQ215OzmHXa8O4pcXnxbNC',

@@ -14,8 +14,8 @@ export type Plan = 'free' | 'pro' | 'studio' | 'business' | 'unlimited';
 // ═══════════════════════════════════════════════
 
 export const CREDIT_COSTS = {
-  analysis: 50,   // 1 song analysis
-  viral: 150,     // 1 viral song generation (Suno V5)
+  analysis: 50,   // 1 song analysis (Scan)
+  viral: 150,     // 1 Algorithm Hit creation (Viral)
 } as const;
 
 export const PLAN_LIMITS = {
@@ -23,17 +23,17 @@ export const PLAN_LIMITS = {
     label: 'Free',
     price: 0,
     monthlyCredits: 0,
-    signupCredits: 50,        // 50cr one-time gift = 1 free analysis
-    analyses: 1,
+    signupCredits: 100,       // 2 free scans on signup (was 50)
+    analyses: 2,
     remixes: 0,
     badge: null,
     highlight: false,
   },
   pro: {
     label: 'Pro',
-    price: 29,                // $29/month
-    monthlyCredits: 500,      // 500 credits/month = 10 analyses or 3 viral
-    signupCredits: 500,
+    price: 19,                // $19/mo (was $29)
+    monthlyCredits: 600,      // 600cr = 12 scans or 4 hits
+    signupCredits: 600,
     analyses: 999,
     remixes: 999,
     badge: 'MOST POPULAR',
@@ -41,55 +41,49 @@ export const PLAN_LIMITS = {
   },
   studio: {
     label: 'Studio',
-    price: 49,                // $49/month
-    monthlyCredits: 1000,     // 1000 credits/month = 20 analyses or 6 viral
-    signupCredits: 1000,
+    price: 39,                // $39/mo (was $49)
+    monthlyCredits: 1800,     // 1800cr = 36 scans or 12 hits
+    signupCredits: 1800,
     analyses: 999,
     remixes: 999,
     badge: 'BEST VALUE',
     highlight: false,
   },
   // Legacy aliases
-  business:  { label: 'Studio', price: 49, monthlyCredits: 1000, signupCredits: 1000, analyses: 999, remixes: 999, badge: null, highlight: false },
-  unlimited: { label: 'Studio', price: 49, monthlyCredits: 1000, signupCredits: 1000, analyses: 999, remixes: 999, badge: null, highlight: false },
+  business:  { label: 'Studio', price: 39, monthlyCredits: 1800, signupCredits: 1800, analyses: 999, remixes: 999, badge: null, highlight: false },
+  unlimited: { label: 'Studio', price: 39, monthlyCredits: 1800, signupCredits: 1800, analyses: 999, remixes: 999, badge: null, highlight: false },
 };
 
-// One-time credit packs — less value per credit than subscription (intentional)
-// Subscription: $29 = 500cr → 5.8¢/cr | $49 = 1000cr → 4.9¢/cr
-// One-time packs are MORE expensive per credit to incentivize subscription
 export const CREDIT_PACKS = [
   {
     id: 'starter',
     credits: 100,
-    price: 9,
+    price: 12,
     label: '100 Credits',
-    desc: '2 analyses or try 1 viral song',
+    desc: '2 scans or top up anytime',
     popular: false,
     badge: null,
     savings: null,
-    // 9¢/cr — most expensive, just to try
   },
   {
     id: 'popular',
-    credits: 300,
-    price: 19,
-    label: '300 Credits',
-    desc: '6 analyses or 2 viral songs',
+    credits: 250,
+    price: 25,
+    label: '250 Credits',
+    desc: '5 scans or 1 Algorithm Hit',
     popular: true,
     badge: 'MOST POPULAR',
     savings: null,
-    // 6.3¢/cr
   },
   {
     id: 'pro',
-    credits: 700,
-    price: 39,
-    label: '700 Credits',
-    desc: '14 analyses or 4 viral songs',
+    credits: 600,
+    price: 49,
+    label: '600 Credits',
+    desc: '12 scans or 4 Algorithm Hits',
     popular: false,
     badge: null,
-    savings: 'Best per credit',
-    // 5.6¢/cr — still worse than $29/mo subscription at 5.8¢/cr
+    savings: 'Best value',
   },
 ];
 

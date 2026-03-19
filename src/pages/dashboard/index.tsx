@@ -1477,7 +1477,7 @@ export default function Workspace() {
               {(['analyze', 'create'] as const).map(m => (
                 <button key={m} onClick={() => setLeftMode(m)}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${leftMode === m ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                  {m === 'analyze' ? 'Analyze' : 'Create'}
+                  {m === 'analyze' ? '🔍 Scan' : '⚡ Algorithm Hit'}
                 </button>
               ))}
             </div>
@@ -1561,7 +1561,7 @@ export default function Workspace() {
                     <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                       animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
                     <Sparkles className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">Create Viral Version →</span>
+                    <span className="relative z-10">Create Algorithm Hit →</span>
                   </motion.button>
 
                   {/* Re-analyze / View full report */}
@@ -1627,7 +1627,7 @@ export default function Workspace() {
                   </select>
                   <Button onClick={handleAnalyze} disabled={!uploadFile}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-xl text-sm font-bold gap-2 disabled:opacity-40 h-10">
-                    <Search className="w-4 h-4" /> Analyze Track
+                    <Search className="w-4 h-4" /> Scan My Song
                   </Button>
                   <p className="text-[10px] text-center text-muted-foreground">Uses {CREDIT_COSTS.analysis} credits</p>
                 </>
@@ -1642,6 +1642,31 @@ export default function Workspace() {
                 <UpgradeGate />
               ) : generating ? (
                 <ViralCreatePanel elapsed={generateElapsed} genre={activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop'} />
+              ) : !activeItem && !createFile ? (
+                <div className="flex-1 flex flex-col items-center justify-center px-4 text-center space-y-4 py-8">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                    <Sparkles className="w-8 h-8 text-black" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-foreground">Create Your Algorithm Hit</h3>
+                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                      Select a song from your library or scan a new one.<br/>
+                      Our AI injects real chart DNA to guarantee more streams.
+                    </p>
+                  </div>
+                  <div className="space-y-2 w-full">
+                    <button onClick={() => setLeftMode('analyze')}
+                      className="w-full py-2.5 rounded-xl bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/15 transition-all flex items-center justify-center gap-2">
+                      <Search className="w-3.5 h-3.5" />
+                      Scan a new song first
+                    </button>
+                    <button onClick={() => pickFile('create')}
+                      className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-muted-foreground text-xs hover:text-foreground hover:border-white/20 transition-all flex items-center justify-center gap-2">
+                      <Upload className="w-3.5 h-3.5" />
+                      Upload audio directly
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <>
                   {/* Version selector — Suno style */}
@@ -1860,7 +1885,7 @@ export default function Workspace() {
                       animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
                     <Sparkles className="w-4 h-4 relative z-10" />
                     <span className="relative z-10">
-                      {_canClick ? 'Create Viral Song' : 'Select a track first'}
+                      {_canClick ? 'Create Algorithm Hit' : 'Select a track first'}
                     </span>
                   </motion.button>
                   );
@@ -1884,7 +1909,7 @@ export default function Workspace() {
           <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10 shrink-0">
             <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
             <p className="text-[11px] text-primary/80 font-medium">
-              Every song analyzed against <strong>500M+ chart data points</strong> from Spotify, Apple Music, Deezer &amp; YouTube
+              Every song powered by <strong>500M+ real chart data points</strong> — Spotify · Apple Music · Deezer · YouTube
             </p>
           </div>
 

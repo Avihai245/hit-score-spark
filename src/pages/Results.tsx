@@ -656,8 +656,8 @@ const AiRemixSection = ({
           <Rocket className="h-4 w-4 text-accent" />
         </div>
         <div>
-          <h2 className="text-lg font-black font-heading text-foreground">Make This Track Viral</h2>
-          <p className="text-xs text-muted-foreground">Apply proven patterns from high-performing tracks</p>
+          <h2 className="text-lg font-black font-heading text-foreground">Create Your Algorithm Hit</h2>
+          <p className="text-xs text-muted-foreground">Inject real chart DNA from 500M+ data points to guarantee more streams</p>
         </div>
       </div>
 
@@ -1257,21 +1257,19 @@ const Results = () => {
                 </div>
 
                 <div className="flex flex-col gap-3">
+                  <Link
+                    to="/dashboard"
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-amber-500/20"
+                  >
+                    ⚡ Turn This Into an Algorithm Hit
+                  </Link>
                   <motion.button
                     onClick={() => setShowRemixPaywall(true)}
-                    className="w-full py-4 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-base overflow-hidden"
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                  >
-                    <span className="flex items-center justify-center gap-2">
-                      <Rocket className="h-5 w-5" /> Remix This Track — $7 one-time
-                    </span>
-                  </motion.button>
-                  <Link
-                    to="/pricing"
                     className="w-full py-3.5 rounded-xl border border-primary/30 bg-primary/[0.06] text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   >
-                    Get Unlimited Remixes — $19/mo
-                  </Link>
+                    <Rocket className="h-4 w-4" /> Get Unlimited Algorithm Hits — $19/mo
+                  </motion.button>
                 </div>
 
                 {/* Social proof */}
@@ -1334,14 +1332,13 @@ const Results = () => {
           transition={{ delay: 2 }}
           className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-3 bg-background/95 backdrop-blur-lg border-t border-border/50"
         >
-          <button
-            onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-bold text-sm flex items-center justify-center gap-2"
+          <Link
+            to="/dashboard"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-bold text-sm flex items-center justify-center gap-2"
             style={{ minHeight: 56 }}
           >
-            <Rocket className="h-4 w-4" />
-            Remix This Track — From $7
-          </button>
+            ⚡ Turn This Into an Algorithm Hit
+          </Link>
         </motion.div>
       )}
     </div>

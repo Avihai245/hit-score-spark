@@ -192,8 +192,8 @@ const dataEngineFeatures = [
 
 const steps = [
 { num: "01", title: "Upload Your Track", desc: "Drag & drop any MP3 or WAV file. No account needed for your first analysis.", icon: Music, metric: "MP3, WAV up to 100MB" },
-{ num: "02", title: "Global Pattern Analysis", desc: "Our engine compares your song against data patterns from top-performing tracks across platforms.", icon: Brain, metric: "500K+ hit patterns" },
-{ num: "03", title: "Optimize for Viral", desc: "Get your viral score, detailed breakdown, and prioritized improvements to maximize your streams.", icon: Rocket, metric: "~90 second analysis" }];
+{ num: "02", title: "Real Chart Data Analysis", desc: "Our engine cross-references 500M+ real chart data points from Spotify, Apple Music, Deezer & YouTube.", icon: Brain, metric: "500M+ data points" },
+{ num: "03", title: "Create Your Algorithm Hit", desc: "Get your score, detailed breakdown, and an AI-generated Algorithm Hit backed by real chart DNA.", icon: Rocket, metric: "~90 second analysis" }];
 
 
 const viralFeatures = [
@@ -212,11 +212,9 @@ const testimonials = [
 
 
 const pricingPreview = [
-  { name: "Free", price: "$0", features: ["1 analysis per month", "Hit score (0–100)", "3 improvement tips", "Strengths & weaknesses", "Share your score"], highlighted: false },
-  { name: "Pro", price: "$19", period: "/mo", badge: "MOST POPULAR", features: ["Unlimited analyses", "Up to 4 viral songs/month", "Smart scan of top 500 live hits", "Full viral report + lyrics breakdown", "MP3 download", "Priority processing"], highlighted: true },
-  { name: "Studio", price: "$29", period: "/mo", features: ["Everything in Pro", "Up to 10 viral songs/month", "WAV + MP3 download", "Advanced analytics", "Commercial use rights", "Priority support"], highlighted: false },
-  { name: "Business", price: "$49", period: "/mo", badge: "BEST VALUE", features: ["Everything in Studio", "Up to 20 viral songs/month", "WAV + MP3 + stems download", "Full commercial rights", "Early access to new features", "Priority support"], highlighted: false },
-  { name: "Unlimited", price: "$79", period: "/mo", features: ["Everything in Business", "Unlimited viral songs", "Fastest priority queue", "Full commercial rights", "Early access to new features", "Premium support"], highlighted: false },
+  { name: "Free", price: "$0", features: ["2 scans on signup (100 credits)", "Hit score (0–100)", "3 improvement tips", "Strengths & weaknesses", "Share your score"], highlighted: false },
+  { name: "Pro", price: "$19", period: "/mo", badge: "MOST POPULAR", features: ["600 credits/mo (12 scans or 4 Algorithm Hits)", "Unlimited analyses", "Full Algorithm Hit creation", "Full report + lyrics breakdown", "MP3 download", "Priority processing"], highlighted: true },
+  { name: "Studio", price: "$39", period: "/mo", badge: "BEST VALUE", features: ["1,800 credits/mo (36 scans or 12 Algorithm Hits)", "Everything in Pro", "WAV + MP3 download", "Advanced analytics", "Commercial use rights", "Priority support"], highlighted: false },
 ];
 
 
@@ -381,7 +379,7 @@ const Index = () => {
               
               <Link to="/analyze" className="flex items-center justify-center gap-2">
                 <Zap className="h-5 w-5" />
-                <span>Analyze Your Track — Free</span>
+                <span>Scan My Song Free</span>
               </Link>
             </Button>
           </motion.div>
@@ -793,7 +791,7 @@ const Index = () => {
               className="relative gradient-purple text-primary-foreground px-12 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden">
               
               <Link to="/analyze" className="flex items-center gap-2">
-                <span>Analyze Your Track Free</span>
+                <span>Scan My Song Free</span>
                 <span>🔥</span>
               </Link>
             </Button>
@@ -804,7 +802,7 @@ const Index = () => {
             <div className="flex items-center gap-3">
               <Globe className="h-3.5 w-3.5 text-muted-foreground/40" />
               <p className="text-xs text-muted-foreground/60">
-                Based on patterns from 500K+ top-performing tracks across major platforms
+                500M+ real chart data points — Spotify · Apple Music · Deezer · YouTube
               </p>
             </div>
           </div>
