@@ -792,6 +792,7 @@ export default function Workspace() {
 
   /* ─── Analyze state ─── */
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [lastScanS3Key, setLastScanS3Key] = useState<string | null>(null); // persists s3Key after scan
   const [songTitle, setSongTitle] = useState('');
   const [songGenre, setSongGenre] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
@@ -1027,6 +1028,7 @@ export default function Workspace() {
       if (!urlRes.ok) throw new Error('Upload URL failed — please try again');
       const { uploadUrl, s3Key } = await urlRes.json();
       if (!uploadUrl || !s3Key) throw new Error('Could not start upload — please try again');
+      setLastScanS3Key(s3Key); // save for use in Algorithm Hit creation
 
       setAnalyzeStep('Uploading to our servers…');
       const uploadRes = await fetch(uploadUrl, {
@@ -1090,22 +1092,18 @@ export default function Workspace() {
   const handleCreate = async () => {
     if (!user) { toast.error('Sign in required'); return; }
 
-    // Determine s3Key:
-    // 1. From selected analysis audio_url (S3 path)
-    // 2. From selected remix audio_url (if it's an S3 URL)  
-    // 3. From manually uploaded file
+    // Determine s3Key — priority order:
+    // 1. activeItem analysis/remix audio_url (selected from library)
+    // 2. lastScanS3Key (from the scan just completed — KEY FIX)
+    // 3. Manually uploaded createFile
     const anyAudioUrl =
       (activeItem?.type === 'analysis' ? activeItem.data.audio_url : null) ||
       (activeItem?.type === 'remix' ? activeItem.data.audio_url : null) || null;
-    const existingS3Key = anyAudioUrl ? extractS3Key(anyAudioUrl) : null;
+    const existingS3Key = anyAudioUrl ? extractS3Key(anyAudioUrl) : (lastScanS3Key || null);
 
     // Must have EITHER a file OR a pre-existing S3 key
     if (!createFile && !existingS3Key) {
-      // If user selected a song from library but audio_url is missing/not S3,
-      // we just need them to upload the file — show helpful message
-      toast.error('Upload the audio file for this track to create a viral version', {
-        duration: 5000,
-      });
+      toast.error('Upload an audio file or scan a song first', { duration: 5000 });
       return;
     }
 
@@ -1659,15 +1657,33 @@ export default function Workspace() {
                     </div>
                   )}
 
-                  {/* CTA — Create Viral */}
+                  {/* CTA — Create Algorithm Hit (transfers ALL data from scan) */}
                   <motion.button
-                    onClick={() => { setLastAnalysisResult(null); setLeftMode('create'); }}
+                    onClick={() => {
+                      // Transfer analysis data → Create panel
+                      const r = lastAnalysisResult;
+                      // Auto-fill lyrics from analysis
+                      if (r.improvedLyrics) setCreateLyrics(r.improvedLyrics);
+                      else if (r.originalLyrics) setCreateLyrics(r.originalLyrics);
+                      // Auto-fill style from analysis
+                      const viralStyle = [
+                        r.genre || '',
+                        r.bpmEstimate ? `${r.bpmEstimate}bpm` : '',
+                        r.musicalKey || '',
+                        ...(r.tags || []),
+                      ].filter(Boolean);
+                      if (viralStyle.length) setCreateStyle(viralStyle.slice(0, 5).join(', '));
+                      // Keep s3Key from scan — so no re-upload needed
+                      // (lastScanS3Key is already set, handleCreate uses it via activeItem or lastScanS3Key)
+                      setLastAnalysisResult(null);
+                      setLeftMode('create');
+                    }}
                     className="w-full py-3 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 hover:opacity-90 transition-all relative overflow-hidden"
                     whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
                     <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                       animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
                     <Sparkles className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">Create Algorithm Hit →</span>
+                    <span className="relative z-10">⚡ Create Algorithm Hit →</span>
                   </motion.button>
 
                   {/* Re-analyze / View full report */}
@@ -1835,24 +1851,25 @@ export default function Workspace() {
 
                   {/* Audio zone — smart status display */}
                   {(() => {
-                    // Check all possible audio sources
+                    // Check all possible audio sources (priority order)
                     const anyUrl =
                       (activeItem?.type === 'analysis' ? activeItem.data.audio_url : null) ||
                       (activeItem?.type === 'remix' ? activeItem.data.audio_url : null);
-                    const s3Key = anyUrl ? extractS3Key(anyUrl) : null;
+                    const s3Key = anyUrl ? extractS3Key(anyUrl) : lastScanS3Key;
+                    const audioLabel = activeItem
+                      ? (activeItem.type === 'analysis' ? activeItem.data.title : (activeItem.data.remix_title || activeItem.data.title))
+                      : (lastScanS3Key ? 'Audio from your last scan' : '');
 
-                    // Has S3 key from selected item → ready
+                    // Has S3 key (from selected item OR from last scan) → ready
                     if (s3Key && !createFile) {
                       return (
                         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-semibold text-emerald-400">Audio ready ✓</p>
-                            <p className="text-[9px] text-muted-foreground truncate">
-                              {activeItem ? (activeItem.type === 'analysis' ? activeItem.data.title : (activeItem.data.remix_title || activeItem.data.title)) : ''}
-                            </p>
+                            <p className="text-[9px] text-muted-foreground truncate">{audioLabel}</p>
                           </div>
-                          <button onClick={() => pickFile('create')} className="text-[9px] text-muted-foreground hover:text-foreground shrink-0">replace</button>
+                          <button onClick={() => { setLastScanS3Key(null); pickFile('create'); }} className="text-[9px] text-muted-foreground hover:text-foreground shrink-0">replace</button>
                         </div>
                       );
                     }
@@ -1981,7 +1998,7 @@ export default function Workspace() {
                   {/* CREATE button — Suno-style orange gradient */}
                   {(() => {
                     // Button is enabled if: any activeItem selected OR file uploaded
-                    const _canClick = !!activeItem || !!createFile;
+                    const _canClick = !!activeItem || !!createFile || !!lastScanS3Key;
                     return (
                   <motion.button onClick={handleCreate} disabled={!_canClick}
                     whileHover={_canClick ? { scale: 1.01 } : {}}
