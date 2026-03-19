@@ -86,6 +86,18 @@ interface Remix {
 type SongItem = { type: 'analysis'; data: Analysis } | { type: 'remix'; data: Remix };
 type CenterTab = 'all' | 'liked' | 'uploads' | 'created';
 
+/* ─── LocalStorage play counts ─── */
+const getPlayCounts = (uid: string): Record<string, number> => {
+  try { return JSON.parse(localStorage.getItem(`hitcheck_plays_${uid}`) || '{}'); } catch { return {}; }
+};
+const incrementPlayCount = (uid: string, id: string) => {
+  try {
+    const counts = getPlayCounts(uid);
+    counts[id] = (counts[id] || 0) + 1;
+    localStorage.setItem(`hitcheck_plays_${uid}`, JSON.stringify(counts));
+  } catch {}
+};
+
 /* ─── LocalStorage likes ─── */
 const getLikes = (userId: string): Set<string> => {
   try { return new Set(JSON.parse(localStorage.getItem(`likes_${userId}`) || '[]')); }
@@ -806,6 +818,8 @@ export default function Workspace() {
   const [reactions, setReactions] = useState<Record<string, Record<string, number>>>({});
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [creditsModalLoading, setCreditsModalLoading] = useState<string | null>(null);
+  const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
+  const [justGenerated, setJustGenerated] = useState(false);
 
   /* ─── Load data ─── */
   const loadData = useCallback(async () => {
@@ -823,7 +837,7 @@ export default function Workspace() {
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { loadData(); if (user) setPlayCounts(getPlayCounts(user.id)); }, [loadData]);
   useEffect(() => () => {
     if (analyzeTimerRef.current) clearInterval(analyzeTimerRef.current);
     if (generateTimerRef.current) clearInterval(generateTimerRef.current);
@@ -862,16 +876,27 @@ export default function Workspace() {
         const tracks: any[] = [];
         if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: pending.version1Label });
         if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: pending.version2Label });
-        if (user) saveRemixesToLocalStorage(user.id, tracks.map((t, i) => ({ id: `local_${Date.now()}_${i}`, remix_title: t.label, audio_url: t.audioUrl, image_url: t.imageUrl, created_at: new Date().toISOString(), analysis_id: pending.analysisId })));
+        // Save to Supabase — deduplicate by audio_url
+        const savedResumeUrls = new Set<string>();
         for (const t of tracks) {
+          if (!t.audioUrl || savedResumeUrls.has(t.audioUrl)) continue;
+          savedResumeUrls.add(t.audioUrl);
           try {
-            await supabase.from('viralize_remixes').insert({ user_id: user.id, analysis_id: pending.analysisId, audio_url: t.audioUrl, image_url: t.imageUrl || null, suno_task_id: pending.taskIdV1, genre: pending.genre, original_title: pending.title, remix_title: t.label, status: 'complete' });
+            const { data: existing } = await supabase
+              .from('viralize_remixes').select('id')
+              .eq('user_id', user.id).eq('audio_url', t.audioUrl).limit(1);
+            if (existing && existing.length > 0) continue;
+            await supabase.from('viralize_remixes').insert({
+              user_id: user.id, analysis_id: pending.analysisId,
+              audio_url: t.audioUrl, image_url: t.imageUrl || null,
+              suno_task_id: pending.taskIdV1, genre: pending.genre,
+              original_title: pending.title, remix_title: t.label, status: 'complete',
+            });
           } catch {}
         }
         clearPendingGeneration(user.id);
         await loadData(); setGenerating(false);
-        if (tracks[0]?.audioUrl) playTrack({ id: `remix_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
-        toast.success(`🎉 Your songs are ready!`); setTab('created');
+        toast.success(`🎉 Your Algorithm Hits are ready! Check "My Hits" tab.`); setTab('created');
       } catch (e: any) {
         clearInterval(generateTimerRef.current);
         clearPendingGeneration(user.id);
@@ -901,9 +926,18 @@ export default function Workspace() {
 
   /* ─── Filtered center feed ─── */
   const feedItems = useMemo((): SongItem[] => {
+    // Deduplicate remixes by audio_url to prevent showing same song twice
+    const seenUrls = new Set<string>();
+    const uniqueRemixes = remixes.filter(r => {
+      if (!r.audio_url) return true;
+      if (seenUrls.has(r.audio_url)) return false;
+      seenUrls.add(r.audio_url);
+      return true;
+    });
+
     const all: SongItem[] = [
       ...analyses.map(a => ({ type: 'analysis' as const, data: a })),
-      ...remixes.map(r => ({ type: 'remix' as const, data: r })),
+      ...uniqueRemixes.map(r => ({ type: 'remix' as const, data: r })),
     ].sort((a, b) => new Date(
       a.type === 'analysis' ? a.data.created_at : a.data.created_at || ''
     ).getTime() - new Date(
@@ -1110,16 +1144,39 @@ export default function Workspace() {
       const tracks: any[] = [];
       if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: version1?.label || 'Faithful Remix' });
       if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: version2?.label || 'Viral Edition' });
-      if (user) saveRemixesToLocalStorage(user.id, tracks.map((t, i) => ({ id: `local_${Date.now()}_${i}`, remix_title: t.label, audio_url: t.audioUrl, image_url: t.imageUrl, created_at: new Date().toISOString(), analysis_id: activeItem?.type === 'analysis' ? activeItem.data.id : null })));
+      // Save to Supabase (source of truth) — deduplicate by audio_url
+      const savedUrls = new Set<string>();
       for (const t of tracks) {
+        if (!t.audioUrl || savedUrls.has(t.audioUrl)) continue;
+        savedUrls.add(t.audioUrl);
         try {
-          await supabase.from('viralize_remixes').insert({ user_id: user.id, analysis_id: activeItem?.type === 'analysis' ? activeItem.data.id : null, audio_url: t.audioUrl, image_url: t.imageUrl || null, suno_task_id: taskIdV1, genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop', original_title: activeItem?.type === 'analysis' ? activeItem.data.title : null, remix_title: t.label, status: 'complete' });
+          // Check not already saved (prevent duplicate on resume)
+          const { data: existing } = await supabase
+            .from('viralize_remixes')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('audio_url', t.audioUrl)
+            .limit(1);
+          if (existing && existing.length > 0) continue;
+
+          await supabase.from('viralize_remixes').insert({
+            user_id: user.id,
+            analysis_id: activeItem?.type === 'analysis' ? activeItem.data.id : null,
+            audio_url: t.audioUrl,
+            image_url: t.imageUrl || null,
+            suno_task_id: taskIdV1,
+            genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop',
+            original_title: activeItem?.type === 'analysis' ? activeItem.data.title : null,
+            remix_title: t.label,
+            status: 'complete',
+          });
         } catch {}
       }
       if (user) clearPendingGeneration(user.id);
       await loadData(); setGenerating(false); setCreateFile(null);
-      if (tracks[0]?.audioUrl) playTrack({ id: `remix_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
-      toast.success(`🎉 ${tracks.length} songs ready!`); setTab('created');
+      // Play first track
+      if (tracks[0]?.audioUrl) playTrack({ id: `remix_new_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
+      toast.success(`🎉 ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready!`); setTab('created');
     } catch (e: any) {
       clearInterval(generateTimerRef.current); setGenerating(false);
       toast.error(e.message || 'Generation failed');
@@ -1155,6 +1212,15 @@ export default function Workspace() {
     } finally {
       setEnhancingLyrics(false);
     }
+  };
+
+  /* ─── Play with tracking ─── */
+  const playTrackWithTracking = (track: { id: string; title: string; audioUrl: string }) => {
+    if (user) {
+      incrementPlayCount(user.id, track.id);
+      setPlayCounts(prev => ({ ...prev, [track.id]: (prev[track.id] || 0) + 1 }));
+    }
+    playTrack(track);
   };
 
   /* ─── REACTION handler ─── */
