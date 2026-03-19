@@ -479,7 +479,7 @@ const Billing = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
               { icon: BarChart2, label: 'Viral Score', desc: 'AI-powered 0–100 rating' },
-              { icon: Music, label: 'AI Remix', desc: 'Suno-powered enhancement' },
+              { icon: Music, label: 'AI Remix', desc: 'AI-powered enhancement' },
               { icon: Download, label: 'WAV Download', desc: 'Lossless for distribution' },
               { icon: Shield, label: 'Lyrics AI', desc: 'Fix + viral line detection' },
               { icon: Star, label: 'Playlist Match', desc: 'Curator targeting' },

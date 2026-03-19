@@ -594,7 +594,7 @@ const AiRemixSection = ({
       const coverData = await coverRes.json();
       if (coverData.error) throw new Error(coverData.error);
       const { taskIdV1, taskIdV2, version1, version2 } = coverData;
-      if (!taskIdV1 || !taskIdV2) throw new Error("No task IDs returned from Suno");
+      if (!taskIdV1 || !taskIdV2) throw new Error("No task IDs returned from AI engine");
 
       let attempts = 0;
       const poll = async (): Promise<any> => {

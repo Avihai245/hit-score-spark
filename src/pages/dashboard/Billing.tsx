@@ -81,7 +81,7 @@ export default function DashboardBilling() {
 
   return (
     <DashboardLayout>
-      {/* ── Top Suno-style info strip ── */}
+      {/* ── Top billing info strip ── */}
       <div className="bg-card border-b border-border px-6 py-3 flex items-center gap-8 flex-wrap text-sm">
         <div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Current Plan</p>

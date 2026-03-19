@@ -1,7 +1,7 @@
 /**
- * SANTO — Main Workspace  (Suno-level)
+ * HitCheck — Main Workspace
  *
- * Layout mirrors Suno exactly:
+ * 3-panel workspace layout:
  *   LEFT  (280px) — Audio upload · Lyrics editor · Style tags · Create button
  *   CENTER (flex) — Song feed with Liked/All/Uploads tabs + inline actions
  *   RIGHT  (300px) — Active song detail: lyrics · style · waveform · actions
@@ -261,15 +261,15 @@ const VIRAL_STAGES = [
   {
     at: 62, platform: null, color: 'hsl(38 92% 50%)',
     icon: <Music2 className="w-4 h-4 text-accent" />,
-    action: 'Assembling viral Suno prompt',
+    action: 'Assembling AI Hit prompt',
     detail: 'Building optimized style + lyrics payload',
-    inject: 'All viral parameters injected into Suno V5',
+    inject: 'All viral parameters injected into AI engine',
   },
   {
     at: 76, platform: null, color: '#1DB954',
     icon: <Check className="w-4 h-4 text-emerald-400" />,
-    action: 'Suno AI generating your hit',
-    detail: 'Suno AI is rendering 2 tracks (~90 seconds)',
+    action: 'HitCheck AI generating your song',
+    detail: 'AI engine is rendering 2 tracks (~90 seconds)',
     inject: 'Final mix & mastering in progress',
   },
 ];
@@ -284,12 +284,12 @@ const INJECT_FEED = [
   '▸ YouTube Music → retention signals mapped',
   '▸ Reference artist patterns loaded into production engine',
   '▸ Lyric structure: verse/pre-chorus/chorus optimized',
-  '▸ Suno V5 style string assembled with viral parameters',
+  '▸ AI V5 style string assembled with viral parameters',
   '▸ Vocal texture: matched to genre top performers',
   '▸ Energy curve: calibrated for max save-rate',
   '▸ Production elements injected: drums, bass, melody',
   '▸ Hook at 0:20 confirmed — TikTok snip zone secured',
-  '▸ Suno V5 render queue: 2 versions queued',
+  '▸ AI engine render queue: 2 versions queued',
   '▸ Professional mix & master pipeline active',
 ];
 
@@ -439,7 +439,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
 
       {elapsed > 60 && (
         <p className="text-[10px] text-center text-amber-400/70 animate-pulse">
-          Still rendering… Suno takes 60–120s. Your song won't be lost even if you navigate away.
+          Still rendering… AI engine takes 60–120s. Your song won't be lost even if you navigate away.
         </p>
       )}
     </div>
@@ -1853,18 +1853,18 @@ export default function Workspace() {
                 </div>
               ) : (
                 <>
-                  {/* Version selector — Suno style */}
+                  {/* Quality selector */}
                   <div className="flex items-center gap-1 pt-0.5">
-                    <span className="text-[10px] text-muted-foreground font-semibold shrink-0">Version</span>
+                    <span className="text-[10px] text-muted-foreground font-semibold shrink-0">Quality</span>
                     <div className="flex gap-0.5 bg-muted/40 rounded-lg p-0.5 ml-1">
-                      {(['v5', 'v4.5'] as const).map(v => (
-                        <button key={v} onClick={() => setSunoVersion(v)}
+                      {([['v5', 'Ultra HD'], ['v4.5', 'Standard']] as const).map(([val, label]) => (
+                        <button key={val} onClick={() => setSunoVersion(val)}
                           className={`px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${
-                            sunoVersion === v
+                            sunoVersion === val
                               ? 'bg-primary text-primary-foreground shadow-sm'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}>
-                          {v}
+                          {label}
                         </button>
                       ))}
                     </div>
@@ -2060,7 +2060,7 @@ export default function Workspace() {
                     )}
                   </div>
 
-                  {/* CREATE button — Suno-style orange gradient */}
+                  {/* CREATE button */}
                   {(() => {
                     // Button is enabled if: any activeItem selected OR file uploaded
                     const _canClick = !!activeItem || !!createFile || !!lastScanS3Key;
@@ -2101,7 +2101,7 @@ export default function Workspace() {
             </p>
           </div>
 
-          {/* Tab bar — Suno style */}
+          {/* Tab bar */}
           <div className="flex items-center gap-0.5 px-3 py-2 border-b border-border/40 shrink-0">
             {([
               { id: 'all', label: `All (${analyses.length + remixes.length})` },
@@ -2203,7 +2203,7 @@ export default function Workspace() {
                           : 'hover:bg-white/[0.03] border-l-2 border-l-transparent'
                       }`}>
 
-                      {/* Square thumbnail — Suno style */}
+                      {/* Square thumbnail */}
                       <div className="relative w-[60px] h-[60px] rounded-xl overflow-hidden shrink-0">
                         {imgUrl
                           ? <img src={imgUrl} alt="" className="w-full h-full object-cover" />
@@ -2212,7 +2212,7 @@ export default function Workspace() {
                             </div>
                         }
 
-                        {/* Score badge — bottom left (like Suno) */}
+                        {/* Score badge — bottom left */}
                         {item.type === 'analysis' && (
                           <div className="absolute bottom-0.5 left-0.5 px-1 py-0.5 rounded text-[8px] font-black text-white bg-black/70">
                             {item.data.score}
@@ -2276,7 +2276,7 @@ export default function Workspace() {
                             </span>
                           )}
                         </div>
-                        {/* Style tags — exactly like Suno */}
+                        {/* Style tags */}
                         <div className="flex items-center gap-1.5">
                           <p className="text-[11px] text-muted-foreground/60 truncate leading-snug">
                             {styleText || fmtDate(item.data.created_at)}
@@ -2303,7 +2303,7 @@ export default function Workspace() {
                         )}
                       </div>
 
-                      {/* Suno-style action menu — appears on hover */}
+                      {/* Action menu — appears on hover */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
                         {/* Top row: like / share / download always visible on hover */}
                         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
