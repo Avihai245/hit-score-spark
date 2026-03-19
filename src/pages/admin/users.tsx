@@ -152,7 +152,7 @@ export default function AdminUsers() {
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {filtered.map((u) => (
-                      <tr key={u.id} className="hover:bg-white/5 transition-colors">
+                      <tr key={u.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => navigate(`/admin/users/${u.id}`)}>
                         {/* Avatar + Email */}
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
