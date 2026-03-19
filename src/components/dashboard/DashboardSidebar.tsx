@@ -74,7 +74,7 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
       )}
     >
       {/* Logo */}
-      <div className="h-14 flex items-center justify-between px-4 border-b border-border/20 shrink-0">
+      <div className="h-14 flex items-center justify-center border-b border-border/20 shrink-0">
         <Link to="/" className="flex items-center gap-2.5 group">
           <LogoIcon size={24} className="transition-transform duration-300 group-hover:scale-110" />
           {!collapsed && (
@@ -85,7 +85,7 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
                 SANTO
               </span>
               <span
-                className="font-heading leading-none text-sm pointer-events-none"
+                className="absolute inset-0 font-heading leading-none text-sm pointer-events-none"
                 style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
                 aria-hidden="true">
                 SANTO
