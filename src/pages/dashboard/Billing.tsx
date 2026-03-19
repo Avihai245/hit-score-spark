@@ -81,7 +81,35 @@ export default function DashboardBilling() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl mx-auto space-y-8">
+      {/* ── Top Suno-style info strip ── */}
+      <div className="bg-card border-b border-border px-6 py-3 flex items-center gap-8 flex-wrap text-sm">
+        <div>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Current Plan</p>
+          <p className="font-bold text-foreground">{planLimits.label} Plan</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits/Month</p>
+          <p className="font-bold text-foreground">{planLimits.monthlyCredits ? planLimits.monthlyCredits.toLocaleString() : 'Free'}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Credits Remaining</p>
+          <p className={`font-bold tabular-nums ${creditBalanceColor(credits, plan)}`}>{credits.toLocaleString()}</p>
+        </div>
+        {profile?.plan_expires_at && (
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Next Billing Date</p>
+            <p className="font-bold text-foreground">{new Date(profile.plan_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+          </div>
+        )}
+        <div className="ml-auto flex gap-2">
+          {profile?.stripe_customer_id && (
+            <Button onClick={handleManage} size="sm" variant="outline" className="text-xs h-8">Cancel / Manage</Button>
+          )}
+          <Button onClick={() => document.getElementById('credits')?.scrollIntoView({ behavior: 'smooth' })} size="sm" className="bg-primary text-primary-foreground text-xs h-8">Buy more credits</Button>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto space-y-8 px-4 pt-6">
 
         {/* Header */}
         <div>

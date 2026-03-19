@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { supabase, PLAN_LIMITS, CREDIT_COSTS } from '@/lib/supabase';
 import { saveRemixesToLocalStorage } from '@/lib/remixStorage';
+import { createCheckoutSession, PRICES } from '@/lib/stripe';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +30,7 @@ import {
   BarChart2, Headphones, CheckCircle2, Heart, Share2, MoreHorizontal,
   ChevronDown, ChevronRight, RotateCcw, Bookmark, Eye, TrendingUp,
   Flame, Target, FileText, Volume2, Shuffle, SkipBack, SkipForward,
-  Repeat, Copy, Check, Globe, GitBranch,
+  Repeat, Copy, Check, Globe, GitBranch, CreditCard,
 } from 'lucide-react';
 
 const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
@@ -682,6 +683,55 @@ const Waveform = ({ active = false, small = false }: { active?: boolean; small?:
   </div>
 );
 
+/* ─── Credits Buy Modal ─── */
+interface CreditsModalProps { onClose: () => void; onBuy: (priceId: string, packId: string) => void; loading: string | null; }
+const CreditsModal = ({ onClose, onBuy, loading }: CreditsModalProps) => {
+  const packs = [
+    { id: 'credits_100', credits: 100, price: 9, label: 'Starter' },
+    { id: 'credits_300', credits: 300, price: 19, label: 'Popular', popular: true },
+    { id: 'credits_700', credits: 700, price: 39, label: 'Best Value' },
+  ];
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-black text-foreground">Buy Credits</h2>
+          <button onClick={onClose} className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="space-y-2">
+          {packs.map(p => (
+            <button key={p.id}
+              disabled={loading === p.id}
+              onClick={() => onBuy(p.id, p.id)}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
+                p.popular
+                  ? 'border-primary/40 bg-primary/5 hover:bg-primary/10'
+                  : 'border-border hover:border-primary/30 hover:bg-primary/5'
+              }`}>
+              <div className="flex items-center gap-3">
+                <CreditCard className={`w-4 h-4 ${p.popular ? 'text-primary' : 'text-muted-foreground'}`} />
+                <div className="text-left">
+                  <p className={`font-semibold text-sm ${p.popular ? 'text-foreground' : 'text-foreground/80'}`}>
+                    {p.credits.toLocaleString()} credits
+                    {p.popular && <span className="ml-2 text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">POPULAR</span>}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">{p.label}</p>
+                </div>
+              </div>
+              <span className={`font-black text-lg ${p.popular ? 'text-primary' : 'text-foreground'}`}>
+                {loading === p.id ? <Loader2 className="w-4 h-4 animate-spin" /> : `$${p.price}`}
+              </span>
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-center text-muted-foreground mt-4">Credits never expire · One-time purchase</p>
+      </div>
+    </div>
+  );
+};
+
 /* ─── Upgrade gate ─── */
 const UpgradeGate = () => (
   <div className="flex flex-col items-center justify-center text-center h-full px-4 py-8 space-y-4">
@@ -754,6 +804,8 @@ export default function Workspace() {
   const [shownChips, setShownChips] = useState<string[]>(() => shuffleArray(VIRAL_STYLE_CHIPS).slice(0, 10));
   const [songMoreMenuId, setSongMoreMenuId] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, Record<string, number>>>({});
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const [creditsModalLoading, setCreditsModalLoading] = useState<string | null>(null);
 
   /* ─── Load data ─── */
   const loadData = useCallback(async () => {
@@ -904,14 +956,30 @@ export default function Workspace() {
     inp.click();
   };
 
+  /* ─── BUY CREDITS (modal) ─── */
+  const handleBuyCreditsModal = async (packId: string, _unused: string) => {
+    if (!user?.id) { toast.error('Sign in first'); return; }
+    const priceId = packId === 'credits_100' ? PRICES.credits_100
+      : packId === 'credits_300' ? PRICES.credits_300
+      : PRICES.credits_700;
+    setCreditsModalLoading(packId);
+    toast.loading('Redirecting to checkout…', { id: 'credits-checkout' });
+    const r = await createCheckoutSession(priceId, user.id, 'payment');
+    toast.dismiss('credits-checkout');
+    setCreditsModalLoading(null);
+    if (r === null) {
+      toast.error('Checkout unavailable. Try again.');
+    } else {
+      setShowCreditsModal(false);
+    }
+  };
+
   /* ─── ANALYZE ─── */
   const handleAnalyze = async () => {
     if (!uploadFile) return;
     // Credit check
     if (credits < CREDIT_COSTS.analysis) {
-      toast.error(`Not enough credits (need ${CREDIT_COSTS.analysis}, have ${credits})`, {
-        action: { label: 'Buy Credits', onClick: () => navigate('/dashboard/billing#credits') }
-      });
+      setShowCreditsModal(true);
       return;
     }
     setAnalyzing(true); setAnalyzeElapsed(0);
@@ -985,9 +1053,7 @@ export default function Workspace() {
 
     // Credit check
     if (credits < CREDIT_COSTS.viral) {
-      toast.error(`Not enough credits (need ${CREDIT_COSTS.viral}, have ${credits})`, {
-        action: { label: 'Buy Credits', onClick: () => navigate('/dashboard/billing#credits') }
-      });
+      setShowCreditsModal(true);
       return;
     }
     setGenerating(true); setGenerateElapsed(0);
@@ -1374,6 +1440,14 @@ export default function Workspace() {
   ──────────────────────────────────────── */
   return (
     <DashboardLayout noPlayerPadding>
+      {/* Credits Modal */}
+      {showCreditsModal && (
+        <CreditsModal
+          onClose={() => setShowCreditsModal(false)}
+          onBuy={handleBuyCreditsModal}
+          loading={creditsModalLoading}
+        />
+      )}
       <div className="flex flex-col h-[calc(100vh-56px)] overflow-hidden">
         {/* 3-column row — LEFT | CENTER | RIGHT */}
         <div className="flex flex-1 overflow-hidden min-h-0">
@@ -1791,9 +1865,10 @@ export default function Workspace() {
                   </motion.button>
                   );
                   })()}
-                  <p className="text-[10px] text-center text-muted-foreground">
-                    Uses {CREDIT_COSTS.viral} credits · {credits} remaining
-                  </p>
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span>Uses {CREDIT_COSTS.viral} credits · {credits} remaining</span>
+                    <button onClick={() => setShowCreditsModal(true)} className="text-primary hover:underline font-semibold">+ Buy credits</button>
+                  </div>
                 </>
               )}
             </div>
