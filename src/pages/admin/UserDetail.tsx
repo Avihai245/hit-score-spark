@@ -55,6 +55,8 @@ export default function AdminUserDetail() {
   const [analyses, setAnalyses] = useState<any[]>([]);
   const [remixes, setRemixes] = useState<any[]>([]);
   const [credits, setCredits] = useState<any[]>([]);
+  const [totalAnalyses, setTotalAnalyses] = useState(0);
+  const [totalRemixes, setTotalRemixes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [changingPlan, setChangingPlan] = useState(false);
   const [creditAmount, setCreditAmount] = useState('');
@@ -64,16 +66,20 @@ export default function AdminUserDetail() {
   const fetchUser = async () => {
     if (!userId) return;
     setLoading(true);
-    const [{ data: userData }, { data: analysesData }, { data: remixesData }, { data: creditsData }] = await Promise.all([
+    const [{ data: userData }, { data: analysesData }, { data: remixesData }, { data: creditsData }, { count: analysesCount }, { count: remixesCount }] = await Promise.all([
       supabase.from('viralize_users').select('*').eq('id', userId).single(),
       supabase.from('viralize_analyses').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
       supabase.from('viralize_remixes').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
       supabase.from('viralize_credits').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(10),
+      supabase.from('viralize_analyses').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+      supabase.from('viralize_remixes').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     ]);
     setUser(userData);
     setAnalyses(analysesData ?? []);
     setRemixes(remixesData ?? []);
     setCredits(creditsData ?? []);
+    setTotalAnalyses(analysesCount ?? 0);
+    setTotalRemixes(remixesCount ?? 0);
     setLoading(false);
   };
 
@@ -251,8 +257,8 @@ export default function AdminUserDetail() {
 
           {/* ── 2. Stats Row ── */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard icon={BarChart3} label="Total Analyses" value={user.analyses_used ?? 0} subtext={`${user.analyses_this_month ?? 0} this month`} color="text-purple-400" />
-            <StatCard icon={Music} label="Total Remixes" value={user.remixes_used ?? 0} subtext={`${user.remixes_this_month ?? 0} this month`} color="text-pink-400" />
+            <StatCard icon={BarChart3} label="Total Analyses" value={totalAnalyses} subtext={`${user.analyses_this_month ?? 0} this month`} color="text-purple-400" />
+            <StatCard icon={Music} label="Total Remixes" value={totalRemixes} subtext={`${user.remixes_this_month ?? 0} this month`} color="text-pink-400" />
             <StatCard
               icon={Coins}
               label="Credits"
