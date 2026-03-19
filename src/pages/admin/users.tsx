@@ -237,7 +237,7 @@ export default function AdminUsers() {
                           {format(new Date(u.created_at), 'MMM d, yyyy')}
                         </td>
                         {/* Actions */}
-                        <td className="px-4 py-3">
+                         <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             {deleteConfirm === u.id ? (
                               <>
