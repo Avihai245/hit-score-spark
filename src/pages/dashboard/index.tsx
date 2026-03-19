@@ -897,6 +897,7 @@ export default function Workspace() {
         clearPendingGeneration(user.id);
         await loadData(); setGenerating(false);
         toast.success(`🎉 Your Algorithm Hits are ready! Check "My Hits" tab.`); setTab('created');
+        setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
       } catch (e: any) {
         clearInterval(generateTimerRef.current);
         clearPendingGeneration(user.id);
@@ -1175,8 +1176,9 @@ export default function Workspace() {
       if (user) clearPendingGeneration(user.id);
       await loadData(); setGenerating(false); setCreateFile(null);
       // Play first track
-      if (tracks[0]?.audioUrl) playTrack({ id: `remix_new_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
+      if (tracks[0]?.audioUrl) playTrackWithTracking({ id: `remix_new_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
       toast.success(`🎉 ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready!`); setTab('created');
+      setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
     } catch (e: any) {
       clearInterval(generateTimerRef.current); setGenerating(false);
       toast.error(e.message || 'Generation failed');
@@ -1344,6 +1346,13 @@ export default function Workspace() {
               <RotateCcw className="w-3.5 h-3.5" /> Remix Again
             </Button>
           )}
+          {/* Play count row */}
+          {(playCounts[activeItem?.data.id || ''] || 0) > 0 && (
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
+              <Play className="w-3 h-3" />
+              Played {playCounts[activeItem.data.id]}× by you
+            </div>
+          )}
         </div>
 
         {/* Style tags */}
@@ -1410,7 +1419,7 @@ export default function Workspace() {
                   setLeftMode('create');
                 }}
                 className="w-full py-2 rounded-xl border border-dashed border-primary/30 text-primary text-[11px] font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-1.5">
-                <GitBranch className="w-3.5 h-3.5" /> Remix this
+                <Sparkles className="w-3.5 h-3.5" /> ⚡ Create Algorithm Hit
               </button>
             </div>
           )}
@@ -1539,11 +1548,19 @@ export default function Workspace() {
 
           {/* Mode tabs */}
           <div className="px-3 pt-3 pb-2 shrink-0">
-            <div className="flex gap-0.5 bg-muted/50 rounded-xl p-0.5">
+            <div className="flex p-1 bg-muted/50 rounded-xl gap-1 shrink-0">
               {(['analyze', 'create'] as const).map(m => (
                 <button key={m} onClick={() => setLeftMode(m)}
-                  className={`flex-1 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${leftMode === m ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-                  {m === 'analyze' ? '🔍 Scan' : '⚡ Algorithm Hit'}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    leftMode === m
+                      ? m === 'analyze'
+                        ? 'bg-primary/20 text-primary shadow-sm'
+                        : 'bg-orange-500/20 text-orange-400 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}>
+                  {m === 'analyze'
+                    ? <><Search className="w-3 h-3" />Scan</>
+                    : <><Sparkles className="w-3 h-3" />Algorithm Hit</>}
                 </button>
               ))}
             </div>
@@ -1982,10 +1999,10 @@ export default function Workspace() {
           {/* Tab bar — Suno style */}
           <div className="flex items-center gap-0.5 px-3 py-2 border-b border-border/40 shrink-0">
             {([
-              { id: 'all', label: 'All Songs' },
-              { id: 'liked', label: 'Liked' },
-              { id: 'uploads', label: 'Uploads' },
-              { id: 'created', label: 'Created' },
+              { id: 'all', label: 'All' },
+              { id: 'liked', label: '❤ Liked' },
+              { id: 'uploads', label: '🔍 Scanned' },
+              { id: 'created', label: '⚡ My Hits' },
             ] as const).map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === t.id ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
@@ -2004,6 +2021,17 @@ export default function Workspace() {
 
           {/* Feed */}
           <div className="flex-1 overflow-y-auto">
+            {tab === 'created' && justGenerated && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                className="mx-4 mt-2 p-3 rounded-xl bg-gradient-to-r from-orange-500/15 to-amber-500/15 border border-orange-500/30 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-orange-400 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-orange-300">Your Algorithm Hits are ready! 🎉</p>
+                  <p className="text-[10px] text-orange-300/70">2 versions generated — play them below</p>
+                </div>
+              </motion.div>
+            )}
             {loading ? (
               <div className="p-3 space-y-2">
                 {Array(8).fill(0).map((_, i) => (
@@ -2011,15 +2039,31 @@ export default function Workspace() {
                 ))}
               </div>
             ) : feedItems.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-3">
-                <Music2 className="w-10 h-10 text-muted-foreground/30" />
-                <p className="text-sm font-semibold text-foreground">
-                  {tab === 'liked' ? 'No liked songs yet' : tab === 'created' ? 'No created songs yet' : 'No songs yet'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {tab === 'liked' ? 'Heart songs to save them here' : 'Upload a track to get started'}
-                </p>
-              </div>
+              tab === 'created' ? (
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center mb-4">
+                    <Sparkles className="w-8 h-8 text-orange-400" />
+                  </div>
+                  <h3 className="text-base font-black text-foreground mb-2">No Algorithm Hits yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Scan a song first, then create your Algorithm Hit powered by real chart data.
+                  </p>
+                  <button onClick={() => setLeftMode('analyze')}
+                    className="px-4 py-2 rounded-xl bg-primary/15 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
+                    🔍 Scan My First Song
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center space-y-3">
+                  <Music2 className="w-10 h-10 text-muted-foreground/30" />
+                  <p className="text-sm font-semibold text-foreground">
+                    {tab === 'liked' ? 'No liked songs yet' : 'No songs yet'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {tab === 'liked' ? 'Heart songs to save them here' : 'Upload a track to get started'}
+                  </p>
+                </div>
+              )
             ) : (
               <div>
                 {feedItems.map((item, i) => {
@@ -2071,7 +2115,7 @@ export default function Workspace() {
 
                         {/* Play on hover */}
                         {audioUrl && (
-                          <button onClick={e => { e.stopPropagation(); playTrack({ id: item.data.id, title, audioUrl }); }}
+                          <button onClick={e => { e.stopPropagation(); playTrackWithTracking({ id: item.data.id, title, audioUrl }); }}
                             className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/60 transition-all rounded-xl">
                             <div className={`w-9 h-9 rounded-full bg-white/90 flex items-center justify-center transition-all ${
                               isCurrentlyPlaying
@@ -2101,16 +2145,38 @@ export default function Workspace() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         {/* Title row */}
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                           <p className={`text-sm font-semibold truncate ${isActive ? 'text-white' : 'text-foreground/90'}`}>{title}</p>
+                          {/* TYPE badge */}
+                          {item.type === 'analysis' && (
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-primary/15 text-primary uppercase tracking-wider shrink-0">
+                              Scanned
+                            </span>
+                          )}
                           {item.type === 'remix' && (
-                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-accent/20 text-accent shrink-0">AI</span>
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 uppercase tracking-wider shrink-0">
+                              Hit ⚡
+                            </span>
+                          )}
+                          {/* NEW badge — shown if play count is 0 */}
+                          {(playCounts[item.data.id] || 0) === 0 && (
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 uppercase tracking-wider shrink-0 animate-pulse">
+                              NEW
+                            </span>
                           )}
                         </div>
                         {/* Style tags — exactly like Suno */}
-                        <p className="text-[11px] text-muted-foreground/60 truncate leading-snug">
-                          {styleText || fmtDate(item.data.created_at)}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[11px] text-muted-foreground/60 truncate leading-snug">
+                            {styleText || fmtDate(item.data.created_at)}
+                          </p>
+                          {(playCounts[item.data.id] || 0) > 0 && (
+                            <span className="text-[9px] text-muted-foreground/50 flex items-center gap-0.5 shrink-0">
+                              <Play className="w-2.5 h-2.5" />
+                              {playCounts[item.data.id]}× played
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Suno-style action menu — appears on hover */}
