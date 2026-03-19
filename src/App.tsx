@@ -37,6 +37,7 @@ import DashboardCompare from "./pages/dashboard/Compare";
 // Admin pages
 import AdminDashboard from "./pages/admin/index";
 import AdminUsers from "./pages/admin/users";
+import AdminUserDetail from "./pages/admin/UserDetail";
 import AdminAnalytics from "./pages/admin/analytics";
 import AdminRevenue from "./pages/admin/revenue";
 import AdminContent from "./pages/admin/content";
