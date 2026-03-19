@@ -10,11 +10,9 @@ import {
 import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from '@/components/ViralizeLogo';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Home', icon: Home, exact: true },
-  { href: '/analyze', label: 'Create', icon: Rocket },
-  { href: '/dashboard/tracks', label: 'Library', icon: Library },
+  { href: '/dashboard', label: 'Workspace', icon: Home, exact: true },
   { href: '/discover', label: 'Discover', icon: Compass },
-  { href: '/dashboard/search', label: 'Search', icon: Search },
+  { href: '/dashboard/tracks', label: 'Library', icon: Library },
   { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
 ];
 

@@ -9,7 +9,7 @@ import { Home, Rocket, Library, CreditCard, Bell } from 'lucide-react';
 
 const MOBILE_NAV = [
   { href: '/dashboard', label: 'Home', icon: Home, exact: true },
-  { href: '/analyze', label: 'Create', icon: Rocket },
+  { href: '/dashboard', label: 'Create', icon: Rocket },
   { href: '/dashboard/tracks', label: 'Library', icon: Library },
   { href: '/dashboard/notifications', label: 'Alerts', icon: Bell },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },

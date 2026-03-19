@@ -112,6 +112,7 @@ const AnimatedRoutes = () => {
         <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
         <Route path="/dashboard/recommendations" element={<ProtectedRoute><DashboardRecommendations /></ProtectedRoute>} />
         <Route path="/dashboard/compare" element={<ProtectedRoute><DashboardCompare /></ProtectedRoute>} />
+        <Route path="/dashboard/search" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     );
   }
