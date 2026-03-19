@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Home, Music2, CreditCard, ArrowRight, X, Rocket, Search,
-  Bell, User, Coins, Library,
+  Bell, User, Coins, Library, Compass,
 } from 'lucide-react';
 import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from '@/components/ViralizeLogo';
 
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Home', icon: Home, exact: true },
   { href: '/analyze', label: 'Create', icon: Rocket },
   { href: '/dashboard/tracks', label: 'Library', icon: Library },
+  { href: '/discover', label: 'Discover', icon: Compass },
   { href: '/dashboard/search', label: 'Search', icon: Search },
   { href: '/dashboard/notifications', label: 'Notifications', icon: Bell },
 ];

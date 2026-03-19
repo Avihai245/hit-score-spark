@@ -33,6 +33,8 @@ import DashboardProfile from "./pages/dashboard/Profile";
 import DashboardSettings from "./pages/dashboard/Settings";
 import DashboardRecommendations from "./pages/dashboard/Recommendations";
 import DashboardCompare from "./pages/dashboard/Compare";
+import Discover from "./pages/Discover";
+import Explore from "./pages/Explore";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/index";
@@ -125,7 +127,8 @@ const AnimatedRoutes = () => {
           <Route path="/billing" element={<Billing />} />
           <Route path="/library" element={<Library />} />
           <Route path="/me" element={<Library />} />
-          <Route path="/explore" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
+          <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
           <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />
           <Route path="/search" element={<Navigate to="/dashboard" replace />} />
           <Route path="/song/:id" element={<ProtectedRoute><SongDetail /></ProtectedRoute>} />

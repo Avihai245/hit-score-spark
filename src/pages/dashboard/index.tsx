@@ -30,7 +30,7 @@ import {
   BarChart2, Headphones, CheckCircle2, Heart, Share2, MoreHorizontal,
   ChevronDown, ChevronRight, RotateCcw, Bookmark, Eye, TrendingUp,
   Flame, Target, FileText, Volume2, Shuffle, SkipBack, SkipForward,
-  Repeat, Copy, Check, Globe, GitBranch, CreditCard,
+  Repeat, Copy, Check, Globe, GitBranch, CreditCard, Zap,
 } from 'lucide-react';
 
 const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
@@ -1879,6 +1879,14 @@ export default function Workspace() {
             CENTER — Song Feed
         ═══════════════════════════════ */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0 border-r border-border/40">
+
+          {/* Brand data tagline */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 border-b border-primary/10 shrink-0">
+            <Zap className="w-3.5 h-3.5 text-primary shrink-0" />
+            <p className="text-[11px] text-primary/80 font-medium">
+              Every song analyzed against <strong>500M+ chart data points</strong> from Spotify, Apple Music, Deezer &amp; YouTube
+            </p>
+          </div>
 
           {/* Tab bar — Suno style */}
           <div className="flex items-center gap-0.5 px-3 py-2 border-b border-border/40 shrink-0">
