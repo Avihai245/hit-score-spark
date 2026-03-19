@@ -75,21 +75,26 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
     >
       {/* Logo */}
       <div className="h-14 flex items-center justify-center border-b border-border/20 shrink-0">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <LogoIcon size={24} className="transition-transform duration-300 group-hover:scale-110" />
-          {!collapsed && (
+        <Link to="/" className="group">
+          {!collapsed ? (
             <span className="relative inline-block">
               <span
-                className="font-heading leading-none text-sm"
+                className="font-heading leading-none text-3xl"
                 style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}>
                 SANTO
               </span>
               <span
-                className="absolute inset-0 font-heading leading-none text-sm pointer-events-none"
+                className="absolute inset-0 font-heading leading-none text-3xl pointer-events-none"
                 style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
                 aria-hidden="true">
                 SANTO
               </span>
+            </span>
+          ) : (
+            <span
+              className="font-heading leading-none text-xl"
+              style={{ fontWeight: 900, ...LOGO_GRADIENT }}>
+              S
             </span>
           )}
         </Link>
