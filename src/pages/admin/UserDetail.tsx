@@ -257,8 +257,8 @@ export default function AdminUserDetail() {
 
           {/* ── 2. Stats Row ── */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard icon={BarChart3} label="Total Analyses" value={user.analyses_used ?? 0} subtext={`${user.analyses_this_month ?? 0} this month`} color="text-purple-400" />
-            <StatCard icon={Music} label="Total Remixes" value={user.remixes_used ?? 0} subtext={`${user.remixes_this_month ?? 0} this month`} color="text-pink-400" />
+            <StatCard icon={BarChart3} label="Total Analyses" value={totalAnalyses} subtext={`${user.analyses_this_month ?? 0} this month`} color="text-purple-400" />
+            <StatCard icon={Music} label="Total Remixes" value={totalRemixes} subtext={`${user.remixes_this_month ?? 0} this month`} color="text-pink-400" />
             <StatCard
               icon={Coins}
               label="Credits"
