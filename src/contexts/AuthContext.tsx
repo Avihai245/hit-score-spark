@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             analyses_used: 0,
             remixes_used: 0,
             analyses_this_month: 0,
-            credits: isAdmin ? 99999 : 0,
+            credits: isAdmin ? 99999 : 50,
             subscription_status: isAdmin ? 'active' : null,
             api_key: null,
           })

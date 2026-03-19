@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import AudioPlayer from "@/components/AudioPlayer";
 import Navbar from "@/components/Navbar";
@@ -53,6 +53,13 @@ import AdminNotifications from "./pages/admin/notifications";
 
 const queryClient = new QueryClient();
 
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
+  if (!user) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+};
+
 const pageVariants = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.25, 0.1, 0.25, 1] as const } },
@@ -89,18 +96,18 @@ const AnimatedRoutes = () => {
   if (isDashboardRoute) {
     return (
       <Routes location={location}>
-        <Route path="/dashboard" element={<DashboardHome />} />
-        <Route path="/dashboard/tracks" element={<DashboardTracks />} />
-        <Route path="/dashboard/uploads" element={<DashboardUploads />} />
-        <Route path="/dashboard/insights" element={<DashboardInsights />} />
-        <Route path="/dashboard/credits" element={<DashboardCredits />} />
-        <Route path="/dashboard/billing" element={<DashboardBilling />} />
-        <Route path="/dashboard/notifications" element={<DashboardNotifications />} />
-        <Route path="/dashboard/support" element={<DashboardSupport />} />
-        <Route path="/dashboard/profile" element={<DashboardProfile />} />
-        <Route path="/dashboard/settings" element={<DashboardSettings />} />
-        <Route path="/dashboard/recommendations" element={<DashboardRecommendations />} />
-        <Route path="/dashboard/compare" element={<DashboardCompare />} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardHome /></ProtectedRoute>} />
+        <Route path="/dashboard/tracks" element={<ProtectedRoute><DashboardTracks /></ProtectedRoute>} />
+        <Route path="/dashboard/uploads" element={<ProtectedRoute><DashboardUploads /></ProtectedRoute>} />
+        <Route path="/dashboard/insights" element={<ProtectedRoute><DashboardInsights /></ProtectedRoute>} />
+        <Route path="/dashboard/credits" element={<ProtectedRoute><DashboardCredits /></ProtectedRoute>} />
+        <Route path="/dashboard/billing" element={<ProtectedRoute><DashboardBilling /></ProtectedRoute>} />
+        <Route path="/dashboard/notifications" element={<ProtectedRoute><DashboardNotifications /></ProtectedRoute>} />
+        <Route path="/dashboard/support" element={<ProtectedRoute><DashboardSupport /></ProtectedRoute>} />
+        <Route path="/dashboard/profile" element={<ProtectedRoute><DashboardProfile /></ProtectedRoute>} />
+        <Route path="/dashboard/settings" element={<ProtectedRoute><DashboardSettings /></ProtectedRoute>} />
+        <Route path="/dashboard/recommendations" element={<ProtectedRoute><DashboardRecommendations /></ProtectedRoute>} />
+        <Route path="/dashboard/compare" element={<ProtectedRoute><DashboardCompare /></ProtectedRoute>} />
       </Routes>
     );
   }
@@ -110,12 +117,12 @@ const AnimatedRoutes = () => {
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
         <Routes location={location}>
           <Route path="/" element={<Index />} />
-          <Route path="/analyze" element={<Analyze />} />
+          <Route path="/analyze" element={<ProtectedRoute><Analyze /></ProtectedRoute>} />
           <Route path="/results" element={<Results />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/library" element={<Library />} />
-          <Route path="/song/:id" element={<SongDetail />} />
+          <Route path="/song/:id" element={<ProtectedRoute><SongDetail /></ProtectedRoute>} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

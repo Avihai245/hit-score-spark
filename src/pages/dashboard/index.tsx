@@ -34,6 +34,34 @@ import {
 
 const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
 
+const GENERATION_KEY = (uid: string) => `hitcheck_generating_${uid}`;
+
+interface PendingGeneration {
+  taskIdV1: string;
+  taskIdV2: string;
+  version1Label: string;
+  version2Label: string;
+  title: string;
+  genre: string;
+  analysisId: string | null;
+  startedAt: number;
+}
+
+const savePendingGeneration = (uid: string, gen: PendingGeneration) => {
+  try { localStorage.setItem(GENERATION_KEY(uid), JSON.stringify(gen)); } catch {}
+};
+
+const loadPendingGeneration = (uid: string): PendingGeneration | null => {
+  try {
+    const raw = localStorage.getItem(GENERATION_KEY(uid));
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+
+const clearPendingGeneration = (uid: string) => {
+  try { localStorage.removeItem(GENERATION_KEY(uid)); } catch {}
+};
+
 /** Extract S3 key from a public S3 URL (amazonaws.com/.../key) */
 const extractS3Key = (url: string): string | null => {
   if (!url) return null;
@@ -209,7 +237,7 @@ const VIRAL_STAGES = [
     at: 76, platform: null, color: '#1DB954',
     icon: <Check className="w-4 h-4 text-emerald-400" />,
     action: 'Suno AI generating your hit',
-    detail: 'AI producing 2 professional versions',
+    detail: 'Suno AI is rendering 2 tracks (~90 seconds)',
     inject: 'Final mix & mastering in progress',
   },
 ];
@@ -375,6 +403,12 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
           </motion.p>
         </AnimatePresence>
       </div>
+
+      {elapsed > 60 && (
+        <p className="text-[10px] text-center text-amber-400/70 animate-pulse">
+          Still rendering… Suno takes 60–120s. Your song won't be lost even if you navigate away.
+        </p>
+      )}
     </div>
   );
 };
@@ -719,6 +753,59 @@ export default function Workspace() {
     if (generateTimerRef.current) clearInterval(generateTimerRef.current);
   }, []);
 
+  // Resume any pending generation after navigation
+  useEffect(() => {
+    if (!user) return;
+    const pending = loadPendingGeneration(user.id);
+    if (!pending) return;
+    // If started more than 10 minutes ago, clear it
+    if (Date.now() - pending.startedAt > 10 * 60 * 1000) {
+      clearPendingGeneration(user.id);
+      return;
+    }
+    // Resume polling
+    setGenerating(true);
+    setGenerateElapsed(Math.floor((Date.now() - pending.startedAt) / 1000));
+    generateTimerRef.current = setInterval(() => setGenerateElapsed(e => e + 1), 1000);
+
+    const resumePoll = async () => {
+      let attempts = 0;
+      const poll = async (): Promise<any> => {
+        if (attempts++ > 45) throw new Error('Timed out');
+        const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'suno-cover', taskIdV1: pending.taskIdV1, taskIdV2: pending.taskIdV2 }) });
+        const d = await pr.json();
+        if (d.status === 'complete') return d;
+        if (d.status === 'failed' || d.error) throw new Error(d.error || 'Generation failed');
+        await new Promise(r => setTimeout(r, 8000)); return poll();
+      };
+
+      try {
+        const final = await poll();
+        clearInterval(generateTimerRef.current);
+        const tracks: any[] = [];
+        if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: pending.version1Label });
+        if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: pending.version2Label });
+        if (user) saveRemixesToLocalStorage(user.id, tracks.map((t, i) => ({ id: `local_${Date.now()}_${i}`, remix_title: t.label, audio_url: t.audioUrl, image_url: t.imageUrl, created_at: new Date().toISOString(), analysis_id: pending.analysisId })));
+        for (const t of tracks) {
+          try {
+            await supabase.from('viralize_remixes').insert({ user_id: user.id, analysis_id: pending.analysisId, audio_url: t.audioUrl, image_url: t.imageUrl || null, suno_task_id: pending.taskIdV1, genre: pending.genre, original_title: pending.title, remix_title: t.label, status: 'complete' });
+          } catch {}
+        }
+        clearPendingGeneration(user.id);
+        await loadData(); setGenerating(false);
+        if (tracks[0]?.audioUrl) playTrack({ id: `remix_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
+        toast.success(`🎉 Your songs are ready!`); setTab('created');
+      } catch (e: any) {
+        clearInterval(generateTimerRef.current);
+        clearPendingGeneration(user.id);
+        setGenerating(false);
+        toast.error(e.message || 'Generation failed');
+      }
+    };
+    resumePoll();
+  }, [user]); // run once on mount
+
   /* ─── Auto-fill create from active analysis ─── */
   useEffect(() => {
     if (activeItem?.type === 'analysis') {
@@ -908,6 +995,16 @@ export default function Workspace() {
       if (coverData.error) throw new Error(coverData.error);
       const { taskIdV1, taskIdV2, version1, version2 } = coverData;
       if (!taskIdV1 || !taskIdV2) throw new Error('No task IDs from server');
+      // Save to localStorage IMMEDIATELY before polling starts
+      if (user) savePendingGeneration(user.id, {
+        taskIdV1, taskIdV2,
+        version1Label: version1?.label || 'Faithful Remix',
+        version2Label: version2?.label || 'Viral Edition',
+        title: activeItem?.type === 'analysis' ? activeItem.data.title : (createFile?.name || 'My Song'),
+        genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop',
+        analysisId: activeItem?.type === 'analysis' ? activeItem.data.id : null,
+        startedAt: Date.now(),
+      });
       let attempts = 0;
       const poll = async (): Promise<any> => {
         if (attempts++ > 45) throw new Error('Timed out — try again');
@@ -929,6 +1026,7 @@ export default function Workspace() {
           await supabase.from('viralize_remixes').insert({ user_id: user.id, analysis_id: activeItem?.type === 'analysis' ? activeItem.data.id : null, audio_url: t.audioUrl, image_url: t.imageUrl || null, suno_task_id: taskIdV1, genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop', original_title: activeItem?.type === 'analysis' ? activeItem.data.title : null, remix_title: t.label, status: 'complete' });
         } catch {}
       }
+      if (user) clearPendingGeneration(user.id);
       await loadData(); setGenerating(false); setCreateFile(null);
       if (tracks[0]?.audioUrl) playTrack({ id: `remix_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
       toast.success(`🎉 ${tracks.length} songs ready!`); setTab('created');
