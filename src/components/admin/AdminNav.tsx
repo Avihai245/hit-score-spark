@@ -92,14 +92,27 @@ export const AdminNav = ({ mobileOpen = false, onMobileClose }: AdminNavProps) =
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
-              <Zap className="w-4 h-4 text-primary-foreground" />
-            </div>
-            {(!collapsed || mobileOpen) && (
-              <div>
-                <p className="text-[10px] font-semibold text-primary uppercase tracking-widest">Admin</p>
-                <p className="text-sm font-bold text-foreground">Santo</p>
-              </div>
+            {(!collapsed || mobileOpen) ? (
+              <span className="relative inline-block">
+                <span
+                  className="font-heading leading-none text-2xl"
+                  style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}>
+                  SANTO
+                </span>
+                <span
+                  className="absolute inset-0 font-heading leading-none text-2xl pointer-events-none"
+                  style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
+                  aria-hidden="true">
+                  SANTO
+                </span>
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-widest mt-0.5">Admin Panel</p>
+              </span>
+            ) : (
+              <span
+                className="font-heading leading-none text-xl"
+                style={{ fontWeight: 900, ...LOGO_GRADIENT }}>
+                S
+              </span>
             )}
           </div>
         </div>

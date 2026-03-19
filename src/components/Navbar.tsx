@@ -120,10 +120,9 @@ const Navbar = () => {
                 SANTO
               </span>
               <span
-                className="font-heading leading-none text-3xl pointer-events-none"
+                className="absolute inset-0 font-heading leading-none text-3xl pointer-events-none"
                 style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
                 aria-hidden="true">
-                
                 SANTO
               </span>
             </span>
