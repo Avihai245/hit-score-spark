@@ -1,402 +1,310 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { PLAN_LIMITS, CREDIT_COSTS, CREDIT_PACKS, Plan } from '@/lib/supabase';
+import { PLAN_LIMITS, CREDIT_COSTS, CREDIT_PACKS, creditBalanceColor } from '@/lib/supabase';
 import { createCheckoutSession, openCustomerPortal, PRICES } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { motion } from 'framer-motion';
 import {
-  Check, Star, Crown, ArrowRight, ExternalLink, Calendar,
-  Coins, X, Zap, Sparkles, Rocket,
+  Check, ArrowRight, ExternalLink, Calendar, Sparkles, Crown, Zap,
+  BarChart2, Star, CreditCard,
 } from 'lucide-react';
+import type { Plan } from '@/lib/supabase';
 
-/* ─── Feature row ─── */
-const FeatureRow = ({ text, included }: { text: string; included: boolean }) => (
-  <li className="flex items-start gap-2 text-[13px] py-0.5">
-    {included ? (
-      <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
-        <Check className="h-2.5 w-2.5 text-emerald-400" />
+/* ─── Credit bar ─── */
+const CreditBar = ({ credits, max }: { credits: number; max: number }) => {
+  const pct = max > 0 ? Math.min(100, (credits / max) * 100) : 0;
+  const color = credits <= 0 ? 'bg-destructive' : pct <= 10 ? 'bg-destructive' : pct <= 25 ? 'bg-amber-400' : 'bg-emerald-400';
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">Credits remaining</span>
+        <span className={`font-bold tabular-nums ${creditBalanceColor(credits, 'free')}`}>{credits.toLocaleString()}</span>
       </div>
-    ) : (
-      <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
-        <X className="h-2.5 w-2.5 text-muted-foreground/30" />
+      <div className="h-2 rounded-full bg-muted overflow-hidden">
+        <motion.div className={`h-full rounded-full ${color}`}
+          initial={{ scaleX: 0 }} animate={{ scaleX: pct / 100 }}
+          style={{ transformOrigin: 'left' }} transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} />
       </div>
-    )}
-    <span className={`leading-snug ${included ? 'text-foreground/80' : 'text-muted-foreground/40'}`}>{text}</span>
-  </li>
-);
+    </div>
+  );
+};
 
 export default function DashboardBilling() {
   const { user, profile, refreshProfile } = useAuth();
   const [searchParams] = useSearchParams();
-  const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly');
-  const plan: Plan = (profile?.plan as Plan) || 'free';
-  const isActive = (p: Plan) => plan === p;
+  const [loading, setLoading] = useState<string | null>(null);
+  const plan = (profile?.plan || 'free') as Plan;
+  const credits = profile?.credits ?? 0;
+  const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
 
   useEffect(() => {
     if (searchParams.get('payment') === 'success') {
-      toast.success('Payment successful! Your plan has been updated.');
+      toast.success('🎉 Payment successful! Your credits have been added.');
       refreshProfile();
       window.history.replaceState({}, '', '/dashboard/billing');
     }
   }, [searchParams]);
 
-  const handleCheckout = async (priceId: string, mode: 'subscription' | 'payment' = 'subscription') => {
-    if (!user?.id) { toast.error('Please sign in first'); return; }
-    toast.loading('Redirecting to checkout...', { id: 'checkout' });
-    const result = await createCheckoutSession(priceId, user.id, mode);
+  const handleSubscribe = async (id: string, priceId: string) => {
+    if (!user?.id) { toast.error('Sign in first'); return; }
+    setLoading(id);
+    toast.loading('Redirecting…', { id: 'checkout' });
+    const r = await createCheckoutSession(priceId, user.id, 'subscription');
     toast.dismiss('checkout');
-    if (result === null) toast.error('Checkout unavailable. Please try again later.');
+    setLoading(null);
+    if (r === null) toast.error('Checkout unavailable. Try again.');
+  };
+
+  const handleBuyCredits = async (id: string, priceId: string) => {
+    if (!user?.id) { toast.error('Sign in first'); return; }
+    setLoading(id);
+    toast.loading('Redirecting…', { id: 'checkout' });
+    const r = await createCheckoutSession(priceId, user.id, 'payment');
+    toast.dismiss('checkout');
+    setLoading(null);
+    if (r === null) toast.error('Checkout unavailable. Try again.');
   };
 
   const handleManage = async () => {
     if (!user?.id) return;
-    toast.loading('Opening billing portal...', { id: 'portal' });
-    const result = await openCustomerPortal(user.id);
+    toast.loading('Opening billing portal…', { id: 'portal' });
+    const r = await openCustomerPortal(user.id);
     toast.dismiss('portal');
-    if (result === null) toast.error('Billing portal unavailable. Please try again later.');
+    if (r === null) toast.error('Billing portal unavailable. Try again.');
   };
 
-  const yearlyDiscount = 0.8;
-
-  const plans = [
-    {
-      id: 'pro' as Plan,
-      name: 'Pro',
-      icon: Star,
-      monthlyPrice: 19,
-      badge: 'MOST POPULAR',
-      badgeClass: 'bg-primary text-primary-foreground',
-      borderClass: 'border-primary/40',
-      activeClass: 'border-primary bg-primary/5',
-      btnClass: 'bg-primary hover:bg-primary/90 text-primary-foreground',
-      description: 'Unlimited analyses + viral song creation',
-      features: [
-        'Unlimited song analyses',
-        'Up to 4 viral songs/month',
-        'Smart scan of top 500 live hits',
-        'Full viral report + lyrics breakdown',
-        'MP3 download',
-        'Priority processing',
-      ],
-    },
-    {
-      id: 'studio' as Plan,
-      name: 'Studio',
-      icon: Crown,
-      monthlyPrice: 29,
-      badge: null,
-      badgeClass: '',
-      borderClass: 'border-accent/30',
-      activeClass: 'border-accent bg-accent/5',
-      btnClass: 'bg-accent hover:bg-accent/90 text-accent-foreground',
-      description: 'More viral songs for serious creators',
-      features: [
-        'Everything in Pro',
-        'Up to 10 viral songs/month',
-        'WAV + MP3 download',
-        'Advanced analytics',
-        'Commercial use rights',
-        'Priority support',
-      ],
-    },
-    {
-      id: 'business' as Plan,
-      name: 'Business',
-      icon: Sparkles,
-      monthlyPrice: 49,
-      badge: 'BEST VALUE',
-      badgeClass: 'bg-emerald-500 text-white',
-      borderClass: 'border-emerald-500/30',
-      activeClass: 'border-emerald-500 bg-emerald-500/5',
-      btnClass: 'bg-emerald-500 hover:bg-emerald-600 text-white',
-      description: 'Scale your music production',
-      features: [
-        'Everything in Studio',
-        'Up to 20 viral songs/month',
-        'WAV + MP3 + stems download',
-        'Full commercial rights',
-        'Early access to new features',
-        'Priority support',
-      ],
-    },
-    {
-      id: 'unlimited' as Plan,
-      name: 'Unlimited',
-      icon: Rocket,
-      monthlyPrice: 79,
-      badge: null,
-      badgeClass: '',
-      borderClass: 'border-amber-500/30',
-      activeClass: 'border-amber-500 bg-amber-500/5',
-      btnClass: 'bg-amber-500 hover:bg-amber-600 text-white',
-      description: 'No limits. Maximum revenue potential.',
-      features: [
-        'Everything in Business',
-        'Unlimited viral songs',
-        'Fastest priority queue',
-        'Full commercial rights',
-        'Early access to new features',
-        'Premium support',
-      ],
-    },
-  ];
-
-  const planOrder = ['free', 'pro', 'studio', 'business', 'unlimited'];
-  const currentIndex = planOrder.indexOf(plan);
+  const isStudio = plan === 'studio' || plan === 'business' || plan === 'unlimited';
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
+      <div className="max-w-3xl mx-auto space-y-8">
 
-        {/* ─── Header ─── */}
-        <div className="text-center px-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Manage your plan</h1>
-          <p className="text-sm text-muted-foreground mt-1">Select the plan that best fits your needs</p>
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Credits & Billing</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your plan and credits</p>
         </div>
 
-        {/* ─── Status Strip ─── */}
-        <div className="bg-card border border-border rounded-xl p-3 sm:p-4">
-          <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              <div>
-                <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground mb-0.5">Current Plan</p>
-                <Badge className="bg-primary/15 text-primary border-0 text-[10px] sm:text-xs font-bold">
-                  {PLAN_LIMITS[plan].label}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground mb-0.5">Billing Period</p>
-                <p className="text-xs sm:text-sm font-medium text-foreground">
-                  {profile?.subscription_status === 'active' ? 'Month' : '—'}
-                </p>
+        {/* Current status */}
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                plan === 'free' ? 'bg-muted' : plan === 'pro' ? 'bg-primary/15' : 'bg-accent/15'
+              }`}>
+                {plan === 'free' ? <Zap className="w-5 h-5 text-muted-foreground" />
+                  : plan === 'pro' ? <Star className="w-5 h-5 text-primary fill-current" />
+                  : <Crown className="w-5 h-5 text-accent" />}
               </div>
               <div>
-                <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground mb-0.5 flex items-center gap-1">
-                  <Calendar className="w-3 h-3 hidden sm:inline" /> Next Billing
-                </p>
-                <p className="text-xs sm:text-sm font-medium text-foreground">
-                  {profile?.plan_expires_at
-                    ? new Date(profile.plan_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                    : '—'}
+                <p className="font-bold text-foreground">{planLimits.label} Plan</p>
+                <p className="text-xs text-muted-foreground">
+                  {plan === 'free'
+                    ? `${PLAN_LIMITS.free.signupCredits} credits on signup (one-time)`
+                    : `${planLimits.monthlyCredits.toLocaleString()} credits / month`}
                 </p>
               </div>
-              <div>
-                <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground mb-0.5 flex items-center gap-1">
-                  <Coins className="w-3 h-3 hidden sm:inline" /> Credits
-                </p>
-                <p className="text-xs sm:text-sm font-bold text-foreground">{profile?.credits ?? 0}</p>
-              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {profile?.stripe_customer_id && (
-                <>
-                  <Button onClick={handleManage} size="sm" variant="outline" className="rounded-lg text-[11px] sm:text-xs border-border h-8">
-                    Cancel subscription
-                  </Button>
-                  <Button onClick={handleManage} size="sm" variant="outline" className="rounded-lg text-[11px] sm:text-xs border-border h-8">
-                    Update payment
-                  </Button>
-                </>
-              )}
-              <Button
-                onClick={() => document.getElementById('credits-section')?.scrollIntoView({ behavior: 'smooth' })}
-                size="sm"
-                className="rounded-lg text-[11px] sm:text-xs bg-primary hover:bg-primary/90 text-primary-foreground border-0 h-8 gap-1"
-              >
-                <Coins className="w-3 h-3" /> Buy credits
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* ─── Support note ─── */}
-        <p className="text-center text-[11px] sm:text-xs text-muted-foreground px-4">
-          Need help? Email us at{' '}
-          <a href="mailto:support@viralize.io" className="text-primary hover:underline">support@viralize.io</a>
-        </p>
-
-        {/* ─── Monthly / Yearly Toggle ─── */}
-        <div className="flex items-center justify-center gap-4 sm:gap-6">
-          <button
-            onClick={() => setBilling('monthly')}
-            className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-              billing === 'monthly' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-              billing === 'monthly' ? 'border-primary' : 'border-muted-foreground/40'
-            }`}>
-              {billing === 'monthly' && <div className="w-2 h-2 rounded-full bg-primary" />}
-            </div>
-            Monthly
-          </button>
-          <button
-            onClick={() => setBilling('yearly')}
-            className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-              billing === 'yearly' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-              billing === 'yearly' ? 'border-primary' : 'border-muted-foreground/40'
-            }`}>
-              {billing === 'yearly' && <div className="w-2 h-2 rounded-full bg-primary" />}
-            </div>
-            Yearly
-            <Badge className="bg-primary text-primary-foreground border-0 text-[9px] px-2 py-0.5 font-bold">
-              SAVE 20%
-            </Badge>
-          </button>
-        </div>
-
-        {/* ─── Plan Cards ─── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {plans.map((p) => {
-            const price = billing === 'yearly'
-              ? Math.round(p.monthlyPrice * yearlyDiscount)
-              : p.monthlyPrice;
-            const active = isActive(p.id);
-            const Icon = p.icon;
-            const pIndex = planOrder.indexOf(p.id);
-            const isUpgrade = pIndex > currentIndex;
-
-            return (
-              <div
-                key={p.id}
-                className={`rounded-2xl border-2 p-4 sm:p-5 flex flex-col relative transition-all ${
-                  active ? p.activeClass : `${p.borderClass} bg-card`
-                }`}
-              >
-                {p.badge && (
-                  <Badge className={`${p.badgeClass} border-0 text-[9px] px-2 py-0.5 font-bold absolute -top-2.5 right-3`}>
-                    {p.badge}
-                  </Badge>
-                )}
-
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Icon className="h-4 w-4 text-foreground/70" />
-                  <span className="font-bold text-foreground text-base">{p.name}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{p.description}</p>
-
-                {/* Price */}
-                <div className="mb-1">
-                  <span className="text-3xl font-bold text-foreground">${price}</span>
-                  <span className="text-muted-foreground text-xs ml-1">/mo</span>
-                </div>
-                <p className="text-[11px] text-muted-foreground mb-4">
-                  {billing === 'yearly'
-                    ? `Billed $${price * 12}/yr · Save $${(p.monthlyPrice - price) * 12}`
-                    : 'Billed monthly'}
-                </p>
-
-                {/* Features — grows to fill space */}
-                <ul className="space-y-0.5 flex-1 mb-4">
-                  {p.features.map((f) => (
-                    <FeatureRow key={f} text={f} included />
-                  ))}
-                </ul>
-
-                {/* CTA — always at bottom */}
-                {active ? (
-                  <Button
-                    onClick={handleManage}
-                    className="w-full rounded-xl h-10 bg-muted text-foreground border border-border font-semibold text-sm"
-                  >
-                    Current Plan
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => handleCheckout(PRICES.pro_monthly, 'subscription')}
-                    className={`w-full rounded-xl h-10 border-0 font-bold text-sm ${p.btnClass}`}
-                  >
-                    {isUpgrade ? 'Upgrade' : 'Downgrade'}
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ─── Pay As You Go Credits ─── */}
-        <div id="credits-section" className="pt-4">
-          <div className="text-center mb-5">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground flex items-center justify-center gap-2">
-              <Coins className="w-5 h-5 sm:w-6 sm:h-6 text-accent" /> Pay As You Go
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              No subscription needed. Buy credits and use them anytime.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-5">
-            <div className="flex items-center gap-2 text-xs sm:text-sm">
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-muted-foreground">Song Analysis</span>
-              <span className="font-bold text-foreground">= {CREDIT_COSTS.analysis} credits</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm">
-              <div className="w-2 h-2 rounded-full bg-accent" />
-              <span className="text-muted-foreground">Viral Song Creation</span>
-              <span className="font-bold text-foreground">= {CREDIT_COSTS.remix} credits</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
-            {CREDIT_PACKS.map((pack) => (
-              <div
-                key={pack.credits}
-                className={`rounded-2xl border-2 p-4 sm:p-5 flex flex-col items-center text-center transition-all ${
-                  pack.popular ? 'border-primary bg-primary/5' : 'border-border bg-card'
-                }`}
-              >
-                {pack.popular && (
-                  <Badge className="bg-primary text-primary-foreground border-0 text-[9px] px-2 mb-2 font-bold">
-                    MOST POPULAR
-                  </Badge>
-                )}
-                {!pack.popular && <div className="mb-2 h-5" />}
-                <p className="text-2xl sm:text-3xl font-bold text-foreground">{pack.credits}</p>
-                <p className="text-[11px] text-muted-foreground mb-1">credits</p>
-                <p className="text-lg sm:text-xl font-bold text-foreground mb-1">${pack.price}</p>
-                {pack.savings ? (
-                  <p className="text-[11px] text-emerald-400 font-medium mb-3">Save {pack.savings}</p>
-                ) : (
-                  <div className="mb-3 h-4" />
-                )}
-                <Button
-                  onClick={() => handleCheckout(PRICES.analysis_credit, 'payment')}
-                  size="sm"
-                  className={`w-full rounded-xl h-9 font-semibold text-xs mt-auto ${
-                    pack.popular
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-0'
-                      : 'bg-muted text-foreground border border-border hover:bg-muted/80'
-                  }`}
-                >
-                  Buy Credits
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ─── Billing Portal Link ─── */}
-        {profile?.stripe_customer_id && (
-          <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Manage your subscription, payment methods, and invoices
+            <div className="text-right">
+              <p className={`text-2xl font-black tabular-nums ${creditBalanceColor(credits, plan)}`}>
+                {credits.toLocaleString()}
               </p>
-              <Button onClick={handleManage} size="sm" variant="outline" className="rounded-lg text-xs border-border gap-1.5 shrink-0">
-                <ExternalLink className="w-3 h-3" /> Open Billing Portal
-              </Button>
+              <p className="text-[10px] text-muted-foreground">credits left</p>
             </div>
           </div>
-        )}
+
+          <CreditBar credits={credits} max={planLimits.monthlyCredits || PLAN_LIMITS.free.signupCredits} />
+
+          {/* What credits buy */}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3 text-primary" /> Analyze: <strong className="text-foreground">{CREDIT_COSTS.analysis}cr</strong></span>
+            <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-accent" /> Viral song: <strong className="text-foreground">{CREDIT_COSTS.viral}cr</strong></span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            {profile?.stripe_customer_id && (
+              <Button onClick={handleManage} size="sm" variant="outline" className="rounded-lg text-xs border-border h-8 gap-1.5">
+                <ExternalLink className="w-3 h-3" /> Manage Subscription
+              </Button>
+            )}
+            {profile?.plan_expires_at && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Calendar className="w-3 h-3" />
+                Renews {new Date(profile.plan_expires_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Plans */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-bold text-foreground">Subscription Plans</h2>
+
+          {/* Free */}
+          <div className={`rounded-2xl border p-4 flex items-center gap-4 ${plan === 'free' ? 'border-border bg-card/50' : 'border-border bg-card/30'}`}>
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+              <Zap className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-bold text-foreground text-sm">Free</p>
+                {plan === 'free' && <Badge className="bg-muted text-muted-foreground border-0 text-[9px]">CURRENT</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground">{PLAN_LIMITS.free.signupCredits} credits on signup · 1 free analysis</p>
+            </div>
+            <p className="text-lg font-black text-foreground shrink-0">$0</p>
+          </div>
+
+          {/* Pro */}
+          <motion.div whileHover={{ scale: 1.005 }}
+            className={`rounded-2xl border-2 p-4 flex items-center gap-4 transition-all ${
+              plan === 'pro' ? 'border-primary bg-primary/5' : 'border-primary/30 bg-card hover:border-primary/60'
+            }`}>
+            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+              <Star className="w-5 h-5 text-primary fill-current" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-foreground text-sm">Pro</p>
+                <Badge className="bg-primary text-primary-foreground border-0 text-[9px]">MOST POPULAR</Badge>
+                {plan === 'pro' && <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px]">ACTIVE</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {PLAN_LIMITS.pro.monthlyCredits} credits/month → {Math.floor(PLAN_LIMITS.pro.monthlyCredits / CREDIT_COSTS.analysis)} analyses or {Math.floor(PLAN_LIMITS.pro.monthlyCredits / CREDIT_COSTS.viral)} viral songs
+              </p>
+            </div>
+            <div className="text-right shrink-0 space-y-2">
+              <div>
+                <p className="text-lg font-black text-foreground">${PLAN_LIMITS.pro.price}</p>
+                <p className="text-[10px] text-muted-foreground">/month</p>
+              </div>
+              {plan !== 'pro'
+                ? <Button onClick={() => handleSubscribe('pro', PRICES.pro_monthly)} disabled={loading === 'pro'} size="sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-xl text-xs h-8 gap-1">
+                    {loading === 'pro' ? '…' : <><span>Upgrade</span><ArrowRight className="w-3 h-3" /></>}
+                  </Button>
+                : <Button onClick={handleManage} size="sm" variant="outline" className="rounded-xl text-xs border-border h-8">Manage</Button>
+              }
+            </div>
+          </motion.div>
+
+          {/* Studio */}
+          <motion.div whileHover={{ scale: 1.005 }}
+            className={`rounded-2xl border-2 p-4 flex items-center gap-4 transition-all ${
+              isStudio ? 'border-accent bg-accent/5' : 'border-accent/30 bg-card hover:border-accent/60'
+            }`}>
+            <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+              <Crown className="w-5 h-5 text-accent" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-foreground text-sm">Studio</p>
+                <Badge className="bg-accent text-black border-0 text-[9px]">BEST VALUE</Badge>
+                {isStudio && <Badge className="bg-accent/20 text-accent border-accent/30 text-[9px]">ACTIVE</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {PLAN_LIMITS.studio.monthlyCredits} credits/month → {Math.floor(PLAN_LIMITS.studio.monthlyCredits / CREDIT_COSTS.analysis)} analyses or {Math.floor(PLAN_LIMITS.studio.monthlyCredits / CREDIT_COSTS.viral)} viral songs
+              </p>
+            </div>
+            <div className="text-right shrink-0 space-y-2">
+              <div>
+                <p className="text-lg font-black text-foreground">${PLAN_LIMITS.studio.price}</p>
+                <p className="text-[10px] text-muted-foreground">/month</p>
+              </div>
+              {!isStudio
+                ? <Button onClick={() => handleSubscribe('studio', PRICES.studio_monthly)} disabled={loading === 'studio'} size="sm"
+                    className="bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-black font-bold border-0 rounded-xl text-xs h-8 gap-1">
+                    {loading === 'studio' ? '…' : <><span>Upgrade</span><ArrowRight className="w-3 h-3" /></>}
+                  </Button>
+                : <Button onClick={handleManage} size="sm" variant="outline" className="rounded-xl text-xs border-border h-8">Manage</Button>
+              }
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Credit packs */}
+        <div className="space-y-3" id="credits">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-foreground">Buy Credits Once</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">No subscription. Credits never expire.</p>
+            </div>
+            <div className="flex items-center gap-3 text-[10px] text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-xl border border-border/60">
+              <span className="flex items-center gap-1"><BarChart2 className="w-3 h-3 text-primary" /> Analyze: <strong className="text-foreground">{CREDIT_COSTS.analysis}cr</strong></span>
+              <span className="w-px h-3 bg-border" />
+              <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-accent" /> Viral: <strong className="text-foreground">{CREDIT_COSTS.viral}cr</strong></span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {CREDIT_PACKS.map((pack, i) => {
+              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_500 : PRICES.credits_1000;
+              return (
+                <motion.div key={pack.id} whileHover={{ scale: 1.02, y: -2 }}
+                  className={`rounded-2xl border p-5 flex flex-col items-center text-center relative cursor-pointer transition-all ${
+                    pack.popular ? 'border-primary bg-primary/8 shadow-lg shadow-primary/10' : 'border-border bg-card hover:border-primary/30'
+                  }`}
+                  onClick={() => handleBuyCredits(pack.id, priceId)}>
+                  {pack.badge && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-black tracking-widest whitespace-nowrap">
+                      {pack.badge}
+                    </span>
+                  )}
+                  {pack.savings && !pack.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black tracking-widest whitespace-nowrap">
+                      {pack.savings}
+                    </span>
+                  )}
+                  <div className="mt-2 mb-1">
+                    <span className="text-4xl font-black text-foreground">{pack.credits.toLocaleString()}</span>
+                    <span className="text-sm text-muted-foreground ml-1">credits</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mb-3 leading-snug">{pack.desc}</p>
+                  <div className="mb-1">
+                    <span className="text-2xl font-black text-foreground">${pack.price}</span>
+                    <span className="text-xs text-muted-foreground ml-1">one-time</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/60 mb-3">
+                    ${(pack.price / pack.credits * 100).toFixed(1)}¢ per credit
+                  </p>
+                  <Button size="sm" disabled={loading === pack.id}
+                    className={`w-full rounded-xl font-bold text-xs h-9 ${
+                      pack.popular
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground border-0'
+                        : 'bg-muted/60 text-foreground border border-border hover:bg-primary/10 hover:border-primary/40 hover:text-primary'
+                    }`}>
+                    {loading === pack.id ? '…' : `Buy ${pack.credits.toLocaleString()} Credits`}
+                  </Button>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Low credits nudge */}
+          {credits < CREDIT_COSTS.viral && (
+            <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-3 p-3.5 rounded-xl bg-accent/8 border border-accent/20">
+              <Sparkles className="w-4 h-4 text-accent shrink-0" />
+              <p className="text-xs text-foreground/80 flex-1">
+                <strong className="text-accent">Running low!</strong> You need {CREDIT_COSTS.viral} credits to create a viral song.
+              </p>
+              <Button onClick={() => handleBuyCredits('popular', PRICES.credits_500)} size="sm"
+                className="shrink-0 bg-accent hover:bg-accent/90 text-black font-bold border-0 rounded-lg text-xs h-8">
+                Top up →
+              </Button>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Support */}
+        <div className="text-center text-xs text-muted-foreground pb-4">
+          Questions? <a href="mailto:support@hitcheck.io" className="text-primary hover:underline">support@hitcheck.io</a>
+          {' '}·{' '}<Link to="/pricing" className="text-primary hover:underline">Full pricing page →</Link>
+        </div>
       </div>
     </DashboardLayout>
   );

@@ -1,334 +1,305 @@
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Check, Sparkles, Crown, Zap, ArrowRight, Music, TrendingUp, Star, Rocket } from "lucide-react";
-import { useState } from "react";
+/**
+ * Pricing — Suno-style subscription model
+ * Free: 50cr (1 analysis) | Pro $29/mo 500cr | Studio $49/mo 1000cr
+ * + One-time credit packs (more expensive per credit = incentivize subscription)
+ */
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { createCheckoutSession, openCustomerPortal, PRICES } from '@/lib/stripe';
+import { CREDIT_COSTS, PLAN_LIMITS, CREDIT_PACKS } from '@/lib/supabase';
+import { toast } from 'sonner';
+import { Check, Zap, Star, Crown, Sparkles, Music2, BarChart2, ArrowRight, Info } from 'lucide-react';
 
-const plans = [
-  {
-    id: "free",
-    name: "Free",
-    price: "$0",
-    period: "",
-    badge: null,
-    tagline: "Try it out",
-    description: "See if your song has viral potential — zero risk",
-    Icon: Zap,
-    gradient: "from-gray-500/20 to-gray-600/5",
-    iconBg: "bg-gray-500/15",
-    iconColor: "text-gray-400",
-    ring: "ring-white/10",
-    features: [
-      "1 analysis per month",
-      "Hit score (0–100)",
-      "3 improvement tips",
-      "Strengths & weaknesses",
-      "Share your score",
-    ],
-    cta: "Start Free",
-    ctaLink: "/analyze",
-    ctaClass: "gradient-purple text-primary-foreground rounded-full shadow-lg shadow-primary/25",
-    highlighted: false,
-    comingSoon: false,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$19",
-    period: "/mo",
-    badge: "MOST POPULAR",
-    tagline: "Best value",
-    description: "For artists serious about going viral",
-    Icon: Crown,
-    gradient: "from-purple-500/20 via-purple-600/10 to-purple-500/5",
-    iconBg: "bg-purple-500/20",
-    iconColor: "text-purple-400",
-    ring: "ring-purple-500/40",
-    features: [
-      "Unlimited analyses",
-      "Up to 4 viral songs/month",
-      "Smart scan of top 500 live hits",
-      "Full viral report + lyrics breakdown",
-      "MP3 download",
-      "Priority processing",
-    ],
-    cta: "Get Pro",
-    ctaClass: "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-black shadow-lg shadow-purple-500/25",
-    highlighted: true,
-    comingSoon: true,
-  },
-  {
-    id: "studio",
-    name: "Studio",
-    price: "$29",
-    period: "/mo",
-    badge: null,
-    tagline: "More power",
-    description: "More viral songs for serious creators",
-    Icon: Star,
-    gradient: "from-amber-500/15 to-amber-600/5",
-    iconBg: "bg-amber-500/15",
-    iconColor: "text-amber-400",
-    ring: "ring-amber-500/20",
-    features: [
-      "Everything in Pro",
-      "Up to 10 viral songs/month",
-      "WAV + MP3 download",
-      "Advanced analytics",
-      "Commercial use rights",
-      "Priority support",
-    ],
-    cta: "Get Studio",
-    ctaClass: "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/25",
-    highlighted: false,
-    comingSoon: true,
-  },
-  {
-    id: "business",
-    name: "Business",
-    price: "$49",
-    period: "/mo",
-    badge: "BEST VALUE",
-    tagline: "Scale up",
-    description: "Scale your music production",
-    Icon: Sparkles,
-    gradient: "from-emerald-500/15 to-emerald-600/5",
-    iconBg: "bg-emerald-500/15",
-    iconColor: "text-emerald-400",
-    ring: "ring-emerald-500/20",
-    features: [
-      "Everything in Studio",
-      "Up to 20 viral songs/month",
-      "WAV + MP3 + stems download",
-      "Full commercial rights",
-      "Early access to new features",
-      "Priority support",
-    ],
-    cta: "Get Business",
-    ctaClass: "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25",
-    highlighted: false,
-    comingSoon: true,
-  },
-  {
-    id: "unlimited",
-    name: "Unlimited",
-    price: "$79",
-    period: "/mo",
-    badge: null,
-    tagline: "No limits",
-    description: "No limits. Maximum revenue potential.",
-    Icon: Rocket,
-    gradient: "from-rose-500/15 to-rose-600/5",
-    iconBg: "bg-rose-500/15",
-    iconColor: "text-rose-400",
-    ring: "ring-rose-500/20",
-    features: [
-      "Everything in Business",
-      "Unlimited viral songs",
-      "Fastest priority queue",
-      "Full commercial rights",
-      "Early access to new features",
-      "Premium support",
-    ],
-    cta: "Go Unlimited",
-    ctaClass: "bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/25",
-    highlighted: false,
-    comingSoon: true,
-  },
-];
+export default function Pricing() {
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const currentPlan = profile?.plan || 'free';
+  const [loading, setLoading] = useState<string | null>(null);
 
-const socialProof = [
-  { stat: "50,000+", label: "Tracks Analyzed" },
-  { stat: "10,000+", label: "Artists Improved" },
-  { stat: "+25%", label: "Avg Viral Improvement" },
-];
+  const handleCheckout = async (id: string, priceId: string, mode: 'subscription' | 'payment' = 'subscription') => {
+    if (!user?.id) { toast.error('Sign in to continue'); navigate('/auth'); return; }
+    setLoading(id);
+    toast.loading('Redirecting to checkout…', { id: 'checkout' });
+    const result = await createCheckoutSession(priceId, user.id, mode);
+    toast.dismiss('checkout');
+    setLoading(null);
+    if (result === null) toast.error('Checkout unavailable. Please try again.');
+  };
 
-const Pricing = () => {
-  const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
+  const handleManage = async () => {
+    if (!user?.id) return;
+    toast.loading('Opening billing portal…', { id: 'portal' });
+    const result = await openCustomerPortal(user.id);
+    toast.dismiss('portal');
+    if (result === null) toast.error('Billing portal unavailable.');
+  };
 
   return (
-    <div className="min-h-screen bg-background px-4 pt-32 pb-20 overflow-hidden">
-      <div className="container max-w-7xl">
+    <div className="min-h-screen bg-[#0a0a0a] px-4 pt-28 pb-24">
+      <div className="max-w-5xl mx-auto space-y-16">
 
-        {/* ─── Header ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-6 space-y-5"
-        >
-          <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/[0.08] border border-primary/20 text-sm font-semibold text-primary backdrop-blur-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Simple Pricing — Serious Results
-          </span>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1]">
-            <span className="text-foreground">Invest in your music.</span>
-            <br />
-            <span className="gradient-text">
-              Get viral returns.
+        {/* Header */}
+        <div className="text-center space-y-4">
+          {user && currentPlan !== 'free' && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              className="flex justify-center mb-2">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 text-sm font-semibold text-primary">
+                <Star className="w-4 h-4 fill-current" />
+                Current plan: {PLAN_LIMITS[currentPlan as keyof typeof PLAN_LIMITS]?.label || currentPlan}
+              </div>
+            </motion.div>
+          )}
+          <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-black text-white leading-tight">
+            Unlock Your Music's Full Potential
+          </motion.h1>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.08 }}
+            className="text-white/40 text-lg max-w-xl mx-auto">
+            Analyze, create, and go viral — powered by AI trained on millions of hits
+          </motion.p>
+          {/* Credit cost legend */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12 }}
+            className="inline-flex items-center gap-5 px-5 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-sm">
+            <span className="flex items-center gap-1.5 text-white/60">
+              <BarChart2 className="w-4 h-4 text-primary" />
+              Analyze: <strong className="text-white">{CREDIT_COSTS.analysis} credits</strong>
             </span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            One hit song can change your career forever. Our AI finds exactly what's
-            missing — so every release has maximum viral potential.
-          </p>
-        </motion.div>
-
-        {/* ─── Social Proof ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="flex items-center justify-center gap-8 md:gap-14 mb-16"
-        >
-          {socialProof.map((item) => (
-            <div key={item.label} className="text-center">
-              <div className="text-2xl md:text-3xl font-black text-foreground">{item.stat}</div>
-              <div className="text-xs md:text-sm text-muted-foreground">{item.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* ─── Plans Grid ─── */}
-        <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-4 items-stretch">
-          {plans.map((plan, i) => {
-            const { Icon } = plan;
-            const isHovered = hoveredPlan === plan.id;
-            return (
-              <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.08 }}
-                onHoverStart={() => setHoveredPlan(plan.id)}
-                onHoverEnd={() => setHoveredPlan(null)}
-                className={`relative flex flex-col rounded-2xl ring-1 ${plan.ring} bg-gradient-to-b ${plan.gradient} backdrop-blur-sm p-5 transition-all duration-300 ${
-                  plan.highlighted
-                    ? "shadow-2xl shadow-purple-500/15 xl:scale-[1.02] z-10"
-                    : ""
-                } ${isHovered ? "-translate-y-1" : ""}`}
-              >
-                {plan.highlighted && (
-                  <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-purple-500/30 via-transparent to-transparent -z-10 blur-sm" />
-                )}
-
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1 rounded-full bg-gradient-to-r from-purple-600 to-purple-500 text-white text-[10px] font-black tracking-widest shadow-lg shadow-purple-500/30 flex items-center gap-1 whitespace-nowrap">
-                      <Star className="h-3 w-3 fill-amber-300 text-amber-300" />
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-
-                {/* Icon + Name */}
-                <div className="space-y-3 pt-1 mb-4">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${plan.iconBg}`}>
-                    <Icon className={`h-5 w-5 ${plan.iconColor}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-foreground">{plan.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{plan.description}</p>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="mb-4">
-                  <div className="flex items-end gap-1">
-                    <span className="text-4xl font-black text-foreground tracking-tight">{plan.price}</span>
-                    {plan.period && <span className="text-muted-foreground text-sm pb-1 font-medium">{plan.period}</span>}
-                  </div>
-                </div>
-
-                {/* Features — flex-1 pushes CTA to bottom */}
-                <div className="space-y-2.5 flex-1 mb-5">
-                  {plan.features.map((f) => (
-                    <div key={f} className="flex items-start gap-2">
-                      <div className={`mt-0.5 rounded-full p-0.5 ${plan.highlighted ? 'bg-purple-500/20' : 'bg-white/5'}`}>
-                        <Check className={`h-3 w-3 ${plan.highlighted ? 'text-purple-400' : 'text-green-400'}`} />
-                      </div>
-                      <span className="text-[13px] text-foreground/80 leading-tight">{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA — always aligned at bottom */}
-                <div>
-                  {plan.comingSoon ? (
-                    <div className="space-y-1.5">
-                      <button
-                        className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all cursor-not-allowed ${plan.ctaClass} ${plan.highlighted ? '' : 'opacity-80'}`}
-                        disabled
-                      >
-                        {plan.cta}
-                      </button>
-                      <p className="text-[11px] text-center text-muted-foreground">Coming soon</p>
-                    </div>
-                  ) : (
-                    <Button asChild className={`w-full py-3 h-auto rounded-xl font-bold text-sm ${plan.ctaClass}`}>
-                      <Link to={plan.ctaLink || "/analyze"}>
-                        {plan.cta} <ArrowRight className="h-4 w-4 ml-1.5" />
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+            <span className="w-px h-4 bg-white/10" />
+            <span className="flex items-center gap-1.5 text-white/60">
+              <Sparkles className="w-4 h-4 text-orange-400" />
+              Create Viral: <strong className="text-white">{CREDIT_COSTS.viral} credits</strong>
+            </span>
+          </motion.div>
         </div>
 
-        {/* ─── ROI Banner ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="mt-20 relative rounded-2xl overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-500/10 to-amber-500/20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80" />
-          <div className="relative ring-1 ring-white/10 rounded-2xl p-10 md:p-14 text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/20">
-              <Music className="h-4 w-4 text-amber-400" />
-              <span className="text-sm font-semibold text-amber-300">The math is simple</span>
+        {/* ── Subscription Plans ── */}
+        <div className="grid md:grid-cols-3 gap-6">
+
+          {/* Free */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            className="rounded-3xl border border-white/10 bg-white/[0.02] p-7 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+                <Music2 className="w-5 h-5 text-white/50" />
+              </div>
+              <div>
+                <p className="font-black text-white text-lg">Free</p>
+                <p className="text-[11px] text-white/40">No credit card needed</p>
+              </div>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black text-foreground leading-tight">
-              One viral song = <span className="text-amber-400">$10,000+</span> in streams
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              A single viral hit can generate thousands in streaming revenue, sync deals, and fan growth.
-              Our AI tells you exactly what to fix — for less than a coffee.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Button asChild className="px-8 py-4 h-auto rounded-full gradient-purple text-primary-foreground font-black text-base hover:opacity-90 shadow-lg shadow-primary/25">
-                <Link to="/analyze">
-                  Analyze Your Track — Free <ArrowRight className="h-5 w-5 ml-2" />
-                </Link>
-              </Button>
+            <div className="flex items-end gap-2 mb-4">
+              <span className="text-5xl font-black text-white">$0</span>
+              <span className="text-white/40 text-sm mb-2">/month</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              No credit card required · Results in 30 seconds
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold mb-5 bg-white/8 text-white/50 w-fit">
+              <Zap className="w-3 h-3" />{PLAN_LIMITS.free.signupCredits} credits on signup (one-time)
+            </div>
+            <ul className="space-y-2.5 flex-1 mb-6">
+              {[
+                { t: `${PLAN_LIMITS.free.signupCredits} free credits`, s: '1 full analysis included', ok: true },
+                { t: 'Basic score report', ok: true },
+                { t: 'Viral potential meter', ok: true },
+                { t: 'Create viral songs', ok: false },
+                { t: 'Monthly credit refresh', ok: false },
+              ].map((f, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${f.ok ? 'bg-emerald-500/20' : 'bg-white/5'}`}>
+                    {f.ok ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <span className="w-1.5 h-px bg-white/20 block" />}
+                  </div>
+                  <div>
+                    <span className={`text-sm ${f.ok ? 'text-white/80' : 'text-white/25 line-through'}`}>{f.t}</span>
+                    {'s' in f && <span className="text-[10px] text-white/30 ml-1">({f.s})</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {currentPlan === 'free' && user
+              ? <Link to="/dashboard" className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all">Go to Dashboard</Link>
+              : <Link to="/auth" className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all">Get Started Free</Link>
+            }
+          </motion.div>
+
+          {/* Pro */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.17 }}
+            className="rounded-3xl border-2 border-primary/60 bg-primary/[0.05] p-7 flex flex-col relative md:-mt-4 md:mb-4 shadow-2xl shadow-primary/10">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black text-white bg-primary tracking-widest">
+              MOST POPULAR
+            </div>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Star className="w-5 h-5 text-primary fill-current" />
+              </div>
+              <div>
+                <p className="font-black text-white text-lg">Pro</p>
+                <p className="text-[11px] text-white/40">For serious artists</p>
+              </div>
+            </div>
+            <div className="flex items-end gap-2 mb-1">
+              <span className="text-5xl font-black text-white">${PLAN_LIMITS.pro.price}</span>
+              <span className="text-white/40 text-sm mb-2">/month</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold mb-5 bg-primary/15 text-primary w-fit">
+              <Zap className="w-3 h-3" />{PLAN_LIMITS.pro.monthlyCredits} credits / month
+            </div>
+            <ul className="space-y-2.5 flex-1 mb-6">
+              {[
+                { t: `${PLAN_LIMITS.pro.monthlyCredits} credits every month`, s: 'auto-refresh', ok: true },
+                { t: `${Math.floor(PLAN_LIMITS.pro.monthlyCredits / CREDIT_COSTS.analysis)} analyses/month`, s: `${CREDIT_COSTS.analysis}cr each`, ok: true },
+                { t: `${Math.floor(PLAN_LIMITS.pro.monthlyCredits / CREDIT_COSTS.viral)} viral songs/month`, s: `${CREDIT_COSTS.viral}cr each`, ok: true },
+                { t: 'Full viral report + lyrics feedback', ok: true },
+                { t: 'Spotify playlist strategy', ok: true },
+                { t: 'Download WAV + MP3', ok: true },
+              ].map((f, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-emerald-500/20">
+                    <Check className="w-2.5 h-2.5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <span className="text-sm text-white/80">{f.t}</span>
+                    {'s' in f && <span className="text-[10px] text-white/30 ml-1">({f.s})</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {currentPlan === 'pro'
+              ? <button onClick={handleManage} className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition-all">Manage Subscription</button>
+              : <button onClick={() => handleCheckout('pro', PRICES.pro_monthly)} disabled={loading === 'pro'}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 hover:opacity-90 transition-all disabled:opacity-60">
+                  {loading === 'pro' ? 'Processing…' : <><Zap className="w-4 h-4" />Upgrade to Pro <ArrowRight className="w-4 h-4" /></>}
+                </button>
+            }
+          </motion.div>
+
+          {/* Studio */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}
+            className="rounded-3xl border-2 border-amber-500/40 bg-amber-500/[0.04] p-7 flex flex-col relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-black text-white bg-amber-500 tracking-widest">
+              BEST VALUE
+            </div>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <Crown className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <p className="font-black text-white text-lg">Studio</p>
+                <p className="text-[11px] text-white/40">For pros, labels & teams</p>
+              </div>
+            </div>
+            <div className="flex items-end gap-2 mb-1">
+              <span className="text-5xl font-black text-white">${PLAN_LIMITS.studio.price}</span>
+              <span className="text-white/40 text-sm mb-2">/month</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold mb-5 bg-amber-500/15 text-amber-400 w-fit">
+              <Zap className="w-3 h-3" />{PLAN_LIMITS.studio.monthlyCredits} credits / month
+            </div>
+            <ul className="space-y-2.5 flex-1 mb-6">
+              {[
+                { t: `${PLAN_LIMITS.studio.monthlyCredits} credits every month`, s: 'auto-refresh', ok: true },
+                { t: `${Math.floor(PLAN_LIMITS.studio.monthlyCredits / CREDIT_COSTS.analysis)} analyses/month`, s: `${CREDIT_COSTS.analysis}cr each`, ok: true },
+                { t: `${Math.floor(PLAN_LIMITS.studio.monthlyCredits / CREDIT_COSTS.viral)} viral songs/month`, s: `${CREDIT_COSTS.viral}cr each`, ok: true },
+                { t: 'Everything in Pro', ok: true },
+                { t: 'API access (500 req/day)', ok: true },
+                { t: '3 team seats', ok: true },
+              ].map((f, i) => (
+                <li key={i} className="flex items-start gap-2.5">
+                  <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-emerald-500/20">
+                    <Check className="w-2.5 h-2.5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <span className="text-sm text-white/80">{f.t}</span>
+                    {'s' in f && <span className="text-[10px] text-white/30 ml-1">({f.s})</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+            {currentPlan === 'studio' || currentPlan === 'business' || currentPlan === 'unlimited'
+              ? <button onClick={handleManage} className="w-full py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm transition-all">Manage Subscription</button>
+              : <button onClick={() => handleCheckout('studio', PRICES.studio_monthly)} disabled={loading === 'studio'}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-amber-400 text-white font-black text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-60">
+                  {loading === 'studio' ? 'Processing…' : <>Get Studio <ArrowRight className="w-4 h-4" /></>}
+                </button>
+            }
+          </motion.div>
+        </div>
+
+        {/* ── One-time Credit Packs ── */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="rounded-3xl border border-white/10 bg-white/[0.02] p-8">
+          <div className="text-center mb-4">
+            <p className="text-xs font-black text-white/30 uppercase tracking-[0.2em] mb-2">No subscription needed</p>
+            <h2 className="text-2xl font-black text-white">Buy Credits Once</h2>
+            <p className="text-white/40 text-sm mt-1">Credits never expire. Less value per credit than a subscription.</p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-4 mt-8">
+            {CREDIT_PACKS.map((pack, i) => {
+              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_500 : PRICES.credits_1000;
+              return (
+                <motion.div key={pack.id} whileHover={{ scale: 1.03, y: -3 }} whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCheckout(pack.id, priceId, 'payment')}
+                  className={`relative rounded-2xl border p-6 flex flex-col items-center text-center cursor-pointer transition-all ${
+                    pack.popular ? 'border-primary/50 bg-primary/[0.07] shadow-xl shadow-primary/10' : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+                  }`}>
+                  {pack.badge && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-white text-[9px] font-black tracking-widest whitespace-nowrap">
+                      {pack.badge}
+                    </span>
+                  )}
+                  {pack.savings && !pack.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black tracking-widest whitespace-nowrap">
+                      {pack.savings}
+                    </span>
+                  )}
+                  <div className="mt-3">
+                    <span className="text-4xl font-black text-white">{pack.credits.toLocaleString()}</span>
+                    <span className="text-sm text-white/40 ml-1">credits</span>
+                  </div>
+                  <p className="text-[11px] text-white/40 mt-1.5 mb-4 leading-snug">{pack.desc}</p>
+                  <span className="text-3xl font-black text-white">${pack.price}</span>
+                  <p className="text-[10px] text-white/30 mt-0.5 mb-4">one-time · never expires</p>
+                  <button disabled={loading === pack.id}
+                    className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all ${
+                      pack.popular
+                        ? 'bg-gradient-to-r from-primary to-violet-500 text-white hover:opacity-90'
+                        : 'bg-white/10 text-white hover:bg-white/15'
+                    }`}>
+                    {loading === pack.id ? 'Processing…' : `Buy ${pack.credits} Credits`}
+                  </button>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <div className="mt-6 flex items-start gap-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
+            <Info className="w-4 h-4 text-white/30 shrink-0 mt-0.5" />
+            <p className="text-xs text-white/40 leading-relaxed">
+              <strong className="text-white/60">Subscription is better value:</strong>{' '}
+              Pro gives you {PLAN_LIMITS.pro.monthlyCredits} credits for ${PLAN_LIMITS.pro.price}/mo
+              ({(PLAN_LIMITS.pro.price / PLAN_LIMITS.pro.monthlyCredits * 100).toFixed(1)}¢/credit).
+              One-time packs cost more per credit — perfect if you just want to top up occasionally.
             </p>
           </div>
         </motion.div>
 
-        {/* ─── Footer ─── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-16 text-center space-y-3"
-        >
-          <h3 className="text-lg font-bold text-foreground">Still not sure?</h3>
-          <p className="text-muted-foreground">
-            Start with a free analysis — no signup needed.{" "}
-            <Link to="/analyze" className="text-primary hover:underline font-semibold">
-              Try it now →
-            </Link>
-          </p>
+        {/* FAQ */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+          className="grid sm:grid-cols-2 gap-4 text-sm">
+          {[
+            { q: 'Do monthly credits roll over?', a: 'No — subscription credits refresh at the start of each billing cycle. Purchased credit packs never expire.' },
+            { q: 'Can I cancel anytime?', a: 'Yes — cancel anytime from your billing portal. Access continues until the end of the billing period.' },
+            { q: 'What if I run out of credits?', a: 'Buy a one-time credit pack anytime without changing your subscription.' },
+            { q: 'Is there a free trial?', a: `Yes — sign up free and get ${PLAN_LIMITS.free.signupCredits} credits instantly. Enough for 1 full analysis. No card needed.` },
+          ].map((faq, i) => (
+            <div key={i} className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.07]">
+              <p className="font-bold text-white/80 mb-1">{faq.q}</p>
+              <p className="text-white/40 text-xs leading-relaxed">{faq.a}</p>
+            </div>
+          ))}
         </motion.div>
 
       </div>
     </div>
   );
-};
-
-export default Pricing;
+}

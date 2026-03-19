@@ -327,7 +327,7 @@ const Billing = () => {
                 <span className="font-bold text-white">Studio</span>
               </div>
               <div className="flex items-end gap-1 mb-1">
-                <span className="text-5xl font-black text-white">$59</span>
+                <span className="text-5xl font-black text-white">$49</span>
                 <span className="text-muted-foreground mb-2">/month</span>
               </div>
               <p className="text-xs text-yellow-400 font-semibold">For pros, labels & teams</p>

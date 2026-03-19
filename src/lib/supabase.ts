@@ -7,11 +7,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type Plan = 'free' | 'pro' | 'studio' | 'business' | 'unlimited';
 
-// ═══════════════════════════════════════════════════
-// CANONICAL PRICING — single source of truth
-// DO NOT edit prices in individual pages — edit here only
-// Last updated: March 2026 (by אילון)
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// CANONICAL PRICING — SINGLE SOURCE OF TRUTH
+// Model: Suno-style subscription credits
+// DO NOT edit prices in individual pages — here only
+// ═══════════════════════════════════════════════
 
 export const CREDIT_COSTS = {
   analysis: 50,   // 1 song analysis
@@ -23,7 +23,7 @@ export const PLAN_LIMITS = {
     label: 'Free',
     price: 0,
     monthlyCredits: 0,
-    signupCredits: 50,       // one-time gift on registration
+    signupCredits: 50,        // 50cr one-time gift = 1 free analysis
     analyses: 1,
     remixes: 0,
     badge: null,
@@ -31,8 +31,8 @@ export const PLAN_LIMITS = {
   },
   pro: {
     label: 'Pro',
-    price: 29,               // $29/month
-    monthlyCredits: 500,     // 500 credits refreshed each month
+    price: 29,                // $29/month
+    monthlyCredits: 500,      // 500 credits/month = 10 analyses or 3 viral
     signupCredits: 500,
     analyses: 999,
     remixes: 999,
@@ -41,99 +41,81 @@ export const PLAN_LIMITS = {
   },
   studio: {
     label: 'Studio',
-    price: 59,               // $59/month
-    monthlyCredits: 1000,    // 1000 credits refreshed each month
+    price: 49,                // $49/month
+    monthlyCredits: 1000,     // 1000 credits/month = 20 analyses or 6 viral
     signupCredits: 1000,
     analyses: 999,
     remixes: 999,
     badge: 'BEST VALUE',
     highlight: false,
   },
-  // Legacy aliases — map to nearest current plan
-  business: {
-    label: 'Studio',
-    price: 59,
-    monthlyCredits: 1000,
-    signupCredits: 1000,
-    analyses: 999,
-    remixes: 999,
-    badge: null,
-    highlight: false,
-  },
-  unlimited: {
-    label: 'Studio',
-    price: 59,
-    monthlyCredits: 1000,
-    signupCredits: 1000,
-    analyses: 999,
-    remixes: 999,
-    badge: null,
-    highlight: false,
-  },
+  // Legacy aliases
+  business:  { label: 'Studio', price: 49, monthlyCredits: 1000, signupCredits: 1000, analyses: 999, remixes: 999, badge: null, highlight: false },
+  unlimited: { label: 'Studio', price: 49, monthlyCredits: 1000, signupCredits: 1000, analyses: 999, remixes: 999, badge: null, highlight: false },
 };
 
-// Credit packs — one-time purchases, credits never expire
-// analysis=50cr, viral=150cr
+// One-time credit packs — less value per credit than subscription (intentional)
+// Subscription: $29 = 500cr → 5.8¢/cr | $49 = 1000cr → 4.9¢/cr
+// One-time packs are MORE expensive per credit to incentivize subscription
 export const CREDIT_PACKS = [
   {
     id: 'starter',
-    credits: 250,
+    credits: 100,
     price: 9,
-    label: '250 Credits',
-    desc: `${Math.floor(250 / CREDIT_COSTS.analysis)} analyses or ${Math.floor(250 / CREDIT_COSTS.viral)} viral song`,
+    label: '100 Credits',
+    desc: '2 analyses or try 1 viral song',
     popular: false,
-    savings: null,
     badge: null,
+    savings: null,
+    // 9¢/cr — most expensive, just to try
   },
   {
     id: 'popular',
-    credits: 600,
+    credits: 300,
     price: 19,
-    label: '600 Credits',
-    desc: `${Math.floor(600 / CREDIT_COSTS.analysis)} analyses or ${Math.floor(600 / CREDIT_COSTS.viral)} viral songs`,
+    label: '300 Credits',
+    desc: '6 analyses or 2 viral songs',
     popular: true,
-    savings: 'BEST VALUE',
     badge: 'MOST POPULAR',
+    savings: null,
+    // 6.3¢/cr
   },
   {
     id: 'pro',
-    credits: 1500,
+    credits: 700,
     price: 39,
-    label: '1,500 Credits',
-    desc: `${Math.floor(1500 / CREDIT_COSTS.analysis)} analyses or ${Math.floor(1500 / CREDIT_COSTS.viral)} viral songs`,
+    label: '700 Credits',
+    desc: '14 analyses or 4 viral songs',
     popular: false,
-    savings: '25% off',
     badge: null,
+    savings: 'Best per credit',
+    // 5.6¢/cr — still worse than $29/mo subscription at 5.8¢/cr
   },
 ];
 
-// ═══════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════
+// HELPERS
+// ═══════════════════════════
 
-/** Monthly credit allotment for a given plan */
-export const getMonthlyCredits = (plan: Plan): number =>
-  PLAN_LIMITS[plan]?.monthlyCredits ?? 0;
-
-/** Credit balance color based on level */
 export const creditBalanceColor = (credits: number, plan: Plan): string => {
   const monthly = PLAN_LIMITS[plan]?.monthlyCredits || PLAN_LIMITS[plan]?.signupCredits || 50;
-  const pct = monthly > 0 ? (credits / monthly) * 100 : 0;
+  const pct = monthly > 0 ? (credits / monthly) * 100 : (credits / 50) * 100;
   if (credits <= 0) return 'text-destructive';
-  if (pct <= 10 || credits < CREDIT_COSTS.analysis) return 'text-red-400';
+  if (credits < CREDIT_COSTS.analysis) return 'text-red-400';
   if (pct <= 25) return 'text-amber-400';
   return 'text-emerald-400';
 };
 
-/** How many of each action credits can buy */
 export const creditsToActions = (credits: number) => ({
   analyses: Math.floor(credits / CREDIT_COSTS.analysis),
   viral: Math.floor(credits / CREDIT_COSTS.viral),
 });
 
-// ═══════════════════════════════════════════════════
-// PROFILE CREDIT REFRESH
-// ═══════════════════════════════════════════════════
+export const deductCredits = async (userId: string, amount: number): Promise<boolean> => {
+  const { data, error } = await supabase.rpc('deduct_credits', { p_user_id: userId, p_amount: amount });
+  if (error) { console.error('deductCredits error:', error); return false; }
+  return data === true;
+};
 
 export const refreshMonthlyCredits = async (userId: string, plan: Plan) => {
   const monthly = PLAN_LIMITS[plan]?.monthlyCredits ?? 0;
@@ -141,18 +123,7 @@ export const refreshMonthlyCredits = async (userId: string, plan: Plan) => {
   const { data, error } = await supabase
     .from('profiles')
     .update({ credits: monthly, credits_refreshed_at: new Date().toISOString() })
-    .eq('id', userId)
-    .select()
-    .single();
+    .eq('id', userId).select().single();
   if (error) console.error('refreshMonthlyCredits error:', error);
   return data;
-};
-
-export const deductCredits = async (userId: string, amount: number): Promise<boolean> => {
-  const { data, error } = await supabase.rpc('deduct_credits', {
-    p_user_id: userId,
-    p_amount: amount,
-  });
-  if (error) { console.error('deductCredits error:', error); return false; }
-  return data === true;
 };
