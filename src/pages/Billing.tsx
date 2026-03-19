@@ -380,7 +380,7 @@ const Billing = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
             {CREDIT_PACKS.map((pack, i) => {
-              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_500 : PRICES.credits_1000;
+              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_300 : PRICES.credits_700;
               return (
                 <motion.div
                   key={pack.id}

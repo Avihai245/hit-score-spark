@@ -251,9 +251,9 @@ export default function Pricing() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { credits: 100,  price: 7,  priceId: PRICES.credits_100,  popular: false },
-              { credits: 500,  price: 29, priceId: PRICES.credits_500,  popular: true  },
-              { credits: 1000, price: 49, priceId: PRICES.credits_1000, popular: false },
+              { credits: 100, price: 9,  priceId: PRICES.credits_100, popular: false },
+              { credits: 300, price: 19, priceId: PRICES.credits_300, popular: true  },
+              { credits: 700, price: 39, priceId: PRICES.credits_700, popular: false },
             ].map(pack => (
               <div key={pack.credits}
                 className={`rounded-2xl border p-5 flex flex-col items-center text-center relative ${

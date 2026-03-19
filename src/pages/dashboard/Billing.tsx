@@ -242,7 +242,7 @@ export default function DashboardBilling() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {CREDIT_PACKS.map((pack, i) => {
-              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_500 : PRICES.credits_1000;
+              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_300 : PRICES.credits_700;
               return (
                 <motion.div key={pack.id} whileHover={{ scale: 1.02, y: -2 }}
                   className={`rounded-2xl border p-5 flex flex-col items-center text-center relative cursor-pointer transition-all ${
@@ -292,7 +292,7 @@ export default function DashboardBilling() {
               <p className="text-xs text-foreground/80 flex-1">
                 <strong className="text-accent">Running low!</strong> You need {CREDIT_COSTS.viral} credits to create a viral song.
               </p>
-              <Button onClick={() => handleBuyCredits('popular', PRICES.credits_500)} size="sm"
+              <Button onClick={() => handleBuyCredits('popular', PRICES.credits_300)} size="sm"
                 className="shrink-0 bg-accent hover:bg-accent/90 text-black font-bold border-0 rounded-lg text-xs h-8">
                 Top up →
               </Button>

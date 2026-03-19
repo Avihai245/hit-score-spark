@@ -5,13 +5,24 @@ export const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
 );
 
+// ═══════════════════════════════════════════════════════
+// STRIPE PRICE IDs — must match supabase/functions/stripe-webhook/index.ts
+// Pro $29/mo | Studio $49/mo
+// Credit packs: 100cr=$9 | 300cr=$19 | 700cr=$39
+// ═══════════════════════════════════════════════════════
 export const PRICES = {
-  pro_monthly:      import.meta.env.VITE_STRIPE_PRO_PRICE_ID     || 'price_1TBQ1y5OzmHXa8O4fyUQRzop',
-  studio_monthly:   import.meta.env.VITE_STRIPE_STUDIO_PRICE_ID  || 'price_1TBQ1z5OzmHXa8O454UWomQK',
-  analysis_credit:  import.meta.env.VITE_STRIPE_ANALYSIS_CREDIT  || 'price_1TBQ205OzmHXa8O4coeEIBLP',
-  remix_credit:     import.meta.env.VITE_STRIPE_REMIX_CREDIT      || 'price_1TBQ205OzmHXa8O4TxhkFsW4',
-  analysis_5pack:   import.meta.env.VITE_STRIPE_ANALYSIS_5PACK   || 'price_1TBQ215OzmHXa8O4pcXnxbNC',
-  remix_3pack:      import.meta.env.VITE_STRIPE_REMIX_3PACK       || 'price_1TBQ225OzmHXa8O4VD8qGIUo',
+  // Subscriptions
+  pro_monthly:    import.meta.env.VITE_STRIPE_PRO_PRICE_ID    || 'price_1TBQ1y5OzmHXa8O4fyUQRzop',
+  studio_monthly: import.meta.env.VITE_STRIPE_STUDIO_PRICE_ID || 'price_1TBQ1z5OzmHXa8O454UWomQK',
+  // Credit packs (one-time)
+  credits_100:    import.meta.env.VITE_STRIPE_CREDITS_100     || 'price_1TBQ205OzmHXa8O4coeEIBLP', // 100cr $9
+  credits_300:    import.meta.env.VITE_STRIPE_CREDITS_300     || 'price_1TBQ215OzmHXa8O4pcXnxbNC', // 300cr $19
+  credits_700:    import.meta.env.VITE_STRIPE_CREDITS_700     || 'price_1TBQ225OzmHXa8O4VD8qGIUo', // 700cr $39
+  // Legacy aliases (backward compat)
+  analysis_credit: import.meta.env.VITE_STRIPE_CREDITS_100    || 'price_1TBQ205OzmHXa8O4coeEIBLP',
+  analysis_5pack:  import.meta.env.VITE_STRIPE_CREDITS_300    || 'price_1TBQ215OzmHXa8O4pcXnxbNC',
+  remix_3pack:     import.meta.env.VITE_STRIPE_CREDITS_700    || 'price_1TBQ225OzmHXa8O4VD8qGIUo',
+  remix_credit:    import.meta.env.VITE_STRIPE_CREDITS_100    || 'price_1TBQ205OzmHXa8O4coeEIBLP',
 };
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
