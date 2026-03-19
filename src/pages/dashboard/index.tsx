@@ -1019,47 +1019,70 @@ export default function Workspace() {
     }
     setAnalyzing(true); setAnalyzeElapsed(0);
     analyzeTimerRef.current = setInterval(() => setAnalyzeElapsed(e => e + 1), 1000);
+    let insertedAnalysis: any = null;
     try {
-      setAnalyzeStep('Uploading…');
+      setAnalyzeStep('Uploading your track…');
       const urlRes = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'get-upload-url', fileName: uploadFile.name }) });
+        body: JSON.stringify({ action: 'get-upload-url', fileName: uploadFile.name, contentType: uploadFile.type || 'audio/mpeg' }) });
+      if (!urlRes.ok) throw new Error('Upload URL failed — please try again');
       const { uploadUrl, s3Key } = await urlRes.json();
-      await fetch(uploadUrl, { method: 'PUT', body: uploadFile });
-      setAnalyzeStep('Analyzing hit patterns…');
+      if (!uploadUrl || !s3Key) throw new Error('Could not start upload — please try again');
+
+      setAnalyzeStep('Uploading to our servers…');
+      const uploadRes = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: uploadFile,
+        headers: { 'Content-Type': uploadFile.type || 'audio/mpeg' },
+      });
+      if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status}) — try a different file`);
+
+      setAnalyzeStep('Scanning chart DNA…');
       const res = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'analyze', s3Key, title: songTitle || uploadFile.name, genre: songGenre }) });
-      const { jobId } = await res.json();
+      if (!res.ok) throw new Error('Analysis server error — please try again');
+      const { jobId, error: startError } = await res.json();
+      if (startError) throw new Error(startError);
+      if (!jobId) throw new Error('Could not start analysis — please try again');
+
       let attempts = 0;
       const poll = async (): Promise<void> => {
-        if (attempts++ > 40) throw new Error('Timeout — try a shorter file');
-        setAnalyzeStep(`Scanning global charts… (${analyzeElapsed}s)`);
+        if (attempts++ > 60) throw new Error('Analysis took too long — please try with a shorter file (under 5 min)');
+        setAnalyzeStep(`Analyzing with AI — scanning ${attempts * 3}s of chart data…`);
         const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'poll', jobId }) });
+        if (!pr.ok) { await new Promise(r => setTimeout(r, 3000)); return poll(); }
         const data = await pr.json();
         if (data.status === 'complete') {
+          if (!data.score) throw new Error('Analysis returned no results — please try again');
+          // Save to Supabase
           if (user) {
-            const { data: inserted } = await supabase.from('viralize_analyses').insert({
+            const { data: ins, error: insErr } = await supabase.from('viralize_analyses').insert({
               user_id: user.id, title: songTitle || uploadFile.name,
               genre: songGenre || data.genre || '', score: data.score,
               verdict: data.verdict, full_result: data,
             }).select('*').single();
+            if (!insErr && ins) {
+              insertedAnalysis = ins;
+              setActiveItem({ type: 'analysis', data: ins });
+              setTab('uploads');
+            }
             await loadData();
-            if (inserted) { setActiveItem({ type: 'analysis', data: inserted }); setTab('uploads'); }
           }
           clearInterval(analyzeTimerRef.current);
           setAnalyzing(false); setUploadFile(null); setSongTitle(''); setSongGenre('');
-          setLastAnalysisResult({ ...data, dbRecord: inserted });
-          toast.success(`🎯 Score: ${data.score}/100`);
+          setLastAnalysisResult({ ...data, dbRecord: insertedAnalysis });
+          toast.success(`🎯 Score: ${data.score}/100 — your scan is ready!`);
         } else if (data.status === 'error') {
-          throw new Error(data.error || 'Analysis failed');
+          throw new Error(data.error || 'Analysis failed — please try again');
         } else {
-          await new Promise(r => setTimeout(r, 3000)); return poll();
+          await new Promise(r => setTimeout(r, 4000)); return poll();
         }
       };
-      await new Promise(r => setTimeout(r, 3000)); await poll();
+      await new Promise(r => setTimeout(r, 5000)); await poll();
     } catch (e: any) {
       clearInterval(analyzeTimerRef.current); setAnalyzing(false);
-      toast.error(e.message || 'Analysis failed');
+      const msg = e.message || 'Scan failed — please try again';
+      toast.error(msg, { duration: 8000, description: 'If this keeps happening, try a shorter MP3 file.' });
     }
   };
 
