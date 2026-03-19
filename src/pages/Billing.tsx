@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { PLAN_LIMITS } from '@/lib/supabase';
+import { PLAN_LIMITS, CREDIT_PACKS, CREDIT_COSTS } from '@/lib/supabase';
 import { createCheckoutSession, PRICES } from '@/lib/stripe';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -264,7 +264,7 @@ const Billing = () => {
                 <span className="font-bold text-white">Pro</span>
               </div>
               <div className="flex items-end gap-2 mb-1">
-                <span className="text-5xl font-black text-white">$19</span>
+                <span className="text-5xl font-black text-white">$29</span>
                 <div className="mb-2">
                   <span className="text-muted-foreground line-through text-sm">$39</span>
                   <span className="text-muted-foreground">/mo</span>
@@ -327,7 +327,7 @@ const Billing = () => {
                 <span className="font-bold text-white">Studio</span>
               </div>
               <div className="flex items-end gap-1 mb-1">
-                <span className="text-5xl font-black text-white">$49</span>
+                <span className="text-5xl font-black text-white">$59</span>
                 <span className="text-muted-foreground mb-2">/month</span>
               </div>
               <p className="text-xs text-yellow-400 font-semibold">For pros, labels & teams</p>
@@ -355,80 +355,75 @@ const Billing = () => {
           </motion.div>
         </div>
 
-        {/* ─── Pay As You Go ─── */}
+        {/* ─── Buy Credits Once ─── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          
           className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 mb-16"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-black text-white mb-2">Just need a few?</h2>
-            <p className="text-muted-foreground">Buy exactly what you need. Credits never expire.</p>
+          <div className="text-center mb-4">
+            <p className="text-xs font-black text-white/30 uppercase tracking-[0.2em] mb-2">No subscription needed</p>
+            <h2 className="text-2xl font-black text-white">Buy Credits Once</h2>
+            <p className="text-muted-foreground text-sm mt-1">Credits never expire. Top up anytime.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {/* Analysis credits */}
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                  <BarChart2 className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-bold text-white">Analysis Credits</p>
-                  <p className="text-xs text-muted-foreground">One full viral analysis</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <motion.button
-                  onClick={() => handleCheckout(PRICES.analysis_credit, user?.id)}
-                  className="w-full py-2.5 rounded-xl border border-primary/40 text-primary font-semibold text-sm hover:bg-primary/10 transition-colors"
+          <div className="flex items-center justify-center gap-6 mb-8 text-sm">
+            <span className="flex items-center gap-1.5 text-white/50">
+              <BarChart2 className="w-4 h-4 text-primary" />
+              Analyze: <strong className="text-white">{CREDIT_COSTS.analysis} credits</strong>
+            </span>
+            <span className="w-px h-4 bg-white/10" />
+            <span className="flex items-center gap-1.5 text-white/50">
+              <Zap className="w-4 h-4 text-accent" />
+              Create Viral: <strong className="text-white">{CREDIT_COSTS.viral} credits</strong>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-3xl mx-auto">
+            {CREDIT_PACKS.map((pack, i) => {
+              const priceId = i === 0 ? PRICES.credits_100 : i === 1 ? PRICES.credits_500 : PRICES.credits_1000;
+              return (
+                <motion.div
+                  key={pack.id}
+                  whileHover={{ scale: 1.03, y: -3 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCheckout(priceId, user?.id)}
+                  className={`relative rounded-2xl border p-6 flex flex-col items-center text-center cursor-pointer transition-all ${
+                    pack.popular
+                      ? 'border-primary/60 bg-primary/[0.07] shadow-xl shadow-primary/15'
+                      : 'border-white/10 bg-white/[0.03] hover:border-primary/30'
+                  }`}
                 >
-                  1 analysis — $3
-                </motion.button>
-                <motion.button
-                  onClick={() => handleCheckout(PRICES.analysis_5pack, user?.id)}
-                  className="relative w-full py-2.5 rounded-xl bg-primary/20 text-primary font-semibold text-sm hover:bg-primary/30 transition-colors overflow-hidden"
-                  whileTap={{ scale: 0.98 }}
-                >
-                  5 analyses — $12
-                  <span className="absolute top-1 right-2 text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold uppercase">
-                    Save 20%
-                  </span>
-                </motion.button>
-              </div>
-            </div>
-            {/* Remix credits */}
-            <div className="rounded-2xl border border-accent/20 bg-accent/5 p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
-                  <Music className="h-5 w-5 text-accent" />
-                </div>
-                <div>
-                  <p className="font-bold text-white">Remix Credits</p>
-                  <p className="text-xs text-muted-foreground">One AI-powered remix</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <motion.button
-                  onClick={() => handleCheckout(PRICES.remix_credit, user?.id)}
-                  className="w-full py-2.5 rounded-xl border border-accent/40 text-accent font-semibold text-sm hover:bg-accent/10 transition-colors"
-                  whileTap={{ scale: 0.98 }}
-                >
-                  1 remix — $7
-                </motion.button>
-                <motion.button
-                  onClick={() => handleCheckout(PRICES.remix_3pack, user?.id)}
-                  className="relative w-full py-2.5 rounded-xl bg-accent/20 text-accent font-semibold text-sm hover:bg-accent/30 transition-colors overflow-hidden"
-                  whileTap={{ scale: 0.98 }}
-                >
-                  3 remixes — $18
-                  <span className="absolute top-1 right-2 text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold uppercase">
-                    Save 14%
-                  </span>
-                </motion.button>
-              </div>
-            </div>
+                  {pack.badge && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-primary text-white text-[9px] font-black tracking-widest whitespace-nowrap">
+                      {pack.badge}
+                    </span>
+                  )}
+                  {pack.savings && !pack.popular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black tracking-widest whitespace-nowrap">
+                      {pack.savings}
+                    </span>
+                  )}
+                  <div className="mt-2">
+                    <span className="text-4xl font-black text-white">{pack.credits.toLocaleString()}</span>
+                    <span className="text-sm text-white/40 ml-1">credits</span>
+                  </div>
+                  <p className="text-[11px] text-white/40 mt-1.5 mb-4 leading-snug">{pack.desc}</p>
+                  <span className="text-3xl font-black text-white">${pack.price}</span>
+                  <p className="text-[10px] text-white/30 mt-0.5 mb-4">
+                    ${(pack.price / pack.credits * 100).toFixed(1)}¢ per credit · one-time
+                  </p>
+                  <motion.button
+                    className={`w-full py-3 rounded-xl font-bold text-sm transition-all ${
+                      pack.popular
+                        ? 'bg-gradient-to-r from-primary to-violet-500 text-white shadow-lg shadow-primary/25 hover:opacity-90'
+                        : 'bg-white/10 text-white hover:bg-white/15'
+                    }`}
+                  >
+                    Buy {pack.credits.toLocaleString()} Credits
+                  </motion.button>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
@@ -576,7 +571,7 @@ const Billing = () => {
                   />
                   <span className="relative flex items-center gap-2">
                     <Zap className="h-5 w-5" />
-                    Upgrade to Pro — $19/month
+                    Upgrade to Pro — $29/month
                     <ArrowRight className="h-4 w-4" />
                   </span>
                 </motion.button>
