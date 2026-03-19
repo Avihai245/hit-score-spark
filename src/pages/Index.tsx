@@ -730,7 +730,7 @@ const Index = () => {
           <motion.p {...fadeUp(0.05)} className="text-center text-muted-foreground mb-14 max-w-xl mx-auto text-lg">
             Start free. Pay only when you're ready. One viral hit pays for itself 100x over.
           </motion.p>
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
             {pricingPreview.map((plan, i) =>
             <motion.div
               key={plan.name}
