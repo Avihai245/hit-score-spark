@@ -215,7 +215,7 @@ const pricingPreview = [
   { name: "Free", price: "$0", features: ["1 analysis per month", "Hit score (0–100)", "3 improvement tips", "Strengths & weaknesses", "Share your score"], highlighted: false },
   { name: "Pro", price: "$19", period: "/mo", badge: "MOST POPULAR", features: ["Unlimited analyses", "Up to 4 viral songs/month", "Smart scan of top 500 live hits", "Full viral report + lyrics breakdown", "MP3 download", "Priority processing"], highlighted: true },
   { name: "Studio", price: "$29", period: "/mo", features: ["Everything in Pro", "Up to 10 viral songs/month", "WAV + MP3 download", "Advanced analytics", "Commercial use rights", "Priority support"], highlighted: false },
-  { name: "Business", price: "$49", period: "/mo", features: ["Everything in Studio", "Up to 20 viral songs/month", "WAV + MP3 + stems download", "Full commercial rights", "Early access to new features", "Priority support"], highlighted: false },
+  { name: "Business", price: "$49", period: "/mo", badge: "BEST VALUE", features: ["Everything in Studio", "Up to 20 viral songs/month", "WAV + MP3 + stems download", "Full commercial rights", "Early access to new features", "Priority support"], highlighted: false },
 ];
 
 
