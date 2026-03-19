@@ -3,9 +3,10 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Users, BarChart3, DollarSign, FileText, ArrowLeft,
   Music2, Activity, MessageSquare, Megaphone, Shield, ScrollText, Settings,
-  ChevronLeft, ChevronRight, Zap, Tag, Heart, X,
+  ChevronLeft, ChevronRight, Tag, Heart, X,
 } from 'lucide-react';
 import { useState } from 'react';
+import { LOGO_GRADIENT, LOGO_SCAN_STYLE } from '@/components/ViralizeLogo';
 
 const NAV_SECTIONS = [
   {
