@@ -216,6 +216,7 @@ const pricingPreview = [
   { name: "Pro", price: "$19", period: "/mo", badge: "MOST POPULAR", features: ["Unlimited analyses", "Up to 4 viral songs/month", "Smart scan of top 500 live hits", "Full viral report + lyrics breakdown", "MP3 download", "Priority processing"], highlighted: true },
   { name: "Studio", price: "$29", period: "/mo", features: ["Everything in Pro", "Up to 10 viral songs/month", "WAV + MP3 download", "Advanced analytics", "Commercial use rights", "Priority support"], highlighted: false },
   { name: "Business", price: "$49", period: "/mo", badge: "BEST VALUE", features: ["Everything in Studio", "Up to 20 viral songs/month", "WAV + MP3 + stems download", "Full commercial rights", "Early access to new features", "Priority support"], highlighted: false },
+  { name: "Unlimited", price: "$79", period: "/mo", features: ["Everything in Business", "Unlimited viral songs", "Fastest priority queue", "Full commercial rights", "Early access to new features", "Premium support"], highlighted: false },
 ];
 
 
