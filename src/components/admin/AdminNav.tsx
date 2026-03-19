@@ -35,6 +35,7 @@ const NAV_SECTIONS = [
   {
     label: 'Operations',
     items: [
+      { href: '/admin/suno-engine', label: 'Suno Engine', icon: Music2 },
       { href: '/admin/content', label: 'Content', icon: FileText },
       { href: '/admin/support', label: 'Support', icon: MessageSquare },
       { href: '/admin/notifications', label: 'Messaging', icon: Megaphone },

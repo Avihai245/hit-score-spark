@@ -719,6 +719,7 @@ export default function Workspace() {
   const [analyzeStep, setAnalyzeStep] = useState('');
   const [analyzeElapsed, setAnalyzeElapsed] = useState(0);
   const [dragOver, setDragOver] = useState(false);
+  const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const analyzeTimerRef = useRef<ReturnType<typeof setInterval>>();
 
   /* ─── Create state ─── */
@@ -920,10 +921,9 @@ export default function Workspace() {
             if (inserted) { setActiveItem({ type: 'analysis', data: inserted }); setTab('uploads'); }
           }
           clearInterval(analyzeTimerRef.current);
-          toast.success(`🎯 Score: ${data.score}/100 — Switching to Create mode`);
           setAnalyzing(false); setUploadFile(null); setSongTitle(''); setSongGenre('');
-          // Auto-flow: open Create panel with pre-filled data from this analysis
-          setTimeout(() => { setLeftMode('create'); }, 900);
+          setLastAnalysisResult({ ...data, dbRecord: inserted });
+          toast.success(`🎯 Score: ${data.score}/100`);
         } else if (data.status === 'error') {
           throw new Error(data.error || 'Analysis failed');
         } else {
@@ -1273,6 +1273,96 @@ export default function Workspace() {
             <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3">
               {analyzing ? (
                 <ScanLoadingPanel elapsed={analyzeElapsed} step={analyzeStep} />
+              ) : lastAnalysisResult ? (
+                /* ── Analysis Results ── */
+                <div className="space-y-3">
+                  {/* Score card */}
+                  <div className={`rounded-2xl p-4 text-center border ${
+                    lastAnalysisResult.score >= 80 ? 'bg-emerald-500/10 border-emerald-500/30' :
+                    lastAnalysisResult.score >= 60 ? 'bg-primary/10 border-primary/30' :
+                    lastAnalysisResult.score >= 40 ? 'bg-amber-500/10 border-amber-500/30' :
+                    'bg-destructive/10 border-destructive/30'
+                  }`}>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Viral Score</p>
+                    <p className={`text-5xl font-black ${
+                      lastAnalysisResult.score >= 80 ? 'text-emerald-400' :
+                      lastAnalysisResult.score >= 60 ? 'text-primary' :
+                      lastAnalysisResult.score >= 40 ? 'text-amber-400' : 'text-destructive'
+                    }`}>{lastAnalysisResult.score}<span className="text-xl text-muted-foreground">/100</span></p>
+                    <p className="text-xs text-foreground/80 mt-1 font-semibold">{lastAnalysisResult.verdict || ''}</p>
+                  </div>
+
+                  {/* Key metrics */}
+                  {lastAnalysisResult.bpm && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { label: 'BPM', value: lastAnalysisResult.bpm },
+                        { label: 'Key', value: lastAnalysisResult.key || '—' },
+                        { label: 'Genre', value: lastAnalysisResult.genre || '—' },
+                      ].map(m => (
+                        <div key={m.label} className="rounded-xl bg-muted/40 border border-border/60 p-2 text-center">
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
+                          <p className="text-xs font-bold text-foreground truncate">{m.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Improvements */}
+                  {lastAnalysisResult.improvements?.length > 0 && (
+                    <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-3">
+                      <p className="text-[10px] font-black text-amber-400 uppercase tracking-wider mb-2">What to improve</p>
+                      <ul className="space-y-1.5">
+                        {lastAnalysisResult.improvements.slice(0, 3).map((imp: string, i: number) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <span className="text-amber-400 mt-0.5 shrink-0">▸</span>
+                            <span className="text-[11px] text-foreground/80 leading-snug">{imp}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Strengths */}
+                  {lastAnalysisResult.strengths?.length > 0 && (
+                    <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-3">
+                      <p className="text-[10px] font-black text-emerald-400 uppercase tracking-wider mb-2">Strengths</p>
+                      <ul className="space-y-1.5">
+                        {lastAnalysisResult.strengths.slice(0, 2).map((s: string, i: number) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <span className="text-emerald-400 mt-0.5 shrink-0">✓</span>
+                            <span className="text-[11px] text-foreground/80 leading-snug">{s}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* CTA — Create Viral */}
+                  <motion.button
+                    onClick={() => { setLastAnalysisResult(null); setLeftMode('create'); }}
+                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 hover:opacity-90 transition-all relative overflow-hidden"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
+                    <Sparkles className="w-4 h-4 relative z-10" />
+                    <span className="relative z-10">Create Viral Version →</span>
+                  </motion.button>
+
+                  {/* Re-analyze / View full report */}
+                  <div className="flex gap-2">
+                    <button onClick={() => setLastAnalysisResult(null)}
+                      className="flex-1 py-2 rounded-xl text-[11px] font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-primary/30 transition-all">
+                      ← Analyze another
+                    </button>
+                    {lastAnalysisResult.dbRecord?.id && (
+                      <Link to={`/song/${lastAnalysisResult.dbRecord.id}`}
+                        className="flex-1 py-2 rounded-xl text-[11px] font-semibold text-primary border border-primary/30 hover:bg-primary/5 transition-all text-center">
+                        Full report →
+                      </Link>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <>
                   {/* Drop zone */}

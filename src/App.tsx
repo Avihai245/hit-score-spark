@@ -50,6 +50,7 @@ import AdminPermissions from "./pages/admin/permissions";
 import AdminAudit from "./pages/admin/audit";
 import AdminSystem from "./pages/admin/system";
 import AdminNotifications from "./pages/admin/notifications";
+import AdminSunoEngine from "./pages/admin/suno-engine";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +89,7 @@ const AnimatedRoutes = () => {
         <Route path="/admin/permissions" element={<AdminPermissions />} />
         <Route path="/admin/audit" element={<AdminAudit />} />
         <Route path="/admin/system" element={<AdminSystem />} />
+        <Route path="/admin/suno-engine" element={<AdminSunoEngine />} />
         <Route path="/admin/notifications" element={<AdminNotifications />} />
       </Routes>
     );
