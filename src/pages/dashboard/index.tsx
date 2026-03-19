@@ -1761,13 +1761,23 @@ export default function Workspace() {
                   </div>
                   <input value={songTitle} onChange={e => setSongTitle(e.target.value)} placeholder="Song title (optional)"
                     className="w-full bg-muted/50 border border-border rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 transition-colors" />
-                  <select value={songGenre} onChange={e => setSongGenre(e.target.value)}
-                    className="w-full bg-muted/50 border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors appearance-none">
-                    <option value="">Genre (optional)</option>
-                    {['Pop','Hip Hop','R&B','Indie Pop','Melodic House','EDM','Rock','Latin','Afrobeats','Country'].map(g => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
+                  {/* Genre pills */}
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Genre <span className="font-normal normal-case opacity-60">(optional)</span></p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {['Pop','Hip-Hop','R&B','Rap','EDM','Rock','Latin','Afrobeats','Country','Indie','Drill','Trap'].map(g => (
+                        <button key={g} type="button"
+                          onClick={() => setSongGenre(songGenre === g ? '' : g)}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all border ${
+                            songGenre === g
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-muted/40 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground'
+                          }`}>
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <Button onClick={handleAnalyze} disabled={!uploadFile}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-xl text-sm font-bold gap-2 disabled:opacity-40 h-10">
                     <Search className="w-4 h-4" /> Scan My Song
