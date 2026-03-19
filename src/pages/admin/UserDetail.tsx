@@ -55,6 +55,8 @@ export default function AdminUserDetail() {
   const [analyses, setAnalyses] = useState<any[]>([]);
   const [remixes, setRemixes] = useState<any[]>([]);
   const [credits, setCredits] = useState<any[]>([]);
+  const [totalAnalyses, setTotalAnalyses] = useState(0);
+  const [totalRemixes, setTotalRemixes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [changingPlan, setChangingPlan] = useState(false);
   const [creditAmount, setCreditAmount] = useState('');
