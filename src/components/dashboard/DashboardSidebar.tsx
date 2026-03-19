@@ -7,7 +7,7 @@ import {
   Home, Music2, CreditCard, ArrowRight, X, Rocket, Search,
   Bell, User, Coins, Library,
 } from 'lucide-react';
-import { LogoIcon } from '@/components/ViralizeLogo';
+import { LogoIcon, LOGO_GRADIENT, LOGO_SCAN_STYLE } from '@/components/ViralizeLogo';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Home', icon: Home, exact: true },
