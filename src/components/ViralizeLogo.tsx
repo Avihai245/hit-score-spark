@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 /**
  * Santo Logo — sleek waveform + bold type
  */
-const LogoIcon = ({ size = 28, className }: {size?: number;className?: string;}) => {};
+const LogoIcon = ({ size = 28, className }: {size?: number;className?: string;}) => { return null; };
 
 
 
