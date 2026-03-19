@@ -74,7 +74,7 @@ export const DashboardSidebar = ({ collapsed, onToggle, mobileOpen, onMobileClos
       )}
     >
       {/* Logo */}
-      <div className="h-14 flex items-center justify-center border-b border-border/20 shrink-0">
+      <div className="h-14 flex items-center px-4 border-b border-border/20 shrink-0">
         <Link to="/" className="group">
           {!collapsed ? (
             <span className="relative inline-block">
