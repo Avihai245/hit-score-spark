@@ -66,16 +66,20 @@ export default function AdminUserDetail() {
   const fetchUser = async () => {
     if (!userId) return;
     setLoading(true);
-    const [{ data: userData }, { data: analysesData }, { data: remixesData }, { data: creditsData }] = await Promise.all([
+    const [{ data: userData }, { data: analysesData }, { data: remixesData }, { data: creditsData }, { count: analysesCount }, { count: remixesCount }] = await Promise.all([
       supabase.from('viralize_users').select('*').eq('id', userId).single(),
       supabase.from('viralize_analyses').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
       supabase.from('viralize_remixes').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
       supabase.from('viralize_credits').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(10),
+      supabase.from('viralize_analyses').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+      supabase.from('viralize_remixes').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     ]);
     setUser(userData);
     setAnalyses(analysesData ?? []);
     setRemixes(remixesData ?? []);
     setCredits(creditsData ?? []);
+    setTotalAnalyses(analysesCount ?? 0);
+    setTotalRemixes(remixesCount ?? 0);
     setLoading(false);
   };
 
