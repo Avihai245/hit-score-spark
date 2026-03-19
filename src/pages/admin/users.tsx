@@ -168,7 +168,7 @@ export default function AdminUsers() {
                           </div>
                         </td>
                         {/* Plan */}
-                        <td className="px-4 py-3">
+                         <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="relative">
                             <button
                               onClick={() => setChangingPlan(changingPlan === u.id ? null : u.id)}
