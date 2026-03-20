@@ -1898,30 +1898,7 @@ export default function Workspace() {
               {!canCreate ? (
                 <UpgradeGate />
               ) : generating ? (
-                /* Non-blocking: show compact progress instead of replacing the form */
-                <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 p-3 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <motion.div className="w-2 h-2 rounded-full bg-orange-400"
-                      animate={{ scale: [1,1.5,1], opacity:[1,0.4,1] }}
-                      transition={{ repeat: Infinity, duration: 0.8 }} />
-                    <span className="text-xs font-bold text-orange-300">Creating Algorithm Hit… {generateElapsed}s</span>
-                  </div>
-                  {/* Mini waveform */}
-                  <div className="flex items-end gap-[1.5px] h-8">
-                    {Array.from({length:20}).map((_,i)=>(
-                      <motion.div key={i} className="flex-1 rounded-full bg-orange-400/60"
-                        style={{height:'100%',transformOrigin:'bottom'}}
-                        animate={{scaleY:[0.1,0.3+Math.abs(Math.sin(i*0.5))*0.7,0.1]}}
-                        transition={{repeat:Infinity,duration:0.5+(i%4)*0.08,delay:i*0.04}}/>
-                    ))}
-                  </div>
-                  <div className="h-1 rounded-full bg-muted overflow-hidden">
-                    <motion.div className="h-full bg-orange-400 rounded-full"
-                      animate={{scaleX:Math.min(0.95,generateElapsed/90)}}
-                      style={{transformOrigin:'left'}} transition={{duration:0.5}}/>
-                  </div>
-                  <p className="text-[10px] text-orange-300/60">Your hits are being built — keep creating!</p>
-                </div>
+                <ViralCreatePanel elapsed={generateElapsed} genre={activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop'} />
               ) : !activeItem && !createFile && !lastScanS3Key ? (
                 <div className="flex-1 flex flex-col items-center justify-center px-4 text-center space-y-4 py-8">
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
