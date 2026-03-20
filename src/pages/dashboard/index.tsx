@@ -1252,7 +1252,9 @@ export default function Workspace() {
 
   /* ─── Play with tracking ─── */
   const playTrackWithTracking = (track: { id: string; title: string; audioUrl: string }) => {
-    if (user) {
+    // Only increment play count when starting a NEW track (not resuming same track)
+    const isNewTrack = !currentTrack || currentTrack.audioUrl !== track.audioUrl;
+    if (user && isNewTrack) {
       incrementPlayCount(user.id, track.id);
       setPlayCounts(prev => ({ ...prev, [track.id]: (prev[track.id] || 0) + 1 }));
     }
@@ -2265,9 +2267,19 @@ export default function Workspace() {
                             </span>
                           )}
                           {item.type === 'remix' && (
-                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 uppercase tracking-wider shrink-0">
-                              Hit ⚡
-                            </span>
+                            <>
+                              <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 uppercase tracking-wider shrink-0">
+                                Hit ⚡
+                              </span>
+                              {/* Model label: Faithful=S4 (standard), Viral=S5 (ultra) */}
+                              <span className={`text-[7px] font-black px-1 py-0.5 rounded border shrink-0 ${
+                                (item.data.remix_title || '').toLowerCase().includes('faithful') || (item.data.remix_title || '').toLowerCase().includes('standard')
+                                  ? 'border-slate-500/30 text-slate-400 bg-slate-500/10'
+                                  : 'border-violet-500/30 text-violet-400 bg-violet-500/10'
+                              }`}>
+                                {(item.data.remix_title || '').toLowerCase().includes('faithful') || (item.data.remix_title || '').toLowerCase().includes('standard') ? 'S4' : 'S5'}
+                              </span>
+                            </>
                           )}
                           {/* NEW badge — shown if play count is 0 */}
                           {(playCounts[item.data.id] || 0) === 0 && (
@@ -2409,7 +2421,9 @@ export default function Workspace() {
                                 setLeftMode('analyze');
                                 setSongTitle((item.data.remix_title || 'Algorithm Hit') + ' (re-scan)');
                                 setSongGenre(item.data.genre || '');
+                                setUploadFile(null);
                                 if (!rightOpen) setRightOpen(true);
+                                toast.info('Upload this track to re-scan it and measure improvement', { duration: 4000 });
                               }}
                               className="flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-[9px] font-bold transition-all">
                               <BarChart2 className="w-3 h-3" />
