@@ -105,10 +105,22 @@ export const creditsToActions = (credits: number) => ({
   viral: Math.floor(credits / CREDIT_COSTS.viral),
 });
 
-export const deductCredits = async (userId: string, amount: number): Promise<boolean> => {
-  const { data, error } = await supabase.rpc('deduct_credits', { p_user_id: userId, p_amount: amount });
-  if (error) { console.error('deductCredits error:', error); return false; }
-  return data === true;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
+
+export const deductCredits = async (userId: string, amount: number): Promise<{ success: boolean; newCredits?: number }> => {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/deduct-credits`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      body: JSON.stringify({ userId, amount }),
+    });
+    const data = await res.json();
+    return { success: data.success === true, newCredits: data.credits };
+  } catch (e) {
+    console.error('deductCredits error:', e);
+    return { success: false };
+  }
 };
 
 export const refreshMonthlyCredits = async (userId: string, plan: Plan) => {

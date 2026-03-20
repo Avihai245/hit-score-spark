@@ -16,7 +16,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
-import { supabase, PLAN_LIMITS, CREDIT_COSTS } from '@/lib/supabase';
+import { supabase, PLAN_LIMITS, CREDIT_COSTS, deductCredits } from '@/lib/supabase';
 import { saveRemixesToLocalStorage } from '@/lib/remixStorage';
 import { createCheckoutSession, PRICES } from '@/lib/stripe';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
@@ -769,7 +769,7 @@ const UpgradeGate = () => (
    WORKSPACE
 ════════════════════════════════════════════════════ */
 export default function Workspace() {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { playTrack, currentTrack, isPlaying, progress, currentTime, duration, togglePlay, seek, volume, setVolume } = useAudioPlayer();
   const navigate = useNavigate();
 
@@ -1093,10 +1093,17 @@ export default function Workspace() {
             }
             await loadData();
           }
+          // ✅ Deduct credits AFTER successful analysis
+          if (user) {
+            const deductResult = await deductCredits(user.id, CREDIT_COSTS.analysis);
+            if (deductResult.success && deductResult.newCredits !== undefined) {
+              await refreshProfile(); // update credits display
+            }
+          }
           clearInterval(analyzeTimerRef.current);
           setAnalyzing(false); setUploadFile(null); setSongTitle(''); setSongGenre('');
           setLastAnalysisResult({ ...data, dbRecord: insertedAnalysis });
-          toast.success(`🎯 Score: ${data.score}/100 — your scan is ready!`);
+          toast.success(`🎯 Score: ${data.score}/100 — ${CREDIT_COSTS.analysis} credits used`);
         } else if (data.status === 'error') {
           throw new Error(data.error || 'Analysis failed — please try again');
         } else {
@@ -1218,10 +1225,17 @@ export default function Workspace() {
         } catch {}
       }
       if (user) clearPendingGeneration(user.id);
+      // ✅ Deduct credits AFTER successful generation
+      if (user && tracks.length > 0) {
+        const deductResult = await deductCredits(user.id, CREDIT_COSTS.viral);
+        if (deductResult.success) {
+          await refreshProfile(); // update credits display
+        }
+      }
       await loadData(); setGenerating(false); setCreateFile(null);
       // Play first track
       if (tracks[0]?.audioUrl) playTrackWithTracking({ id: `remix_new_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
-      toast.success(`🎉 ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready!`); setTab('created');
+      toast.success(`🎉 ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready! ${CREDIT_COSTS.viral} credits used`); setTab('created');
       setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
     } catch (e: any) {
       clearInterval(generateTimerRef.current); setGenerating(false);
