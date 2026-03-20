@@ -1506,22 +1506,70 @@ export default function Workspace() {
             </div>
           </div>
 
+          {/* "Algorithm Hit based on" — for remixes (like Suno's "Cover of") */}
+          {activeItem.type === 'remix' && activeItem.data.original_title && (
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-bold">Algorithm Hit based on</p>
+                <p className="text-xs font-semibold text-foreground truncate">{activeItem.data.original_title}</p>
+              </div>
+              {/* Score progression if original analysis exists */}
+              {(() => {
+                const orig = analyses.find(a => a.id === activeItem.data.analysis_id);
+                if (!orig) return null;
+                return (
+                  <div className="text-right shrink-0">
+                    <p className="text-[9px] text-muted-foreground">Score</p>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground/50 line-through">{orig.score}</span>
+                      <span className="text-[10px] text-emerald-400 font-black">→ Hit ⚡</span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Lyrics — analyses AND remixes */}
+          {/* For remixes: show the lyrics that were used to generate */}
+          {activeItem.type === 'remix' && createLyrics && activeItem.data.suno_task_id && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Generated Lyrics</p>
+                <button onClick={() => navigator.clipboard.writeText(createLyrics)}
+                  className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground flex items-center gap-0.5">
+                  <Copy className="w-2.5 h-2.5" /> Copy
+                </button>
+              </div>
+              <div className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border text-muted-foreground">
+                {createLyrics}
+              </div>
+            </div>
+          )}
+
           {/* Lyrics — with section markers */}
           {(r.originalLyrics || r.improvedLyrics) && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Lyrics</p>
                 <div className="flex gap-1">
+                  <button onClick={() => navigator.clipboard.writeText(r.improvedLyrics || r.originalLyrics)}
+                    className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground flex items-center gap-0.5">
+                    <Copy className="w-2.5 h-2.5" /> Copy
+                  </button>
                   {r.originalLyrics && (
                     <button onClick={() => setCreateLyrics(r.originalLyrics)}
                       className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground">
-                      Use Original
+                      Use
                     </button>
                   )}
                   {r.improvedLyrics && (
                     <button onClick={() => setCreateLyrics(r.improvedLyrics)}
                       className="text-[9px] px-1.5 py-0.5 rounded border border-primary/30 text-primary hover:bg-primary/10 flex items-center gap-0.5">
-                      <Sparkles className="w-2 h-2" /> AI-improved
+                      <Sparkles className="w-2 h-2" /> AI ✓
                     </button>
                   )}
                 </div>
