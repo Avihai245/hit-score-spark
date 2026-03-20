@@ -36,6 +36,13 @@ import {
 const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
 
 const GENERATION_KEY = (uid: string) => `hitcheck_generating_${uid}`;
+const LYRICS_KEY = (taskId: string) => `hitcheck_lyrics_${taskId}`;
+const saveLyricsForTrack = (taskId: string, lyrics: string) => {
+  try { localStorage.setItem(LYRICS_KEY(taskId), lyrics); } catch {}
+};
+const loadLyricsForTrack = (taskId: string): string => {
+  try { return localStorage.getItem(LYRICS_KEY(taskId)) || ''; } catch { return ''; }
+};
 
 interface PendingGeneration {
   taskIdV1: string;
@@ -1225,6 +1232,11 @@ export default function Workspace() {
         } catch {}
       }
       if (user) clearPendingGeneration(user.id);
+      // ✅ Save lyrics to localStorage for each generated track (persists across sessions)
+      if (createLyrics && taskIdV1) {
+        saveLyricsForTrack(taskIdV1, createLyrics);
+        if (taskIdV2) saveLyricsForTrack(taskIdV2, createLyrics);
+      }
       // ✅ Deduct credits AFTER successful generation
       if (user && tracks.length > 0) {
         const deductResult = await deductCredits(user.id, CREDIT_COSTS.viral);
@@ -1535,20 +1547,43 @@ export default function Workspace() {
 
           {/* Lyrics — analyses AND remixes */}
           {/* For remixes: show the lyrics that were used to generate */}
-          {activeItem.type === 'remix' && createLyrics && activeItem.data.suno_task_id && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Generated Lyrics</p>
-                <button onClick={() => navigator.clipboard.writeText(createLyrics)}
-                  className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground flex items-center gap-0.5">
-                  <Copy className="w-2.5 h-2.5" /> Copy
-                </button>
+          {activeItem.type === 'remix' && activeItem.data.suno_task_id && (() => {
+            // Load lyrics from localStorage (persists across sessions)
+            const savedLyrics = loadLyricsForTrack(activeItem.data.suno_task_id);
+            const displayLyrics = savedLyrics || createLyrics;
+            if (!displayLyrics) return null;
+            return (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Lyrics</p>
+                  <div className="flex gap-1">
+                    <button onClick={() => navigator.clipboard.writeText(displayLyrics)}
+                      className="text-[9px] px-1.5 py-0.5 rounded border border-border text-muted-foreground hover:text-foreground flex items-center gap-0.5">
+                      <Copy className="w-2.5 h-2.5" /> Copy
+                    </button>
+                    <button onClick={() => { setCreateLyrics(displayLyrics); setLeftMode('create'); }}
+                      className="text-[9px] px-1.5 py-0.5 rounded border border-primary/30 text-primary hover:bg-primary/10 flex items-center gap-0.5">
+                      <Sparkles className="w-2 h-2" /> Edit
+                    </button>
+                  </div>
+                </div>
+                {/* Suno-style full scrollable lyrics with section markers */}
+                <div className="font-mono text-[11px] leading-relaxed overflow-y-auto bg-muted/20 rounded-xl p-3 border border-border"
+                  style={{ maxHeight: '40vh' }}>
+                  {displayLyrics.split('\n').map((line: string, idx: number) => {
+                    const isSection = /^\[.+\]$/.test(line.trim());
+                    return (
+                      <div key={idx} className={isSection
+                        ? 'text-primary font-black text-[10px] uppercase tracking-wider mt-3 mb-1 first:mt-0'
+                        : 'text-foreground/80'}>
+                        {line || '\u00A0'}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border text-muted-foreground">
-                {createLyrics}
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Lyrics — with section markers */}
           {(r.originalLyrics || r.improvedLyrics) && (
@@ -1574,13 +1609,17 @@ export default function Workspace() {
                   )}
                 </div>
               </div>
-              <div className="text-[11px] font-mono whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto bg-muted/30 rounded-xl p-3 border border-border">
+              {/* Suno-style: full scrollable, no max-height cap, section markers colored */}
+              <div className="font-mono text-[11px] leading-relaxed overflow-y-auto bg-muted/20 rounded-xl p-3 border border-border"
+                style={{ maxHeight: '45vh' }}>
                 {(r.improvedLyrics || r.originalLyrics).split('\n').map((line: string, idx: number) => {
                   const isSection = /^\[.+\]$/.test(line.trim());
                   return (
-                    <span key={idx} className={isSection ? 'block text-primary font-bold text-[10px] uppercase tracking-wider mt-2 mb-0.5' : 'block text-muted-foreground'}>
+                    <div key={idx} className={isSection
+                      ? 'text-primary font-black text-[10px] uppercase tracking-wider mt-3 mb-1 first:mt-0'
+                      : 'text-foreground/80'}>
                       {line || '\u00A0'}
-                    </span>
+                    </div>
                   );
                 })}
               </div>
