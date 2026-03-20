@@ -1559,8 +1559,7 @@ export default function Workspace() {
           loading={creditsModalLoading}
         />
       )}
-      <div className="-m-4 lg:-m-6 -mb-6 overflow-hidden">
-      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px - 64px)' }}>
+      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
         {/* 3-column row — LEFT | CENTER | RIGHT */}
         <div className="flex flex-1 overflow-hidden min-h-0">
 
@@ -2544,9 +2543,7 @@ export default function Workspace() {
           </div>
         </div>
 
-        <WorkspacePlayer />
       </div>{/* end outer flex-col */}
-      </div>{/* end negative margin wrapper */}
     </DashboardLayout>
   );
 }

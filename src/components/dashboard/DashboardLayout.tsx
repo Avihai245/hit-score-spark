@@ -58,10 +58,10 @@ export const DashboardLayout = ({ children, noPlayerPadding = false }: Dashboard
           onMobileMenuToggle={() => setMobileOpen(!mobileOpen)}
         />
         <main className={cn(
-          "flex-1",
+          "flex-1 min-h-0",
           !noPlayerPadding && "p-4 lg:p-6 md:pb-6",
           !noPlayerPadding && (hasPlayer ? "pb-36" : "pb-24"),
-          noPlayerPadding && "overflow-hidden"
+          noPlayerPadding && "overflow-hidden flex flex-col"
         )}>
           {children}
         </main>
