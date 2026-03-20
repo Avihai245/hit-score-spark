@@ -1406,7 +1406,7 @@ export default function Workspace() {
         )}
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 pb-20 space-y-4">
 
           {/* Score + badges for analyses */}
           {activeItem.type === 'analysis' && (
@@ -1560,7 +1560,7 @@ export default function Workspace() {
         />
       )}
       <div className="-m-4 lg:-m-6 -mb-6 overflow-hidden">
-      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
+      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px - 64px)' }}>
         {/* 3-column row — LEFT | CENTER | RIGHT */}
         <div className="flex flex-1 overflow-hidden min-h-0">
 
@@ -1618,7 +1618,7 @@ export default function Workspace() {
 
           {/* ── ANALYZE ── */}
           {leftMode === 'analyze' && (
-            <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-3">
+            <div className="flex-1 overflow-y-auto px-3 pb-20 space-y-3">
               {analyzing ? (
                 <ScanLoadingPanel elapsed={analyzeElapsed} step={analyzeStep} />
               ) : lastAnalysisResult ? (
@@ -1823,7 +1823,7 @@ export default function Workspace() {
 
           {/* ── CREATE ── */}
           {leftMode === 'create' && (
-            <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2.5">
+            <div className="flex-1 overflow-y-auto px-3 pb-20 space-y-2.5">
               {!canCreate ? (
                 <UpgradeGate />
               ) : generating ? (
@@ -2133,7 +2133,7 @@ export default function Workspace() {
           </div>
 
           {/* Feed */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-20">
             {tab === 'created' && justGenerated && (
               <motion.div
                 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}

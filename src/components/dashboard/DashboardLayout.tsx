@@ -17,9 +17,10 @@ const MOBILE_NAV = [
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  noPlayerPadding?: boolean; // workspace uses own full-height layout
 }
 
-export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+export const DashboardLayout = ({ children, noPlayerPadding = false }: DashboardLayoutProps) => {
   const { user, loading } = useAuth();
   const { currentTrack } = useAudioPlayer();
   const navigate = useNavigate();
@@ -57,8 +58,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           onMobileMenuToggle={() => setMobileOpen(!mobileOpen)}
         />
         <main className={cn(
-          "flex-1 p-4 lg:p-6 md:pb-6",
-          hasPlayer ? "pb-36" : "pb-24"
+          "flex-1",
+          !noPlayerPadding && "p-4 lg:p-6 md:pb-6",
+          !noPlayerPadding && (hasPlayer ? "pb-36" : "pb-24"),
+          noPlayerPadding && "overflow-hidden"
         )}>
           {children}
         </main>
@@ -67,7 +70,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       {/* ─── Mobile Bottom Navigation ─── */}
       <nav className={cn(
         "fixed left-0 right-0 z-50 md:hidden bg-[hsl(var(--background))] border-t border-border/30 safe-area-pb transition-all",
-        hasPlayer ? "bottom-[60px]" : "bottom-0"
+        hasPlayer ? "bottom-[64px]" : "bottom-0"
       )}>
         <div className="flex items-center justify-around h-14">
           {MOBILE_NAV.map(({ href, label, icon: Icon, exact }) => {

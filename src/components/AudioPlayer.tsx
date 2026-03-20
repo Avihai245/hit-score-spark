@@ -39,7 +39,7 @@ export const AudioPlayer = () => {
   if (!currentTrack) {
     if (!isDashboard) return null;
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--card))]/95 backdrop-blur-xl border-t border-border/30 px-4 py-2.5">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-[hsl(var(--card))]/95 backdrop-blur-xl border-t border-border/30 px-4 py-2.5">
         <div className="max-w-6xl mx-auto flex items-center gap-4">
           <div className="flex items-center gap-3 flex-1">
             <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
@@ -71,7 +71,7 @@ export const AudioPlayer = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--card))]/95 backdrop-blur-xl border-t border-border/30 px-4 py-3"
+          className="fixed bottom-0 left-0 right-0 z-40 bg-[hsl(var(--card))]/95 backdrop-blur-xl border-t border-border/30 px-4 py-3"
         >
           <div className="max-w-6xl mx-auto flex items-center gap-4">
             {/* Track info */}
