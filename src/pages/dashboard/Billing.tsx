@@ -342,7 +342,7 @@ export default function DashboardBilling() {
             <div className="flex items-center gap-2 text-xs sm:text-sm">
               <div className="w-2 h-2 rounded-full bg-accent" />
               <span className="text-muted-foreground">Viral Song Creation</span>
-              <span className="font-bold text-foreground">= {CREDIT_COSTS.remix} credits</span>
+              <span className="font-bold text-foreground">= {CREDIT_COSTS.viral} credits</span>
             </div>
           </div>
 
