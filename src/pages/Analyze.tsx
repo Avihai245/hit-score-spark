@@ -152,6 +152,40 @@ const LiveDataFeed = ({ elapsedSeconds }: { elapsedSeconds: number }) => {
   );
 };
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
+
+/**
+ * Enriches Lambda's raw analysis with real Spotify viral DNA via Claude.
+ * Falls back to raw Lambda result if the Edge Function is unavailable.
+ */
+const enrichWithSpotifyDna = async (
+  lambdaResult: any,
+  title: string,
+  genre: string,
+  goal: string,
+  analysisId?: string | null,
+): Promise<any> => {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-song`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+      },
+      body: JSON.stringify({ lambdaResult, title, genre, goal, analysisId }),
+    });
+    if (!res.ok) {
+      console.warn('analyze-song edge function returned', res.status, '— using Lambda result');
+      return lambdaResult;
+    }
+    return await res.json();
+  } catch (e) {
+    console.warn('analyze-song unavailable, using Lambda result:', e);
+    return lambdaResult;
+  }
+};
+
 const saveAnalysisToSupabase = async (userId: string, data: {
   title: string;
   genre: string;
@@ -318,7 +352,9 @@ const Analyze = () => {
               fullResult: analysisData,
             });
           }
-          navigate("/results", { state: { results: analysisData, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
+          // Enrich with real Spotify viral DNA + Claude
+          const enriched = await enrichWithSpotifyDna(analysisData, title || file.name, genre || analysisData.genre || '', goal || '', analysisId);
+          navigate("/results", { state: { results: enriched, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
           return;
         }
         throw new Error("No jobId received from server");
@@ -359,7 +395,7 @@ const Analyze = () => {
 
           if (data.status === "complete") {
             markStep(6); // Report generated
-            // Save to Supabase if logged in
+            // Save raw Lambda result to Supabase first
             let analysisId: string | null = null;
             if (user) {
               analysisId = await saveAnalysisToSupabase(user.id, {
@@ -370,9 +406,11 @@ const Analyze = () => {
                 fullResult: data,
               });
             }
+            // Enrich with real Spotify viral DNA + Claude (updates the saved record too)
+            const enriched = await enrichWithSpotifyDna(data, title || file.name, genre || data.genre || '', goal || '', analysisId);
             setTimeout(() => {
               setLoading(false);
-              navigate("/results", { state: { results: data, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
+              navigate("/results", { state: { results: enriched, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
             }, 600);
           } else if (data.status === "error") {
             setLoading(false);
