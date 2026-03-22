@@ -166,6 +166,7 @@ const enrichWithSpotifyDna = async (
   goal: string,
   analysisId?: string | null,
   fileSizeBytes?: number,
+  s3Key?: string,
 ): Promise<any> => {
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-song`, {
@@ -174,7 +175,7 @@ const enrichWithSpotifyDna = async (
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_ANON}`,
       },
-      body: JSON.stringify({ lambdaResult, title, genre, goal, analysisId, fileSizeBytes }),
+      body: JSON.stringify({ lambdaResult, title, genre, goal, analysisId, fileSizeBytes, s3Key }),
     });
     if (!res.ok) {
       console.warn('analyze-song edge function returned', res.status, '— using Lambda result');
@@ -355,8 +356,9 @@ const Analyze = () => {
               fullResult: analysisData,
             });
           }
-          // Enrich with real Spotify viral DNA + Claude
-          const enriched = await enrichWithSpotifyDna(analysisData, title || file.name, genre || analysisData.genre || '', goal || '', analysisId, file?.size);
+          // Enrich with real Spotify viral DNA + Claude (pass s3Key for transcription)
+          const enriched = await enrichWithSpotifyDna(analysisData, title || file.name, genre || analysisData.genre || '', goal || '', analysisId, file?.size, s3Key);
+          enriched.s3Key = s3Key; // persist s3Key inside full_result so Library/SongDetail can retrieve it
           navigate("/results", { state: { results: enriched, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
           return;
         }
@@ -411,7 +413,8 @@ const Analyze = () => {
               });
             }
             // Enrich with real Spotify viral DNA + Claude (updates the saved record too)
-            const enriched = await enrichWithSpotifyDna(data, title || file.name, genre || data.genre || '', goal || '', analysisId, file?.size);
+            const enriched = await enrichWithSpotifyDna(data, title || file.name, genre || data.genre || '', goal || '', analysisId, file?.size, s3Key);
+            enriched.s3Key = s3Key; // persist s3Key inside full_result so Library/SongDetail can retrieve it
             setTimeout(() => {
               setLoading(false);
               navigate("/results", { state: { results: enriched, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });

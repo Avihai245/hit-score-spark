@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
 import { supabase } from '@/lib/supabase';
-import { Search, Trash2, CreditCard, ChevronDown, AlertCircle } from 'lucide-react';
+import { Search, Trash2, CreditCard, ChevronDown, AlertCircle, Download, Shield, ShieldOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -78,6 +78,42 @@ export default function AdminUsers() {
     setCreditAmount('');
   };
 
+  const handleToggleAdmin = async (userId: string, currentIsAdmin: boolean) => {
+    const { error } = await supabase
+      .from('viralize_users')
+      .update({ is_admin: !currentIsAdmin })
+      .eq('id', userId);
+    if (error) {
+      toast.error('Failed to toggle admin', { description: error.message });
+    } else {
+      toast.success(currentIsAdmin ? 'Admin access revoked' : 'Admin access granted');
+      fetchUsers();
+    }
+  };
+
+  const exportCSV = () => {
+    const rows = [
+      ['Email', 'Display Name', 'Plan', 'Credits', 'Analyses', 'Remixes', 'Admin', 'Joined'],
+      ...filtered.map(u => [
+        u.email ?? '',
+        u.display_name ?? '',
+        u.plan ?? 'free',
+        String(u.credits ?? 0),
+        String(u.analyses_used ?? 0),
+        String(u.remixes_used ?? 0),
+        u.is_admin ? 'Yes' : 'No',
+        u.created_at ? new Date(u.created_at).toISOString().slice(0, 10) : '',
+      ]),
+    ];
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `santo-users-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
   const handleDelete = async (userId: string) => {
     const { error } = await supabase
       .from('viralize_users')
@@ -101,8 +137,15 @@ export default function AdminUsers() {
           <div className="flex flex-wrap items-center gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-bold text-white">Users</h1>
-              <p className="text-xs text-white/40 mt-1">{users.length} total users</p>
+              <p className="text-xs text-white/40 mt-1">{users.length} total · {filtered.length} shown</p>
             </div>
+            <button
+              onClick={exportCSV}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              title="Export visible users to CSV"
+            >
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </button>
             <div className="flex-1 min-w-0 max-w-sm">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -239,6 +282,14 @@ export default function AdminUsers() {
                         {/* Actions */}
                          <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
+                            {/* Admin toggle */}
+                            <button
+                              onClick={() => handleToggleAdmin(u.id, !!u.is_admin)}
+                              className={`p-1.5 rounded transition-colors ${u.is_admin ? 'text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10' : 'text-white/30 hover:text-yellow-400 hover:bg-yellow-400/10'}`}
+                              title={u.is_admin ? 'Revoke admin' : 'Grant admin'}
+                            >
+                              {u.is_admin ? <Shield className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
+                            </button>
                             {deleteConfirm === u.id ? (
                               <>
                                 <button

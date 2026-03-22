@@ -206,6 +206,45 @@ function buildDnaScores(song: Record<string, any>, dna: Record<string, any>, fin
   ];
 }
 
+// ── AssemblyAI transcription (real speech-to-text from audio file) ────────────
+
+async function transcribeAudio(s3Key: string, aaiKey: string, lambdaUrl: string): Promise<string> {
+  // Step 1: Get a signed download URL from Lambda
+  const dlRes = await fetch(lambdaUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "get-download-url", s3Key }),
+  });
+  if (!dlRes.ok) throw new Error(`Lambda get-download-url failed: ${dlRes.status}`);
+  const dlJson = await dlRes.json();
+  const downloadUrl = dlJson.downloadUrl || dlJson.url;
+  if (!downloadUrl) throw new Error("No downloadUrl returned from Lambda");
+
+  // Step 2: Submit to AssemblyAI
+  const submitRes = await fetch("https://api.assemblyai.com/v2/transcript", {
+    method: "POST",
+    headers: { "authorization": aaiKey, "content-type": "application/json" },
+    body: JSON.stringify({ audio_url: downloadUrl, language_detection: true }),
+  });
+  if (!submitRes.ok) throw new Error(`AssemblyAI submit failed: ${submitRes.status}`);
+  const { id } = await submitRes.json();
+  if (!id) throw new Error("No transcript ID returned from AssemblyAI");
+
+  // Step 3: Poll until done (max 90s — 9 × 10s)
+  for (let i = 0; i < 9; i++) {
+    await new Promise(r => setTimeout(r, 10000));
+    const pollRes = await fetch(`https://api.assemblyai.com/v2/transcript/${id}`, {
+      headers: { "authorization": aaiKey },
+    });
+    if (!pollRes.ok) throw new Error(`AssemblyAI poll failed: ${pollRes.status}`);
+    const data = await pollRes.json();
+    if (data.status === "completed") return data.text || "";
+    if (data.status === "error") throw new Error(`AssemblyAI error: ${data.error}`);
+    console.log(`AssemblyAI transcription status: ${data.status} (poll ${i + 1}/9)`);
+  }
+  throw new Error("AssemblyAI transcription timed out after 90s");
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -213,7 +252,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { lambdaResult, title, genre, goal, userId, analysisId, fileSizeBytes } = body;
+    const { lambdaResult, title, genre, goal, userId, analysisId, fileSizeBytes, s3Key } = body;
 
     if (!lambdaResult) {
       return new Response(JSON.stringify({ error: "lambdaResult is required" }), {
@@ -228,6 +267,16 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+
+    // 0. Start real lyrics transcription in parallel (non-blocking)
+    const assemblyAiKey = Deno.env.get("ASSEMBLYAI_API_KEY");
+    const lambdaUrl = Deno.env.get("LAMBDA_URL") || "https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze";
+    const transcriptionPromise: Promise<string> = (assemblyAiKey && s3Key)
+      ? transcribeAudio(s3Key, assemblyAiKey, lambdaUrl).catch(err => {
+          console.warn("Transcription failed (non-fatal), will use AI lyrics:", err.message);
+          return "";
+        })
+      : Promise.resolve("");
 
     // 1. Fetch real viral DNA for this genre
     const effectiveGenre = genre || lambdaResult.genre || "Pop";
@@ -447,8 +496,11 @@ Return ONLY this JSON:
       console.warn("Lyrics generation failed (non-fatal):", lyricsErr);
     }
 
-    enrichedResult.originalLyrics = lyricsResult.originalLyrics;
+    // Resolve real transcription — overrides AI-generated lyrics if successful
+    const realTranscript = await transcriptionPromise;
+    enrichedResult.originalLyrics = realTranscript || lyricsResult.originalLyrics;
     enrichedResult.improvedLyrics = lyricsResult.improvedLyrics;
+    enrichedResult.lyricsSource = realTranscript ? "transcribed" : "ai_generated";
 
     // 8. Update Supabase analysis record
     if (analysisId) {

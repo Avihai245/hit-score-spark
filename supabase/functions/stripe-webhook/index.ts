@@ -12,19 +12,19 @@ const supabase = createClient(
 );
 
 // ═══════════════════════════════════════════════
-// CANONICAL PRICING — must match src/lib/supabase.ts
-// Pro: $29/mo = 500 credits | Studio: $49/mo = 1000 credits
-// Credit packs: 100cr/$9 | 300cr/$19 | 700cr/$39
+// CANONICAL PRICING — must match src/lib/supabase.ts + Pricing.tsx
+// Pro: $19/mo = 600 credits | Studio: $39/mo = 1800 credits
+// Credit packs: 100cr/$12 | 250cr/$25 | 600cr/$49
 // ═══════════════════════════════════════════════
 
 const PRICE_TO_PLAN: Record<string, string> = {
-  'price_1TBQ1y5OzmHXa8O4fyUQRzop': 'pro',    // Pro $29/mo
-  'price_1TBQ1z5OzmHXa8O454UWomQK': 'studio', // Studio $49/mo
+  'price_1TBQ1y5OzmHXa8O4fyUQRzop': 'pro',    // Pro $19/mo
+  'price_1TBQ1z5OzmHXa8O454UWomQK': 'studio', // Studio $39/mo
 };
 
 const PLAN_MONTHLY_CREDITS: Record<string, number> = {
-  'pro':    500,
-  'studio': 1000,
+  'pro':    600,   // matches Pricing.tsx
+  'studio': 1800,  // matches Pricing.tsx
 };
 
 // One-time credit pack price IDs → credit amounts
@@ -73,6 +73,15 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       credits_refreshed_at: new Date().toISOString(),
       plan_expires_at: new Date(subscription.current_period_end * 1000).toISOString(),
     }).eq("id", userId);
+
+    // Record subscription credit grant as a transaction (for admin history)
+    try {
+      await supabase.from("viralize_credits").insert({
+        user_id: userId, amount: credits, type: "subscription",
+        stripe_payment_id: session.id, stripe_price_id: priceId,
+        price_paid: (session.amount_total ?? 0) / 100,
+      });
+    } catch (e) { console.warn("Credit transaction insert failed (non-fatal):", e); }
 
     console.log(`Subscription: user=${userId} plan=${plan} credits=${credits}`);
 
@@ -147,9 +156,8 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   };
 
   // On renewal (invoice.payment_succeeded triggers this) — refresh credits
-  // We check billing_cycle_anchor vs current_period_start to detect renewals
   if (isActive) {
-    updates.credits = PLAN_MONTHLY_CREDITS[plan] || 500;
+    updates.credits = PLAN_MONTHLY_CREDITS[plan] || 600;
     updates.credits_refreshed_at = new Date().toISOString();
   }
 
@@ -173,12 +181,30 @@ serve(async (req) => {
     const sig = req.headers.get("stripe-signature");
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
+    // Always require Stripe signature — no unsigned fallback
     let event: Stripe.Event;
-    if (webhookSecret && sig) {
+    try {
+      if (!webhookSecret || !sig) throw new Error("Missing webhook secret or signature");
       event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-    } else {
-      event = JSON.parse(body) as Stripe.Event;
+    } catch (sigErr: unknown) {
+      const msg = sigErr instanceof Error ? sigErr.message : String(sigErr);
+      console.error("Webhook signature verification failed:", msg);
+      return new Response(JSON.stringify({ error: "Signature verification failed" }), {
+        status: 400, headers: { "Content-Type": "application/json" },
+      });
     }
+
+    // Idempotency: skip already-processed events (prevents double credits on Stripe retries)
+    const { data: alreadyProcessed } = await supabase
+      .from("stripe_events_processed")
+      .select("event_id").eq("event_id", event.id).maybeSingle();
+    if (alreadyProcessed) {
+      console.log(`Event ${event.id} already processed — skipping`);
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    await supabase.from("stripe_events_processed").insert({ event_id: event.id });
 
     console.log(`Stripe event: ${event.type}`);
 

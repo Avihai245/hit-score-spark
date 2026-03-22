@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  BarChart2, Music2, RefreshCw, Zap, ArrowRight, Download, TrendingUp, Star,
+  BarChart2, Music, Music2, RefreshCw, Zap, ArrowRight, Download, TrendingUp, Star,
   Play, Pause, Library, Plus,
 } from 'lucide-react';
 
@@ -270,11 +270,14 @@ export default function Dashboard() {
 
         {/* Empty state if no songs */}
         {!dataLoading && recentItems.length === 0 && (
-          <div className="glass-card p-12 text-center">
-            <Star className="h-10 w-10 text-muted mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">No songs analyzed yet</p>
-            <Button asChild size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground border-0">
-              <Link to="/analyze">Analyze your first song <ArrowRight className="ml-1 h-3 w-3" /></Link>
+          <div className="glass-card p-12 text-center border border-accent/20 bg-gradient-to-b from-accent/5 to-transparent">
+            <div className="h-16 w-16 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center mx-auto mb-4">
+              <Music className="h-8 w-8 text-accent" />
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-2">Analyze your first song</h3>
+            <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">Upload any track to get your personalized hit score, viral DNA analysis, and AI improvements.</p>
+            <Button asChild className="rounded-full bg-gradient-to-r from-accent to-yellow-500 text-black font-bold border-0 hover:opacity-90 px-8">
+              <Link to="/analyze">Start Analyzing <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
         )}

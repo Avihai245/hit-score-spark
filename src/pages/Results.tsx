@@ -614,26 +614,48 @@ const AiRemixSection = ({
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-      const fullAnalysis = { ...(analysisData || {}), customLyrics: lyrics.trim() || undefined };
+      // Always send a rich prompt — never empty. Fallback to buildAutoPrompt() if user hasn't typed lyrics.
+      const effectiveLyrics = lyrics.trim() || buildAutoPrompt();
+
+      // Send a slim, targeted payload — NOT the full analysis blob (which can be huge and cause Lambda failures)
       const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "suno-cover", s3Key, title: songTitle, genre: songGenre || analysisData?.genre || "pop", style, analysisData: fullAnalysis }),
+        body: JSON.stringify({
+          action: "suno-cover",
+          s3Key,
+          title: songTitle,
+          genre: songGenre || analysisData?.genre || "pop",
+          style,
+          customLyrics: effectiveLyrics,
+          bpm: analysisData?.bpmEstimate || analysisData?.bpm || analysisData?.genreDna?.avgBpm,
+          energy: analysisData?.energyLevel,
+          emotionalCore: analysisData?.emotionalCore,
+          viralLine: analysisData?.viralLine,
+          oneChange: analysisData?.oneChange,
+          improvements: (analysisData?.improvements || []).slice(0, 3),
+        }),
       });
       const coverData = await coverRes.json();
-      console.log('[Suno] Lambda response:', JSON.stringify(coverData).slice(0, 600));
+      console.log('[Suno] Lambda suno-cover response:', JSON.stringify(coverData).slice(0, 800));
       if (coverData.error) throw new Error(`Suno error: ${coverData.error}`);
       if (!coverRes.ok) throw new Error(`Server returned ${coverRes.status}. Please try again.`);
-      const { taskIdV1, taskIdV2, version1, version2 } = coverData;
-      if (!taskIdV1 || !taskIdV2) throw new Error(`AI engine did not return song task IDs. Got: ${JSON.stringify(coverData).slice(0, 150)}`);
+
+      // Support both {taskIdV1, taskIdV2} and single {taskId} formats
+      const taskIdV1 = coverData.taskIdV1 || coverData.taskId;
+      const taskIdV2 = coverData.taskIdV2 || coverData.taskId;
+      const version1 = coverData.version1;
+      const version2 = coverData.version2;
+      if (!taskIdV1) throw new Error(`AI engine did not return task IDs. Response: ${JSON.stringify(coverData).slice(0, 200)}`);
 
       let attempts = 0;
       const poll = async (): Promise<any> => {
-        if (attempts++ > 40) throw new Error("Remix timed out. Please try again.");
+        if (attempts++ > 40) throw new Error("Song generation timed out after 5 minutes. Please try again.");
         const pollRes = await fetch(LAMBDA_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "suno-cover", taskIdV1, taskIdV2 }) });
         const data = await pollRes.json();
+        console.log(`[Suno] Poll ${attempts}:`, data.status || JSON.stringify(data).slice(0, 150));
         if (data.status === "complete") return data;
-        if (data.status === "failed" || data.error) throw new Error(data.error || "Remix failed");
+        if (data.status === "failed" || data.error) throw new Error(data.error || "Song generation failed. Please try again.");
         await new Promise(r => setTimeout(r, 8000));
         return poll();
       };
@@ -644,6 +666,14 @@ const AiRemixSection = ({
       const tracks: any[] = [];
       if (finalData.v1?.audioUrl) tracks.push({ audioUrl: finalData.v1.audioUrl, imageUrl: finalData.v1.imageUrl, label: version1?.label || "Faithful Remix", description: version1?.description || "Production-upgraded, preserves original vibe", accent: "blue" });
       if (finalData.v2?.audioUrl) tracks.push({ audioUrl: finalData.v2.audioUrl, imageUrl: finalData.v2.imageUrl, label: version2?.label || "Viral Edition", description: version2?.description || "Trend-forward, maximum chart impact", accent: "purple" });
+      // Also handle array-based response format
+      if (tracks.length === 0 && Array.isArray(finalData.tracks)) {
+        finalData.tracks.forEach((t: any, i: number) => {
+          const au = t.audioUrl || t.audio_url;
+          if (au) tracks.push({ audioUrl: au, imageUrl: t.imageUrl || t.image_url || null, label: t.label || `Version ${i + 1}`, description: t.description || "", accent: i === 0 ? "blue" : "purple" });
+        });
+      }
+      if (tracks.length === 0) throw new Error("Songs were generated but audio links are missing. Please try again.");
 
       const localEntries = tracks.map((track: any, i: number) => ({
         id: `local_${Date.now()}_${i}`, remix_title: track.label || 'AI Remix', original_title: songTitle || null, audio_url: track.audioUrl, image_url: track.imageUrl || null,

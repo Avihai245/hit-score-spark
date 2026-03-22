@@ -288,8 +288,13 @@ const Index = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   const handleAnalyzeClick = () => {
-    if (user) navigate('/analyze');
-    else setAuthModalOpen(true);
+    if (user) {
+      navigate('/analyze');
+    } else {
+      // After OAuth login, return to /analyze not home page
+      localStorage.setItem('santo_oauth_return', '/analyze');
+      setAuthModalOpen(true);
+    }
   };
 
   return (

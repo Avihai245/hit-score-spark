@@ -188,10 +188,12 @@ export default function SongDetail() {
 
   if (error || !analysis) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">{error || 'Analysis not found'}</p>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <AlertTriangle className="h-10 w-10 text-muted-foreground/40" />
+        <p className="text-foreground font-semibold">Analysis not found</p>
+        <p className="text-sm text-muted-foreground max-w-xs">This analysis wasn't found — it may have been deleted or the link is invalid.</p>
         <Button asChild variant="outline" className="border-border">
-          <Link to="/library">← Back to Library</Link>
+          <Link to="/dashboard">← Back to Dashboard</Link>
         </Button>
       </div>
     );
@@ -532,17 +534,39 @@ export default function SongDetail() {
           </p>
           {canRemix ? (
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Button asChild className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-accent/40">
-                <Link to="/analyze">
+              {analysis.full_result?.s3Key ? (
+                <Button
+                  onClick={() => navigate('/results', {
+                    state: {
+                      results: analysis.full_result,
+                      title: analysis.title,
+                      songGenre: analysis.genre,
+                      analysisId: analysis.id,
+                      s3Key: analysis.full_result.s3Key,
+                    }
+                  })}
+                  className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-accent/40">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                     animate={{ x: ['-100%', '200%'] }}
                     transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
                   />
                   <Sparkles className="h-5 w-5 relative z-10" />
-                  <span className="relative z-10">Upload & Remix This Song</span>
-                </Link>
-              </Button>
+                  <span className="relative z-10">Create AI Hit Version</span>
+                </Button>
+              ) : (
+                <Button asChild className="bg-gradient-to-r from-accent via-yellow-500 to-accent text-black font-black border-0 hover:opacity-90 gap-2 h-12 px-8 relative overflow-hidden shadow-[0_0_25px_-5px] shadow-accent/40">
+                  <Link to="/analyze">
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
+                    />
+                    <Sparkles className="h-5 w-5 relative z-10" />
+                    <span className="relative z-10">Re-upload & Create Hit</span>
+                  </Link>
+                </Button>
+              )}
             </motion.div>
           ) : (
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>

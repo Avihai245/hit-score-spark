@@ -136,8 +136,16 @@ const AnalysisCard = ({ analysis, onDelete }: { analysis: Analysis; onDelete: (i
           <Button asChild size="sm" variant="outline" className="flex-1 h-8 text-xs border-white/10 hover:bg-white/10 rounded-xl">
             <Link to={`/song/${analysis.id}`}>View Report</Link>
           </Button>
-          <Button asChild size="sm" className="flex-1 h-8 text-xs bg-primary/20 hover:bg-primary/30 text-primary border-0 rounded-xl">
-            <Link to={`/song/${analysis.id}?remix=1`}>Remix →</Link>
+          <Button size="sm" className="flex-1 h-8 text-xs bg-primary/20 hover:bg-primary/30 text-primary border-0 rounded-xl"
+            onClick={() => {
+              const s3Key = analysis.full_result?.s3Key || null;
+              if (s3Key) {
+                navigate('/results', { state: { results: analysis.full_result, title: analysis.title, songGenre: analysis.genre, analysisId: analysis.id, s3Key } });
+              } else {
+                navigate(`/song/${analysis.id}?remix=1`);
+              }
+            }}>
+            Remix →
           </Button>
         </div>
       </div>
