@@ -37,7 +37,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     if (error) return setError(error.message);
     onClose();
     reset();
-    navigate('/library');
+    navigate('/analyze');
   };
 
   const handleSignUp = async () => {
@@ -49,7 +49,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     setError(null);
     onClose();
     reset();
-    navigate('/library');
+    navigate('/analyze');
   };
 
   const handleGoogle = async () => {

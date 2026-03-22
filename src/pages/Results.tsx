@@ -559,6 +559,32 @@ const AiRemixSection = ({
 
   const canCreate = !!(file || existingS3Key);
 
+  // Build a smart Suno prompt from all analysis improvements + viral DNA
+  const buildAutoPrompt = (): string => {
+    const g = songGenre || analysisData?.genre || "pop";
+    const bpm = analysisData?.bpmEstimate || analysisData?.genreDna?.avgBpm;
+    const improvements = (analysisData?.improvements || []).slice(0, 3).join(", ");
+    const oneChange = analysisData?.oneChange || "";
+    const emotional = analysisData?.emotionalCore || "";
+    const topKeys = (analysisData?.genreDna?.topKeys || []).join(", ");
+    return [
+      `${g} hit song`,
+      bpm ? `${Math.round(bpm)} BPM` : "",
+      "high energy", "strong hook in first 7 seconds",
+      emotional ? emotional.slice(0, 60) : "",
+      improvements ? `improved: ${improvements.slice(0, 100)}` : "",
+      oneChange ? oneChange.slice(0, 80) : "",
+      topKeys ? `key: ${topKeys}` : "",
+      "radio ready", "viral potential",
+    ].filter(Boolean).join(", ");
+  };
+
+  const startQuickGenerate = () => {
+    setStyle("radio");
+    setLyrics(buildAutoPrompt());
+    setTimeout(() => startRemix(), 50);
+  };
+
   const startRemix = async () => {
     if (!user) { toast.error("Sign in to create remixes"); return; }
     if (!canCreate) { toast.error("No audio file. Please re-upload."); return; }
@@ -651,7 +677,7 @@ const AiRemixSection = ({
 
   return (
     <div id="viral-cta" className="rounded-2xl border border-accent/20 bg-gradient-to-b from-accent/[0.04] to-transparent p-5 md:p-6 relative overflow-hidden scroll-mt-24">
-      <div className="flex items-center gap-2.5 mb-5">
+      <div className="flex items-center gap-2.5 mb-4">
         <div className="h-9 w-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
           <Rocket className="h-4 w-4 text-accent" />
         </div>
@@ -660,6 +686,18 @@ const AiRemixSection = ({
           <p className="text-xs text-muted-foreground">Inject real chart DNA from 500M+ data points to guarantee more streams</p>
         </div>
       </div>
+
+      {/* ONE-CLICK: Fix everything from the analysis and generate instantly */}
+      {status === "idle" && canCreate && (
+        <motion.button
+          onClick={startQuickGenerate}
+          className="w-full mb-4 py-4 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/25 hover:opacity-90 transition-all"
+          whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+        >
+          <Zap className="h-4 w-4" />
+          ⚡ One-Click: Fix Everything &amp; Generate Hit
+        </motion.button>
+      )}
 
       {status === "idle" && (
         <div className="space-y-4">
@@ -1260,12 +1298,13 @@ const Results = () => {
                 </div>
 
                 <div className="flex flex-col gap-3">
-                  <Link
-                    to="/dashboard"
+                  <motion.button
+                    onClick={() => setShowRemixPaywall(true)}
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-amber-500/20"
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   >
                     ⚡ Turn This Into an Algorithm Hit
-                  </Link>
+                  </motion.button>
                   <motion.button
                     onClick={() => setShowRemixPaywall(true)}
                     className="w-full py-3.5 rounded-xl border border-primary/30 bg-primary/[0.06] text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors"
@@ -1334,14 +1373,15 @@ const Results = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2 }}
           className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-3 bg-background/95 backdrop-blur-lg border-t border-border/50"
+          style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
         >
-          <Link
-            to="/dashboard"
+          <button
+            onClick={() => setShowRemixPaywall(true)}
             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-bold text-sm flex items-center justify-center gap-2"
-            style={{ minHeight: 56 }}
+            style={{ minHeight: 48 }}
           >
             ⚡ Turn This Into an Algorithm Hit
-          </Link>
+          </button>
         </motion.div>
       )}
     </div>

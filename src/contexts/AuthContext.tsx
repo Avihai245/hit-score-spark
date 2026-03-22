@@ -170,7 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/library' },
+      options: { redirectTo: window.location.origin + '/analyze' },
     });
     return { error: error as Error | null };
   };

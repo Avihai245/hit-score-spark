@@ -8,6 +8,18 @@ interface AdminGuardProps {
 }
 
 export const AdminGuard = ({ children }: AdminGuardProps) => {
-  // TODO: Re-enable admin check before production
+  const { profile, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+    if (!profile || !profile.is_admin) {
+      toast.error('Access denied');
+      navigate('/', { replace: true });
+    }
+  }, [profile, loading, navigate]);
+
+  if (loading) return null;
+  if (!profile?.is_admin) return null;
   return <>{children}</>;
 };

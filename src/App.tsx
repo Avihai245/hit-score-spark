@@ -37,6 +37,7 @@ import Discover from "./pages/Discover";
 import Explore from "./pages/Explore";
 
 // Admin pages
+import { AdminGuard } from "./components/admin/AdminGuard";
 import AdminDashboard from "./pages/admin/index";
 import AdminUsers from "./pages/admin/users";
 import AdminUserDetail from "./pages/admin/UserDetail";
@@ -77,22 +78,22 @@ const AnimatedRoutes = () => {
   if (isAdminRoute) {
     return (
       <Routes location={location}>
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/users/:userId" element={<AdminUserDetail />} />
-        <Route path="/admin/analytics" element={<AdminAnalytics />} />
-        <Route path="/admin/revenue" element={<AdminRevenue />} />
-        <Route path="/admin/content" element={<AdminContent />} />
-        <Route path="/admin/tracks" element={<AdminTracks />} />
-        <Route path="/admin/monitoring" element={<AdminMonitoring />} />
-        <Route path="/admin/support" element={<AdminSupport />} />
-        <Route path="/admin/lifecycle" element={<AdminLifecycle />} />
-        <Route path="/admin/coupons" element={<AdminCoupons />} />
-        <Route path="/admin/permissions" element={<AdminPermissions />} />
-        <Route path="/admin/audit" element={<AdminAudit />} />
-        <Route path="/admin/system" element={<AdminSystem />} />
-        <Route path="/admin/suno-engine" element={<AdminSunoEngine />} />
-        <Route path="/admin/notifications" element={<AdminNotifications />} />
+        <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+        <Route path="/admin/users" element={<AdminGuard><AdminUsers /></AdminGuard>} />
+        <Route path="/admin/users/:userId" element={<AdminGuard><AdminUserDetail /></AdminGuard>} />
+        <Route path="/admin/analytics" element={<AdminGuard><AdminAnalytics /></AdminGuard>} />
+        <Route path="/admin/revenue" element={<AdminGuard><AdminRevenue /></AdminGuard>} />
+        <Route path="/admin/content" element={<AdminGuard><AdminContent /></AdminGuard>} />
+        <Route path="/admin/tracks" element={<AdminGuard><AdminTracks /></AdminGuard>} />
+        <Route path="/admin/monitoring" element={<AdminGuard><AdminMonitoring /></AdminGuard>} />
+        <Route path="/admin/support" element={<AdminGuard><AdminSupport /></AdminGuard>} />
+        <Route path="/admin/lifecycle" element={<AdminGuard><AdminLifecycle /></AdminGuard>} />
+        <Route path="/admin/coupons" element={<AdminGuard><AdminCoupons /></AdminGuard>} />
+        <Route path="/admin/permissions" element={<AdminGuard><AdminPermissions /></AdminGuard>} />
+        <Route path="/admin/audit" element={<AdminGuard><AdminAudit /></AdminGuard>} />
+        <Route path="/admin/system" element={<AdminGuard><AdminSystem /></AdminGuard>} />
+        <Route path="/admin/suno-engine" element={<AdminGuard><AdminSunoEngine /></AdminGuard>} />
+        <Route path="/admin/notifications" element={<AdminGuard><AdminNotifications /></AdminGuard>} />
       </Routes>
     );
   }
@@ -123,17 +124,18 @@ const AnimatedRoutes = () => {
         <Routes location={location}>
           <Route path="/" element={<Index />} />
           <Route path="/analyze" element={<ProtectedRoute><Analyze /></ProtectedRoute>} />
-          <Route path="/results" element={<Results />} />
+          <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/library" element={<Library />} />
-          <Route path="/me" element={<Library />} />
+          <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+          <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+          <Route path="/me" element={<ProtectedRoute><Library /></ProtectedRoute>} />
           <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
           <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
           <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />
+          <Route path="/auth" element={<Navigate to="/analyze" replace />} />
           <Route path="/search" element={<Navigate to="/dashboard" replace />} />
           <Route path="/song/:id" element={<ProtectedRoute><SongDetail /></ProtectedRoute>} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </motion.div>
