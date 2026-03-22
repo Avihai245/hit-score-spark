@@ -34,6 +34,8 @@ import {
 } from 'lucide-react';
 
 const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
 
 const GENERATION_KEY = (uid: string) => `hitcheck_generating_${uid}`;
 const LYRICS_KEY = (taskId: string) => `hitcheck_lyrics_${taskId}`;
@@ -1086,7 +1088,8 @@ export default function Workspace() {
         const data = await pr.json();
         if (data.status === 'complete') {
           if (!data.score) throw new Error('Analysis returned no results — please try again');
-          // Save to Supabase
+
+          // Step 1: Save raw result to Supabase to get analysisId
           if (user) {
             const { data: ins, error: insErr } = await supabase.from('viralize_analyses').insert({
               user_id: user.id, title: songTitle || uploadFile.name,
@@ -1095,22 +1098,57 @@ export default function Workspace() {
             }).select('*').single();
             if (!insErr && ins) {
               insertedAnalysis = ins;
-              setActiveItem({ type: 'analysis', data: ins });
-              setTab('uploads');
             }
-            await loadData();
           }
-          // ✅ Deduct credits AFTER successful analysis
+
+          // Step 2: Enrich with Claude AI + AssemblyAI transcription + viral DNA comparison
+          setAnalyzeStep('Building hit intelligence with AI…');
+          let enrichedData = data;
+          try {
+            const enrichRes = await fetch(`${SUPABASE_URL}/functions/v1/analyze-song`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON}`,
+              },
+              body: JSON.stringify({
+                lambdaResult: data,
+                title: songTitle || uploadFile.name,
+                genre: songGenre || data.genre || '',
+                goal: 'maximize streams',
+                analysisId: insertedAnalysis?.id || undefined,
+                fileSizeBytes: uploadFile.size,
+                s3Key,
+              }),
+            });
+            if (enrichRes.ok) {
+              enrichedData = await enrichRes.json();
+              enrichedData.s3Key = s3Key;
+            } else {
+              console.warn('analyze-song enrichment failed, using raw Lambda result');
+            }
+          } catch (enrichErr) {
+            console.warn('analyze-song enrichment error (non-fatal):', enrichErr);
+          }
+
+          // Step 3: Update UI with enriched data
+          if (insertedAnalysis) {
+            setActiveItem({ type: 'analysis', data: { ...insertedAnalysis, full_result: enrichedData } });
+            setTab('uploads');
+          }
+          await loadData();
+
+          // Step 4: Deduct credits AFTER successful analysis
           if (user) {
             const deductResult = await deductCredits(user.id, CREDIT_COSTS.analysis);
             if (deductResult.success && deductResult.newCredits !== undefined) {
-              await refreshProfile(); // update credits display
+              await refreshProfile();
             }
           }
           clearInterval(analyzeTimerRef.current);
           setAnalyzing(false); setUploadFile(null); setSongTitle(''); setSongGenre('');
-          setLastAnalysisResult({ ...data, dbRecord: insertedAnalysis });
-          toast.success(`🎯 Score: ${data.score}/100 — ${CREDIT_COSTS.analysis} credits used`);
+          setLastAnalysisResult({ ...enrichedData, dbRecord: insertedAnalysis });
+          toast.success(`🎯 Score: ${enrichedData.score}/100 — ${CREDIT_COSTS.analysis} credits used`);
         } else if (data.status === 'error') {
           throw new Error(data.error || 'Analysis failed — please try again');
         } else {
