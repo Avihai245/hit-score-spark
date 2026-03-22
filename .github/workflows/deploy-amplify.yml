@@ -36,19 +36,25 @@ jobs:
           AWS_DEFAULT_REGION: eu-west-1
           AMPLIFY_APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
         run: |
+          # Ensure SPA routing works — all paths serve index.html (200 rewrite)
+          aws amplify update-app \
+            --app-id "$AMPLIFY_APP_ID" \
+            --custom-rules '[{"source":"</^[^.]+$|\\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>","target":"/index.html","status":"200"}]' \
+            > /dev/null 2>&1 || true
+
           DEPLOY=$(aws amplify create-deployment \
             --app-id "$AMPLIFY_APP_ID" \
             --branch-name main)
-          
+
           JOB_ID=$(echo "$DEPLOY" | python3 -c "import json,sys; print(json.load(sys.stdin)['jobId'])")
           ZIP_URL=$(echo "$DEPLOY" | python3 -c "import json,sys; print(json.load(sys.stdin)['zipUploadUrl'])")
-          
+
           curl -s -X PUT -H "Content-Type: application/zip" \
             --data-binary @/tmp/deploy.zip "$ZIP_URL"
-          
+
           aws amplify start-deployment \
             --app-id "$AMPLIFY_APP_ID" \
             --branch-name main \
             --job-id "$JOB_ID"
-          
+
           echo "✅ Deployed job $JOB_ID to Amplify app $AMPLIFY_APP_ID"
