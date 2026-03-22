@@ -874,8 +874,9 @@ const Results = () => {
   const targetScore = Math.min(100, score + 19);
 
   // Use dnaScores from analyze-song v2 if available; otherwise fall back to old correlated derivation
-  const dnaScores: { label: string; value: number; max: number }[] = results.dnaScores?.length
-    ? results.dnaScores
+  // Note: analyze-song returns the field as `dna` (not `dnaScores`)
+  const dnaScores: { label: string; value: number; max: number }[] = results.dna?.length
+    ? results.dna
     : (() => {
         const hookStrength = hookAnalysis ? Math.min(10, Math.round(score * 0.1 + (competitorMatch || 5) * 0.3 + 2)) : Math.round(score / 10);
         const replayValue = Math.min(10, Math.round((danceability || 5) * 0.5 + (valence || 5) * 0.3 + score * 0.02));

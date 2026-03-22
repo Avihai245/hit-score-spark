@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState, useMemo } from "react";
@@ -9,6 +9,8 @@ import {
   Play, Shield, Globe, Eye } from
 "lucide-react";
 import FreeTrialUpload from "@/components/FreeTrialUpload";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/AuthModal";
 
 /* ─── Animated Counter ─── */
 const AnimatedCounter = ({ from, to, duration = 2, suffix = "" }: {from: number;to: number;duration?: number;suffix?: string;}) => {
@@ -110,7 +112,7 @@ const HeroBackground = () => {
 };
 
 /* ─── Floating CTA ─── */
-const FloatingCTA = () => {
+const FloatingCTA = ({ onAnalyzeClick }: { onAnalyzeClick: () => void }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 500);
@@ -125,17 +127,14 @@ const FloatingCTA = () => {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed bottom-8 left-0 right-0 z-40 flex justify-center px-4"
       style={{ pointerEvents: visible ? "auto" : "none" }}>
-      
+
       <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
         <Button
-          asChild
           size="lg"
+          onClick={onAnalyzeClick}
           className="relative gradient-purple text-primary-foreground px-8 py-5 text-sm font-bold shadow-xl shadow-primary/20 overflow-hidden rounded-full">
-          
-          <Link to="/analyze" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            <span>Analyze Your Track — Free</span>
-          </Link>
+          <Zap className="h-4 w-4" />
+          <span>Analyze Your Track — Free</span>
         </Button>
       </motion.div>
     </motion.div>);
@@ -284,9 +283,18 @@ const ComparisonVisual = () => {
 
 /* ═══════════════════════════════════════════════════ */
 const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  const handleAnalyzeClick = () => {
+    if (user) navigate('/analyze');
+    else setAuthModalOpen(true);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background relative">
-      <FloatingCTA />
+      <FloatingCTA onAnalyzeClick={handleAnalyzeClick} />
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative flex flex-col items-center justify-center min-h-[100svh] px-4 text-center overflow-hidden pt-32 pb-20">
@@ -373,14 +381,11 @@ const Index = () => {
           
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} className="w-full sm:w-auto">
             <Button
-              asChild
               size="lg"
+              onClick={handleAnalyzeClick}
               className="relative w-full sm:w-auto gradient-purple text-primary-foreground px-10 py-6 text-base sm:text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden rounded-full">
-              
-              <Link to="/analyze" className="flex items-center justify-center gap-2">
-                <Zap className="h-5 w-5" />
-                <span>Scan My Song Free</span>
-              </Link>
+              <Zap className="h-5 w-5" />
+              <span>Scan My Song Free</span>
             </Button>
           </motion.div>
           <Button
@@ -388,8 +393,8 @@ const Index = () => {
             size="lg"
             variant="outline"
             className="w-full sm:w-auto px-8 py-6 text-sm sm:text-base font-semibold border-border/50 hover:bg-secondary hover:border-muted-foreground/30 transition-all backdrop-blur-sm rounded-full">
-            
-            <Link to="/results" className="flex items-center justify-center gap-2">
+
+            <Link to="/demo-report" className="flex items-center justify-center gap-2">
               See Example Report <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
@@ -786,14 +791,11 @@ const Index = () => {
           </p>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
             <Button
-              asChild
               size="lg"
+              onClick={handleAnalyzeClick}
               className="relative gradient-purple text-primary-foreground px-12 py-7 text-lg font-bold shadow-2xl shadow-primary/25 hover:shadow-primary/40 transition-shadow overflow-hidden">
-              
-              <Link to="/analyze" className="flex items-center gap-2">
-                <span>Scan My Song Free</span>
-                <span>🔥</span>
-              </Link>
+              <span>Scan My Song Free</span>
+              <span>🔥</span>
             </Button>
           </motion.div>
 
@@ -808,6 +810,8 @@ const Index = () => {
           </div>
         </motion.div>
       </section>
+
+      <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>);
 
 };

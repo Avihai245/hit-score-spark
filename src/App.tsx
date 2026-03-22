@@ -35,6 +35,7 @@ import DashboardRecommendations from "./pages/dashboard/Recommendations";
 import DashboardCompare from "./pages/dashboard/Compare";
 import Discover from "./pages/Discover";
 import Explore from "./pages/Explore";
+import DemoReport from "./pages/DemoReport";
 
 // Admin pages
 import { AdminGuard } from "./components/admin/AdminGuard";
@@ -123,6 +124,7 @@ const AnimatedRoutes = () => {
       <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate" exit="exit">
         <Routes location={location}>
           <Route path="/" element={<Index />} />
+          <Route path="/demo-report" element={<DemoReport />} />
           <Route path="/analyze" element={<ProtectedRoute><Analyze /></ProtectedRoute>} />
           <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
           <Route path="/pricing" element={<Pricing />} />
