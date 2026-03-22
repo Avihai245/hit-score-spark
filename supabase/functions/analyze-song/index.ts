@@ -410,7 +410,47 @@ Return ONLY this JSON (no markdown, no extra text):
       dataSource: "real_chart_comparison",
     };
 
-    // 7. Update Supabase analysis record
+    // 7. Generate AI lyrics (verse + chorus + bridge) based on the full musical analysis
+    // These are Claude-composed lyrics matching the song's style — user can edit or replace with real ones
+    const lyricsSystemPrompt = `You are a professional hit songwriter with #1 charting credits across Pop, Hip Hop, R&B, and EDM.
+Write realistic, singable lyrics that match the musical DNA provided.
+The lyrics must feel authentic to the genre and emotionally match the song's energy and valence.
+Respond ONLY with valid JSON.`;
+
+    const lyricsUserPrompt = `Write original lyrics for this song and an AI-optimized improved version:
+
+SONG:
+- Title: "${title || "Untitled"}"
+- Genre: ${effectiveGenre}
+- BPM: ${songBpm ?? "unknown"}
+- Energy level: ${songEnergy != null ? (songEnergy * 10).toFixed(1) : "unknown"}/10
+- Emotional core: ${analysis.emotionalCore || "not specified"}
+- Viral hook idea: ${analysis.viralLine || "not specified"}
+- Hook analysis: ${analysis.hookAnalysis || "not specified"}
+- One key improvement: ${analysis.oneChange || "not specified"}
+
+Write 2 verses + 1 chorus + 1 bridge (total ~16-20 lines).
+
+Return ONLY this JSON:
+{
+  "originalLyrics": "<verse 1 (4 lines)>\\n\\n<chorus (4 lines)>\\n\\n<verse 2 (4 lines)>\\n\\n<bridge (4 lines)>",
+  "improvedLyrics": "<same structure, but stronger hook, more memorable chorus, optimized for virality and ${effectiveGenre} trends>"
+}`;
+
+    let lyricsResult = { originalLyrics: "", improvedLyrics: "" };
+    try {
+      const lyricsRaw = await callClaude(anthropicKey, lyricsSystemPrompt, lyricsUserPrompt);
+      const lyricsClean = lyricsRaw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      const lyricsParsed = JSON.parse(lyricsClean);
+      if (lyricsParsed.originalLyrics) lyricsResult = lyricsParsed;
+    } catch (lyricsErr) {
+      console.warn("Lyrics generation failed (non-fatal):", lyricsErr);
+    }
+
+    enrichedResult.originalLyrics = lyricsResult.originalLyrics;
+    enrichedResult.improvedLyrics = lyricsResult.improvedLyrics;
+
+    // 8. Update Supabase analysis record
     if (analysisId) {
       await supabase
         .from("viralize_analyses")

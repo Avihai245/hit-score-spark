@@ -471,7 +471,10 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         <div className="p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-bold text-foreground flex items-center gap-2"><Mic2 className="h-4 w-4 text-primary" /> Song Lyrics</label>
+            <label className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Mic2 className="h-4 w-4 text-primary" /> Song Lyrics
+              <span className="text-[10px] font-normal text-muted-foreground/60 bg-primary/10 px-2 py-0.5 rounded-full">AI-generated · edit as needed</span>
+            </label>
             {improved && (
               <div className="flex items-center gap-2">
                 <button onClick={() => { setShowDiff(!showDiff); if (!showDiff) setApplyImproved(false); }} className="text-xs px-3 py-1 rounded-md border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-all">
@@ -618,9 +621,11 @@ const AiRemixSection = ({
         body: JSON.stringify({ action: "suno-cover", s3Key, title: songTitle, genre: songGenre || analysisData?.genre || "pop", style, analysisData: fullAnalysis }),
       });
       const coverData = await coverRes.json();
-      if (coverData.error) throw new Error(coverData.error);
+      console.log('[Suno] Lambda response:', JSON.stringify(coverData).slice(0, 600));
+      if (coverData.error) throw new Error(`Suno error: ${coverData.error}`);
+      if (!coverRes.ok) throw new Error(`Server returned ${coverRes.status}. Please try again.`);
       const { taskIdV1, taskIdV2, version1, version2 } = coverData;
-      if (!taskIdV1 || !taskIdV2) throw new Error("No task IDs returned from AI engine");
+      if (!taskIdV1 || !taskIdV2) throw new Error(`AI engine did not return song task IDs. Got: ${JSON.stringify(coverData).slice(0, 150)}`);
 
       let attempts = 0;
       const poll = async (): Promise<any> => {
@@ -760,8 +765,16 @@ const AiRemixSection = ({
       {status === "error" && (
         <div className="text-center py-6 space-y-3">
           <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
-          <p className="text-sm text-destructive font-medium">{error}</p>
-          <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" className="gap-2 border-border">Try Again</Button>
+          <p className="text-sm text-destructive font-semibold">Song generation failed</p>
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto">{error?.slice(0, 120) || "Please try again."}</p>
+          <div className="flex items-center justify-center gap-2">
+            <Button onClick={() => { setStatus("idle"); setError(""); }} variant="outline" size="sm" className="gap-2 border-border">
+              Try Again
+            </Button>
+            <Button onClick={startQuickGenerate} size="sm" className="gap-2 bg-accent/20 border border-accent/30 text-accent hover:bg-accent/30">
+              Quick Generate
+            </Button>
+          </div>
         </div>
       )}
 
