@@ -1200,22 +1200,49 @@ export default function Workspace() {
         await fetch(urlData.uploadUrl, { method: 'PUT', headers: { 'Content-Type': createFile.type || 'audio/mpeg' }, body: createFile });
       }
 
-      const analysisData = {
-        ...(activeItem?.type === 'analysis' ? activeItem.data.full_result || {} : {}),
-        customLyrics: createLyrics.trim() || undefined,
-      };
+      // Build slim Suno payload — only send specific fields, NOT the full analysis blob
+      // (sending the entire full_result causes Lambda payload/parse failures)
+      const fr = activeItem?.type === 'analysis' ? activeItem.data.full_result || {} : {};
+      const songGenreForCover = activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop';
+      const songTitleForCover = activeItem?.type === 'analysis' ? activeItem.data.title : (createFile?.name || 'My Song');
+
+      // Build a rich prompt if user hasn't written custom lyrics
+      const autoPrompt = [
+        `${songGenreForCover} hit song`,
+        fr.bpmEstimate ? `${Math.round(fr.bpmEstimate)} BPM` : '',
+        'high energy', 'strong hook in first 7 seconds',
+        fr.emotionalCore ? fr.emotionalCore.slice(0, 60) : '',
+        fr.improvements?.length ? `improved: ${fr.improvements.slice(0, 3).join(', ').slice(0, 100)}` : '',
+        fr.oneChange ? fr.oneChange.slice(0, 80) : '',
+        'radio ready', 'viral potential',
+      ].filter(Boolean).join(', ');
+      const effectiveLyrics = createLyrics.trim() || autoPrompt;
+
       const coverRes = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'suno-cover', s3Key,
-          title: activeItem?.type === 'analysis' ? activeItem.data.title : (createFile?.name || 'My Song'),
-          genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop',
-          style: createStyle || 'same', analysisData,
+          title: songTitleForCover,
+          genre: songGenreForCover,
+          style: createStyle || 'same',
+          customLyrics: effectiveLyrics,
+          bpm: fr.bpmEstimate || fr.bpm || fr.genreDna?.avgBpm,
+          energy: fr.energyLevel,
+          emotionalCore: fr.emotionalCore,
+          viralLine: fr.viralLine,
+          oneChange: fr.oneChange,
+          improvements: (fr.improvements || []).slice(0, 3),
           sunoVersion,
         }) });
       const coverData = await coverRes.json();
-      if (coverData.error) throw new Error(coverData.error);
-      const { taskIdV1, taskIdV2, version1, version2 } = coverData;
-      if (!taskIdV1 || !taskIdV2) throw new Error('No task IDs from server');
+      console.log('[Suno] Lambda suno-cover response:', JSON.stringify(coverData).slice(0, 800));
+      if (coverData.error) throw new Error(`Suno error: ${coverData.error}`);
+      if (!coverRes.ok) throw new Error(`Server returned ${coverRes.status}. Please try again.`);
+      // Support both {taskIdV1, taskIdV2} and single {taskId} formats
+      const taskIdV1 = coverData.taskIdV1 || coverData.taskId;
+      const taskIdV2 = coverData.taskIdV2 || coverData.taskId;
+      const version1 = coverData.version1;
+      const version2 = coverData.version2;
+      if (!taskIdV1) throw new Error(`AI engine did not return task IDs. Response: ${JSON.stringify(coverData).slice(0, 200)}`);
       // Save to localStorage IMMEDIATELY before polling starts
       if (user) savePendingGeneration(user.id, {
         taskIdV1, taskIdV2,
