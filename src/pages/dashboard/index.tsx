@@ -33,7 +33,7 @@ import {
   Repeat, Copy, Check, Globe, GitBranch, CreditCard, Zap,
 } from 'lucide-react';
 
-const LAMBDA_URL = 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
+const LAMBDA_URL = import.meta.env.VITE_LAMBDA_URL || 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
 
@@ -1174,7 +1174,10 @@ export default function Workspace() {
     const anyAudioUrl =
       (activeItem?.type === 'analysis' ? activeItem.data.audio_url : null) ||
       (activeItem?.type === 'remix' ? activeItem.data.audio_url : null) || null;
-    const existingS3Key = anyAudioUrl ? extractS3Key(anyAudioUrl) : (lastScanS3Key || null);
+    // Also check full_result.s3Key — stored by analyze-song edge function for cross-session use
+    const s3KeyFromResult = activeItem?.type === 'analysis'
+      ? (activeItem.data.full_result?.s3Key || null) : null;
+    const existingS3Key = anyAudioUrl ? extractS3Key(anyAudioUrl) : (s3KeyFromResult || lastScanS3Key || null);
 
     // Must have EITHER a file OR a pre-existing S3 key
     if (!createFile && !existingS3Key) {

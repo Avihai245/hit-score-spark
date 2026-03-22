@@ -441,6 +441,8 @@ Return ONLY this JSON (no markdown, no extra text):
       baseScore,
       dna: dnaScores,
       similarityFingerprint: fingerprint,
+      // Persist s3Key so dashboard can use it for Algorithm Hit creation in future sessions
+      s3Key: s3Key || lambdaResult.s3Key,
       // Viral DNA context for UI comparison bars
       genreDna: {
         genre: effectiveGenre,
