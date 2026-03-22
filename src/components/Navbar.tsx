@@ -112,20 +112,26 @@ const Navbar = () => {
 
           {/* Center — Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 group">
-            <span className="relative inline-block">
-              <span
-                className="font-heading leading-none text-3xl"
-                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}>
-                
-                SANTO
+            <div className="flex flex-col items-center leading-none">
+              <span className="relative inline-block">
+                <span
+                  className="font-heading leading-none text-3xl"
+                  style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_GRADIENT }}>
+                  SANTO
+                </span>
+                <span
+                  className="absolute inset-0 font-heading leading-none text-3xl pointer-events-none"
+                  style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
+                  aria-hidden="true">
+                  SANTO
+                </span>
               </span>
               <span
-                className="absolute inset-0 font-heading leading-none text-3xl pointer-events-none"
-                style={{ fontWeight: 900, letterSpacing: "0.14em", ...LOGO_SCAN_STYLE }}
-                aria-hidden="true">
-                SANTO
+                className="text-[9px] font-medium tracking-[0.18em] uppercase mt-0.5"
+                style={{ background: "linear-gradient(90deg, #a855f7, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                blow up on spotify
               </span>
-            </span>
+            </div>
           </Link>
 
           {/* Right — auth area (desktop) */}

@@ -104,7 +104,7 @@ const ViralizeLogo = ({ variant = "navbar", className, showTagline }: SantoLogoP
           "font-heading font-semibold uppercase text-muted-foreground/60",
           isStacked ? "text-xs tracking-[0.3em] mt-1" : "text-[8px] tracking-[0.2em] leading-none"
         )}>
-            AI Music Intelligence
+            blow up on spotify
           </span>
         }
       </div>
