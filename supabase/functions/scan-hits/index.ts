@@ -76,30 +76,54 @@ const GENRE_DEFAULTS: Record<string, { bpm: number; energy: number; danceability
 function aggregateDNA(hits: any[]): Record<string, any> {
   if (hits.length === 0) return {};
 
-  const avg = (key: string) => {
-    const vals = hits.map((h) => h[key]).filter((v) => v != null);
-    return vals.length ? vals.reduce((a: number, b: number) => a + b, 0) / vals.length : null;
+  const vals = (key: string) => hits.map((h) => h[key]).filter((v) => v != null) as number[];
+  const avg = (key: string) => { const v = vals(key); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+  const std = (key: string, mean: number | null) => {
+    if (mean == null) return null;
+    const v = vals(key);
+    if (v.length < 2) return null;
+    return Math.sqrt(v.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / v.length);
   };
+
+  const avgBpm = avg("bpm");
+  const avgEnergy = avg("energy");
+  const avgDance = avg("danceability");
+  const avgValence = avg("valence");
+  const avgAcoustic = avg("acousticness");
+  const avgLoudness = avg("loudness");
+  const avgSpeech = avg("speechiness");
+
+  const bpmVals = vals("bpm");
+  const energyVals = vals("energy");
 
   return {
     track_count:      hits.length,
-    avg_bpm:          avg("bpm"),
-    avg_energy:       avg("energy"),
-    avg_danceability: avg("danceability"),
-    avg_valence:      avg("valence"),
-    avg_acousticness: avg("acousticness"),
-    avg_loudness:     avg("loudness"),
+    avg_bpm:          avgBpm,
+    avg_energy:       avgEnergy,
+    avg_danceability: avgDance,
+    avg_valence:      avgValence,
+    avg_acousticness: avgAcoustic,
+    avg_loudness:     avgLoudness,
+    avg_speechiness:  avgSpeech,
     top_keys:         [],
     avg_duration_ms:  avg("duration_ms"),
     avg_popularity:   avg("popularity"),
+    bpm_min:          bpmVals.length ? Math.min(...bpmVals) : null,
+    bpm_max:          bpmVals.length ? Math.max(...bpmVals) : null,
+    bpm_std:          std("bpm", avgBpm),
+    energy_min:       energyVals.length ? Math.min(...energyVals) : null,
+    energy_max:       energyVals.length ? Math.max(...energyVals) : null,
+    energy_std:       std("energy", avgEnergy),
+    dance_std:        std("danceability", avgDance),
+    valence_std:      std("valence", avgValence),
     dna: {
-      bpm:          { avg: avg("bpm"), min: Math.min(...hits.map((h) => h.bpm || 120)), max: Math.max(...hits.map((h) => h.bpm || 120)) },
-      energy:       { avg: avg("energy") },
-      danceability: { avg: avg("danceability") },
-      valence:      { avg: avg("valence") },
-      acousticness: { avg: avg("acousticness") },
-      loudness:     { avg: avg("loudness") },
-      speechiness:  { avg: avg("speechiness") },
+      bpm:          { avg: avgBpm, min: bpmVals.length ? Math.min(...bpmVals) : 120, max: bpmVals.length ? Math.max(...bpmVals) : 120, std: std("bpm", avgBpm) },
+      energy:       { avg: avgEnergy, std: std("energy", avgEnergy) },
+      danceability: { avg: avgDance, std: std("danceability", avgDance) },
+      valence:      { avg: avgValence, std: std("valence", avgValence) },
+      acousticness: { avg: avgAcoustic },
+      loudness:     { avg: avgLoudness },
+      speechiness:  { avg: avgSpeech, std: std("speechiness", avgSpeech) },
       top_keys:     [],
       track_count:  hits.length,
       sample_tracks: hits.slice(0, 5).map((h) => ({ title: h.title, artist: h.artist, popularity: h.popularity })),

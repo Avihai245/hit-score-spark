@@ -865,29 +865,33 @@ const Results = () => {
     hookAnalysis, viralPotential, competitorMatch,
     emotionalCore, viralLine,
     danceability, valence,
-    similarSongs,
+    similarSongs, similarHits,
+    genreDna, similarityFingerprint,
   } = results;
 
   const isRealAudio = dataSource === "real_audio_analysis";
   const confidence = confidenceFromScore(score);
   const targetScore = Math.min(100, score + 19);
 
-  // Derive HIT DNA scores
-  const hookStrength = hookAnalysis ? Math.min(10, Math.round(score * 0.1 + (competitorMatch || 5) * 0.3 + 2)) : Math.round(score / 10);
-  const replayValue = Math.min(10, Math.round((danceability || 5) * 0.5 + (valence || 5) * 0.3 + score * 0.02));
-  const emotionalImpact = Math.min(10, Math.round((valence || 5) * 0.6 + (emotionalCore ? 3 : 0) + score * 0.02));
-  const structureQuality = Math.min(10, Math.round(score * 0.08 + (hookTiming ? 2 : 0) + 1));
-  const marketFit = competitorMatch || Math.min(10, Math.round(score * 0.09 + 1));
-  const algorithmCompat = Math.min(10, Math.round((danceability || 5) * 0.3 + (valence || 5) * 0.2 + score * 0.04));
-
-  const dnaScores = [
-    { label: "Hook Strength", value: hookStrength, max: 10 },
-    { label: "Replay Value", value: replayValue, max: 10 },
-    { label: "Emotional Impact", value: emotionalImpact, max: 10 },
-    { label: "Structure Quality", value: structureQuality, max: 10 },
-    { label: "Market Fit", value: marketFit, max: 10 },
-    { label: "Platform Readiness", value: algorithmCompat, max: 10 },
-  ];
+  // Use dnaScores from analyze-song v2 if available; otherwise fall back to old correlated derivation
+  const dnaScores: { label: string; value: number; max: number }[] = results.dnaScores?.length
+    ? results.dnaScores
+    : (() => {
+        const hookStrength = hookAnalysis ? Math.min(10, Math.round(score * 0.1 + (competitorMatch || 5) * 0.3 + 2)) : Math.round(score / 10);
+        const replayValue = Math.min(10, Math.round((danceability || 5) * 0.5 + (valence || 5) * 0.3 + score * 0.02));
+        const emotionalImpact = Math.min(10, Math.round((valence || 5) * 0.6 + (emotionalCore ? 3 : 0) + score * 0.02));
+        const structureQuality = Math.min(10, Math.round(score * 0.08 + (hookTiming ? 2 : 0) + 1));
+        const marketFit = competitorMatch || Math.min(10, Math.round(score * 0.09 + 1));
+        const algorithmCompat = Math.min(10, Math.round((danceability || 5) * 0.3 + (valence || 5) * 0.2 + score * 0.04));
+        return [
+          { label: "Hook Strength", value: hookStrength, max: 10 },
+          { label: "Replay Value", value: replayValue, max: 10 },
+          { label: "Emotional Impact", value: emotionalImpact, max: 10 },
+          { label: "Structure Quality", value: structureQuality, max: 10 },
+          { label: "Market Fit", value: marketFit, max: 10 },
+          { label: "Platform Readiness", value: algorithmCompat, max: 10 },
+        ];
+      })();
 
   // Critical issues with humanized titles
   const criticalIssues = (improvements || []).slice(0, 4).map((imp: string, i: number) => {
@@ -1052,6 +1056,121 @@ const Results = () => {
           </div>
         </Section>
 
+        {/* ═══ FEATURE COMPARISON — Your Song vs Genre DNA ═══ */}
+        {genreDna && (bpmEstimate || danceability || valence) && (
+          <Section delay={2.5}>
+            <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+              Your Song vs. {songGenre || results.genre || "Genre"} DNA
+            </h2>
+            <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-5 space-y-4">
+              {[
+                {
+                  label: "BPM",
+                  songVal: bpmEstimate,
+                  avgVal: genreDna.avgBpm,
+                  minVal: genreDna.bpmMin,
+                  maxVal: genreDna.bpmMax,
+                  format: (v: number) => `${Math.round(v)}`,
+                  unit: "BPM",
+                  scale: [60, 180],
+                },
+                {
+                  label: "Energy",
+                  songVal: typeof energyLevel === "number" ? energyLevel : (typeof energyLevel === "string" ? null : null),
+                  avgVal: genreDna.avgEnergy,
+                  minVal: null,
+                  maxVal: null,
+                  format: (v: number) => v.toFixed(2),
+                  unit: "",
+                  scale: [0, 1],
+                },
+                {
+                  label: "Danceability",
+                  songVal: typeof danceability === "number" ? danceability / 10 : null,
+                  avgVal: genreDna.avgDanceability,
+                  minVal: null,
+                  maxVal: null,
+                  format: (v: number) => v.toFixed(2),
+                  unit: "",
+                  scale: [0, 1],
+                },
+                {
+                  label: "Valence / Mood",
+                  songVal: typeof valence === "number" ? valence / 10 : null,
+                  avgVal: genreDna.avgValence,
+                  minVal: null,
+                  maxVal: null,
+                  format: (v: number) => v.toFixed(2),
+                  unit: "",
+                  scale: [0, 1],
+                },
+              ]
+                .filter(row => row.songVal != null && row.avgVal != null)
+                .map((row) => {
+                  const [scaleMin, scaleMax] = row.scale;
+                  const songPct = Math.max(0, Math.min(100, ((row.songVal! - scaleMin) / (scaleMax - scaleMin)) * 100));
+                  const avgPct = Math.max(0, Math.min(100, ((row.avgVal! - scaleMin) / (scaleMax - scaleMin)) * 100));
+                  const diff = row.label === "BPM"
+                    ? Math.round(row.songVal! - row.avgVal!)
+                    : +(row.songVal! - row.avgVal!).toFixed(2);
+                  const isAbove = diff > 0;
+                  const isClose = Math.abs(diff) < (row.label === "BPM" ? 5 : 0.05);
+                  return (
+                    <div key={row.label} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{row.label}</span>
+                        <span className={`text-xs font-bold ${isClose ? "text-green-400" : isAbove ? "text-blue-400" : "text-orange-400"}`}>
+                          {isClose ? "✓ On target" : isAbove ? `+${diff}${row.unit} above avg` : `${diff}${row.unit} below avg`}
+                        </span>
+                      </div>
+                      <div className="relative h-5">
+                        {/* Background track */}
+                        <div className="absolute inset-0 rounded-full bg-white/5" />
+                        {/* Range band (min–max if available) */}
+                        {row.minVal != null && row.maxVal != null && (
+                          <div
+                            className="absolute top-0 bottom-0 rounded-full bg-white/10"
+                            style={{
+                              left: `${Math.max(0, ((row.minVal - scaleMin) / (scaleMax - scaleMin)) * 100)}%`,
+                              width: `${Math.max(0, ((row.maxVal - row.minVal) / (scaleMax - scaleMin)) * 100)}%`,
+                            }}
+                          />
+                        )}
+                        {/* Genre average marker */}
+                        <div
+                          className="absolute top-0.5 bottom-0.5 w-0.5 bg-white/30 rounded-full"
+                          style={{ left: `${avgPct}%`, transform: "translateX(-50%)" }}
+                        />
+                        {/* Song bar */}
+                        <motion.div
+                          className="absolute top-1 bottom-1 rounded-full bg-gradient-to-r from-primary to-accent"
+                          style={{ left: 0, width: `${songPct}%` }}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${songPct}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-[10px] text-muted-foreground/60">
+                        <span>Your song: <span className="text-foreground/80 font-semibold">{row.format(row.songVal!)}{row.unit}</span></span>
+                        <span>Genre avg: <span className="text-foreground/80 font-semibold">{row.format(row.avgVal!)}{row.unit}</span>
+                          {row.minVal != null && row.maxVal != null && (
+                            <span className="ml-1">(range {row.format(row.minVal)}–{row.format(row.maxVal)})</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              {similarityFingerprint && (
+                <p className="text-[10px] text-muted-foreground/40 pt-1 border-t border-border/30">
+                  Fingerprint: {similarityFingerprint}
+                </p>
+              )}
+            </div>
+          </Section>
+        )}
+
         {/* ═══ SECTION 3 — WHAT'S HOLDING YOU BACK ═══ */}
         {criticalIssues.length > 0 && (
           <Section delay={3} id="holding-back">
@@ -1135,6 +1254,46 @@ const Results = () => {
                 </button>
               </p>
             </motion.div>
+          </Section>
+        )}
+
+        {/* ═══ SIMILAR HITS — tracks in the genre DNA ═══ */}
+        {(similarHits?.length > 0 || similarSongs?.length > 0) && (
+          <Section delay={4.5}>
+            <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
+              Similar Hits in Your Lane
+            </h2>
+            <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-5">
+              <p className="text-xs text-muted-foreground mb-3">
+                These tracks are charting in the same genre DNA as your song. Study what makes them work.
+              </p>
+              <div className="space-y-2">
+                {(similarHits || similarSongs || []).slice(0, 5).map((hit: any, i: number) => {
+                  const title = typeof hit === "string" ? hit : (hit.title || hit.name || hit);
+                  const artist = typeof hit === "object" ? hit.artist : null;
+                  const pop = typeof hit === "object" ? hit.popularity : null;
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -8 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.06 }}
+                      className="flex items-center gap-3 rounded-xl border border-border/40 bg-white/[0.02] px-4 py-2.5"
+                    >
+                      <span className="text-xs font-bold text-muted-foreground/50 w-4 flex-shrink-0">{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{title}</p>
+                        {artist && <p className="text-xs text-muted-foreground truncate">{artist}</p>}
+                      </div>
+                      {pop != null && (
+                        <span className="text-[10px] font-bold text-primary/70 flex-shrink-0">{pop}%</span>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
           </Section>
         )}
 

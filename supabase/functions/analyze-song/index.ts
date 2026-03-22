@@ -1,9 +1,16 @@
 /**
- * analyze-song — AI-powered hit comparison engine
+ * analyze-song v2 — AI-powered hit comparison engine
  *
  * Takes a Lambda raw analysis + audio features, fetches the real viral DNA
  * for the song's genre from `viral_dna_cache` (populated by scan-hits),
  * then uses Claude to produce a deep, accurate hit score and actionable advice.
+ *
+ * v2 changes:
+ * - Each of the 6 DNA scores uses independent features (not all derived from finalScore)
+ * - computeBaseScore uses wider tolerances + loudness + speechiness
+ * - Claude prompt forces numerical specificity (BPM delta, energy delta, etc.)
+ * - Hook timing scoring is position-aware (earlier = better)
+ * - 70% data-driven / 30% Lambda blend (was 60/40)
  *
  * POST /functions/v1/analyze-song
  * Body: {
@@ -12,12 +19,9 @@
  *   genre: string,
  *   goal: string,
  *   userId?: string,
+ *   analysisId?: string,
+ *   fileSizeBytes?: number,
  * }
- *
- * Required env vars:
- *   ANTHROPIC_API_KEY
- *   SUPABASE_URL
- *   SUPABASE_SERVICE_ROLE_KEY
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -40,7 +44,7 @@ async function callClaude(apiKey: string, systemPrompt: string, userPrompt: stri
     },
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
-      max_tokens: 2000,
+      max_tokens: 2500,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     }),
@@ -53,6 +57,45 @@ async function callClaude(apiKey: string, systemPrompt: string, userPrompt: stri
   return data.content[0].text;
 }
 
+// ── Hook timing score (earlier hook = higher score) ───────────────────────────
+
+function hookTimingScore(hookTiming: string | null | undefined): number {
+  if (!hookTiming) return 5;
+  // Parse "M:SS" or "SS" format
+  const parts = hookTiming.split(":").map(Number);
+  const totalSeconds = parts.length === 2 ? parts[0] * 60 + parts[1] : parts[0];
+  if (totalSeconds <= 15) return 10;   // Hook by 0:15 — perfect
+  if (totalSeconds <= 25) return 8;    // Hook by 0:25 — great
+  if (totalSeconds <= 40) return 6;    // Hook by 0:40 — acceptable
+  if (totalSeconds <= 60) return 4;    // Hook after 1:00 — too late
+  return 2;                             // Hook very late
+}
+
+// ── Clamp helper ──────────────────────────────────────────────────────────────
+
+function clamp(val: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, Math.round(val)));
+}
+
+// ── Normalize: convert 0-10 scale to 0-1 ─────────────────────────────────────
+
+function norm(v: any): number | null {
+  if (v == null) return null;
+  const n = Number(v);
+  if (isNaN(n)) return null;
+  return n > 1 ? n / 10 : n;
+}
+
+// ── Loudness score: -14 LUFS is Spotify target, map to 0-1 ───────────────────
+
+function loudnessScore(loudnessDbfs: number | null | undefined): number {
+  if (loudnessDbfs == null) return 0.5;
+  // Typical range: -20 to -4 dBFS. Target around -9 to -6 (≈ -14 LUFS integrated)
+  const target = -9;
+  const distance = Math.abs(loudnessDbfs - target);
+  return Math.max(0, 1 - distance / 12);
+}
+
 // ── Score computation: compare song features vs viral DNA ─────────────────────
 
 function computeBaseScore(song: Record<string, any>, dna: Record<string, any>): number {
@@ -62,54 +105,104 @@ function computeBaseScore(song: Record<string, any>, dna: Record<string, any>): 
   let weight = 0;
 
   const compare = (songVal: number | null, dnaAvg: number | null, w: number, tolerance: number) => {
-    if (songVal == null || dnaAvg == null) return;
+    if (songVal == null || dnaAvg == null || tolerance <= 0) return;
     const diff = Math.abs(songVal - dnaAvg);
     const proximity = Math.max(0, 1 - diff / tolerance);
     score += proximity * w;
     weight += w;
   };
 
-  // BPM: ±15 BPM is "in range"
-  compare(song.bpmEstimate || song.bpm, dna.avg_bpm, 20, 15);
-  // Energy: ±0.2 range
-  compare(song.energyLevel != null ? song.energyLevel / 10 : null, dna.avg_energy, 20, 0.2);
-  // Danceability: ±0.2
-  compare(song.danceability != null ? song.danceability / 10 : null, dna.avg_danceability, 15, 0.2);
-  // Valence: ±0.25
-  compare(song.valence != null ? song.valence / 10 : null, dna.avg_valence, 10, 0.25);
-  // Acousticness: ±0.3
-  compare(song.acousticness != null ? song.acousticness / 10 : null, dna.avg_acousticness, 10, 0.3);
+  // Use dynamic std-based tolerance if available, else hardcoded fallback
+  const bpmTol   = dna.bpm_std   ? Math.max(10, dna.bpm_std * 1.5)   : 20;
+  const engTol   = dna.energy_std ? Math.max(0.15, dna.energy_std * 1.5) : 0.25;
+  const danceTol = dna.dance_std  ? Math.max(0.15, dna.dance_std * 1.5)  : 0.25;
+  const valTol   = dna.valence_std ? Math.max(0.2, dna.valence_std * 1.5) : 0.30;
+  const acouTol  = 0.35;
+
+  compare(song.bpmEstimate || song.bpm, dna.avg_bpm, 20, bpmTol);
+  compare(norm(song.energyLevel),  dna.avg_energy,        20, engTol);
+  compare(norm(song.danceability), dna.avg_danceability,  15, danceTol);
+  compare(norm(song.valence),      dna.avg_valence,       10, valTol);
+  compare(norm(song.acousticness), dna.avg_acousticness,  10, acouTol);
+
+  // Loudness: compare normalized loudness score (0-1) to genre avg
+  const songLoudScore = loudnessScore(song.loudness ?? song.loudnessDbfs);
+  const dnaLoudScore  = loudnessScore(dna.avg_loudness);
+  compare(songLoudScore, dnaLoudScore, 15, 0.2);
+
+  // Speechiness: if available from Lambda
+  if (song.speechiness != null && dna.avg_speechiness != null) {
+    compare(norm(song.speechiness), dna.avg_speechiness, 10, 0.15);
+  }
 
   const rawScore = weight > 0 ? (score / weight) * 100 : 50;
 
-  // Blend: 60% data-driven + 40% from Lambda's own score (if available)
+  // Blend: 70% data-driven + 30% from Lambda's score
   const lambdaScore = song.score ?? 50;
-  return Math.round(rawScore * 0.6 + lambdaScore * 0.4);
+  return Math.round(rawScore * 0.7 + lambdaScore * 0.3);
 }
 
-// ── DNA scores breakdown ──────────────────────────────────────────────────────
+// ── DNA scores breakdown — each score uses DIFFERENT independent features ─────
 
 function buildDnaScores(song: Record<string, any>, dna: Record<string, any>, finalScore: number) {
-  const toTen = (v: number | null, fallback: number) =>
-    v != null ? Math.min(10, Math.max(1, Math.round(v * 10))) : fallback;
+  const energy       = norm(song.energyLevel)  ?? 0.5;
+  const danceability = norm(song.danceability)  ?? 0.5;
+  const valence      = norm(song.valence)        ?? 0.5;
+  const speechiness  = norm(song.speechiness)    ?? 0.1;
+  const competitor   = song.competitorMatch != null
+    ? (song.competitorMatch > 1 ? song.competitorMatch / 10 : song.competitorMatch)
+    : finalScore / 100;
+  const avgPop       = dna?.avg_popularity != null ? dna.avg_popularity / 100 : 0.7;
 
-  const dnaObj = dna?.dna || dna || {};
+  // BPM proximity to genre avg (0-1)
+  const songBpm = song.bpmEstimate || song.bpm;
+  const bpmProximity = songBpm && dna?.avg_bpm
+    ? Math.max(0, 1 - Math.abs(songBpm - dna.avg_bpm) / 20)
+    : 0.5;
 
-  // Get values from song (Lambda may return 0-1 or 0-10 depending on version)
-  const normalize = (v: any) => v != null ? (v > 1 ? v / 10 : v) : null;
+  // Hook timing quality (position-aware, fully independent)
+  const hookQuality = hookTimingScore(song.hookTiming) / 10;
 
-  const energy       = normalize(song.energyLevel)  ?? normalize(dnaObj.energy?.avg)      ?? 0.5;
-  const danceability = normalize(song.danceability)  ?? normalize(dnaObj.danceability?.avg) ?? 0.5;
-  const valence      = normalize(song.valence)        ?? normalize(dnaObj.valence?.avg)      ?? 0.5;
-  const competitor   = song.competitorMatch != null ? song.competitorMatch / 10 : finalScore / 100;
+  // Loudness fit
+  const lScore = loudnessScore(song.loudness ?? song.loudnessDbfs);
 
   return [
-    { label: "Hook Strength",     value: Math.min(10, Math.round(finalScore * 0.1 + competitor * 3 + 1)),  max: 10 },
-    { label: "Replay Value",      value: Math.min(10, Math.round(danceability * 5 + valence * 3 + finalScore * 0.02)), max: 10 },
-    { label: "Emotional Impact",  value: toTen(valence, Math.round(finalScore / 10)),  max: 10 },
-    { label: "Structure Quality", value: Math.min(10, Math.round(finalScore * 0.08 + (song.hookTiming ? 2 : 0) + 1)), max: 10 },
-    { label: "Market Fit",        value: Math.min(10, Math.max(1, Math.round(competitor * 10))), max: 10 },
-    { label: "Platform Readiness",value: Math.min(10, Math.round(energy * 4 + danceability * 3 + finalScore * 0.03)), max: 10 },
+    {
+      label: "Hook Strength",
+      // Uses: hookTiming position + competitor match — NO finalScore
+      value: clamp(hookQuality * 6 + competitor * 4, 1, 10),
+      max: 10,
+    },
+    {
+      label: "Replay Value",
+      // Uses: danceability + valence — NO finalScore
+      value: clamp(danceability * 6 + valence * 4, 1, 10),
+      max: 10,
+    },
+    {
+      label: "Emotional Impact",
+      // Uses: valence + speechiness — NO finalScore
+      value: clamp(valence * 7 + speechiness * 3, 1, 10),
+      max: 10,
+    },
+    {
+      label: "Structure Quality",
+      // Uses: BPM proximity to genre + hook timing — NO finalScore
+      value: clamp(bpmProximity * 7 + hookQuality * 3, 1, 10),
+      max: 10,
+    },
+    {
+      label: "Market Fit",
+      // Uses: competitor match + genre avg popularity — NO finalScore
+      value: clamp(competitor * 7 + avgPop * 3, 1, 10),
+      max: 10,
+    },
+    {
+      label: "Platform Readiness",
+      // Uses: energy + danceability + loudness fit — NO finalScore
+      value: clamp(energy * 4 + danceability * 3 + lScore * 3, 1, 10),
+      max: 10,
+    },
   ];
 }
 
@@ -120,7 +213,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { lambdaResult, title, genre, goal, userId } = body;
+    const { lambdaResult, title, genre, goal, userId, analysisId, fileSizeBytes } = body;
 
     if (!lambdaResult) {
       return new Response(JSON.stringify({ error: "lambdaResult is required" }), {
@@ -167,11 +260,27 @@ serve(async (req) => {
       .order("popularity", { ascending: false })
       .limit(5);
 
-    // 4. Claude analysis — deep hit comparison
+    // 4. Pre-compute deltas for Claude prompt specificity
+    const songBpm   = lambdaResult.bpmEstimate || lambdaResult.bpm;
+    const songEnergy = norm(lambdaResult.energyLevel);
+    const songDance  = norm(lambdaResult.danceability);
+    const songValence = norm(lambdaResult.valence);
+    const songLoudness = lambdaResult.loudness ?? lambdaResult.loudnessDbfs;
+
+    const bpmDelta   = songBpm   && dna?.avg_bpm   ? (songBpm - dna.avg_bpm).toFixed(1)       : null;
+    const engDelta   = songEnergy != null && dna?.avg_energy   ? ((songEnergy - dna.avg_energy) * 100).toFixed(1) : null;
+    const danceDelta = songDance  != null && dna?.avg_danceability ? ((songDance - dna.avg_danceability) * 100).toFixed(1) : null;
+
+    // Estimate duration from file size (MP3 ~1MB/min at 128kbps, ~2MB/min at 256kbps)
+    const durationHint = fileSizeBytes
+      ? `~${Math.round(fileSizeBytes / (1024 * 1024 * 1.5))} min estimated`
+      : "unknown";
+
+    // 5. Claude analysis — deep hit comparison with forced numerical specificity
     const systemPrompt = `You are the world's top music A&R consultant and hit-maker analyst.
 You have analyzed over 1 million songs and know exactly what separates a viral hit from a missed opportunity.
 Your analysis is based on REAL data from Spotify's top charts.
-Be specific, direct, and actionable. No fluff. Respond ONLY with valid JSON.`;
+Be specific, direct, and actionable. Reference exact numbers. No fluff. Respond ONLY with valid JSON.`;
 
     const userPrompt = `Analyze this song against real chart data and return a JSON object.
 
@@ -179,44 +288,60 @@ SONG:
 - Title: "${title || lambdaResult.title || 'Untitled'}"
 - Genre: ${effectiveGenre}
 - Goal: ${goal || "maximize streams"}
-- BPM: ${lambdaResult.bpmEstimate || lambdaResult.bpm || "unknown"}
-- Energy: ${lambdaResult.energyLevel || "unknown"}/10
-- Danceability: ${lambdaResult.danceability || "unknown"}/10
+- Duration: ${durationHint}
+- BPM: ${songBpm ?? "unknown"}
+- Energy: ${songEnergy != null ? (songEnergy * 10).toFixed(1) : "unknown"}/10
+- Danceability: ${songDance != null ? (songDance * 10).toFixed(1) : "unknown"}/10
+- Valence: ${songValence != null ? (songValence * 10).toFixed(1) : "unknown"}/10
+- Loudness: ${songLoudness != null ? `${songLoudness} dBFS` : "unknown"}
 - Hook timing: ${lambdaResult.hookTiming || "unknown"}
 - Lambda score: ${lambdaResult.score || 50}/100
 - Lambda verdict: ${lambdaResult.verdict || "N/A"}
 - Lambda strengths: ${JSON.stringify(lambdaResult.strengths || [])}
 - Lambda improvements: ${JSON.stringify(lambdaResult.improvements || [])}
 
-REAL ${effectiveGenre.toUpperCase()} HIT DNA (from ${dna?.track_count || 0} Spotify top tracks):
-- Avg BPM: ${dna?.avg_bpm?.toFixed(1) || "N/A"}
+NUMERICAL DELTAS VS GENRE AVERAGE (you MUST reference these in your analysis):
+- BPM: ${songBpm ?? "?"} vs genre avg ${dna?.avg_bpm?.toFixed(1) ?? "?"} → ${bpmDelta != null ? `${Number(bpmDelta) > 0 ? "+" : ""}${bpmDelta} BPM` : "N/A"}
+- Energy: song ${songEnergy != null ? songEnergy.toFixed(2) : "?"} vs genre avg ${dna?.avg_energy?.toFixed(3) ?? "?"} → ${engDelta != null ? `${Number(engDelta) > 0 ? "+" : ""}${engDelta}%` : "N/A"}
+- Danceability: song ${songDance != null ? songDance.toFixed(2) : "?"} vs genre avg ${dna?.avg_danceability?.toFixed(3) ?? "?"} → ${danceDelta != null ? `${Number(danceDelta) > 0 ? "+" : ""}${danceDelta}%` : "N/A"}
+- Loudness: ${songLoudness != null ? `${songLoudness} dBFS` : "unknown"} (Spotify target: -14 LUFS ≈ -9 dBFS)
+- Hook timing: ${lambdaResult.hookTiming ?? "unknown"} (ideal: within first 0:15)
+
+REAL ${effectiveGenre.toUpperCase()} HIT DNA (from ${dna?.track_count || 0} chart tracks):
+- Avg BPM: ${dna?.avg_bpm?.toFixed(1) || "N/A"} (range: ${dna?.bpm_min?.toFixed(0) ?? "?"} – ${dna?.bpm_max?.toFixed(0) ?? "?"})
 - Avg Energy: ${dna?.avg_energy?.toFixed(3) || "N/A"}
 - Avg Danceability: ${dna?.avg_danceability?.toFixed(3) || "N/A"}
 - Avg Valence: ${dna?.avg_valence?.toFixed(3) || "N/A"}
 - Avg Loudness: ${dna?.avg_loudness?.toFixed(1) || "N/A"} dBFS
-- Top Keys: ${JSON.stringify(dna?.top_keys || [])}
 - Avg Popularity: ${dna?.avg_popularity?.toFixed(0) || "N/A"}/100
 
-TOP ${effectiveGenre.toUpperCase()} HITS ON SPOTIFY RIGHT NOW:
-${(topHits || []).map(h => `- "${h.title}" by ${h.artist} (popularity: ${h.popularity}, BPM: ${h.bpm?.toFixed(0)}, energy: ${h.energy?.toFixed(2)})`).join("\n") || "No data yet — use available context"}
+TOP ${effectiveGenre.toUpperCase()} HITS RIGHT NOW:
+${(topHits || []).map(h => `- "${h.title}" by ${h.artist} (popularity: ${h.popularity}, BPM: ${h.bpm?.toFixed(0)}, energy: ${h.energy?.toFixed(2)})`).join("\n") || "No data — use available context"}
 
 DATA-DRIVEN BASE SCORE: ${baseScore}/100
+
+RULES — you MUST follow these:
+1. Every strength and improvement MUST cite a specific number (BPM, energy value, timing, etc.)
+2. Improvements MUST include target values: "increase BPM from ${songBpm ?? 'X'} to ${dna?.avg_bpm?.toFixed(0) ?? 'Y'}"
+3. Score must reflect the numerical deltas — if BPM is far from genre avg, score lower
+4. hookAnalysis MUST reference the actual timing "${lambdaResult.hookTiming ?? 'unknown'}" and compare to the 0:15 ideal
+5. similarHits must be real songs from the ${effectiveGenre} genre that this reminds you of
 
 Return ONLY this JSON (no markdown, no extra text):
 {
   "score": <integer 0-100, your final assessment blending data + musical judgment>,
-  "verdict": "<2-3 sentence verdict that references actual hit data comparisons>",
-  "strengths": ["<specific strength 1 with data reference>", "<strength 2>", "<strength 3>"],
-  "improvements": ["<specific fix 1 with data reference>", "<fix 2>", "<fix 3>", "<fix 4>"],
-  "oneChange": "<single most impactful change the artist should make TODAY>",
-  "hookAnalysis": "<detailed analysis of hook timing and strength — reference the 0:07 decision window>",
-  "viralPotential": "<TikTok/Instagram Reels potential — reference current viral sound patterns>",
+  "verdict": "<2-3 sentence verdict that references actual BPM/energy numbers from the deltas above>",
+  "strengths": ["<specific strength 1 with exact number>", "<strength 2 with exact number>", "<strength 3>"],
+  "improvements": ["<fix 1 with specific target value>", "<fix 2 with specific target value>", "<fix 3>", "<fix 4>"],
+  "oneChange": "<single most impactful change with specific target: 'bring BPM from X to Y'>",
+  "hookAnalysis": "<detailed analysis referencing actual hookTiming value and comparing to 0:15 ideal>",
+  "viralPotential": "<TikTok/Instagram Reels potential — reference current viral sound patterns and energy level>",
   "competitorMatch": <integer 1-10, how closely this matches current chart hits>,
-  "emotionalCore": "<what emotion drives this song and how well it's executed>",
-  "viralLine": "<the single most memorable lyric or musical moment — or 'none yet' if unclear>",
-  "marketInsight": "<1 specific thing about the current ${effectiveGenre} market this artist should know>",
-  "similarHits": ["<hit song this reminds you of 1>", "<hit song 2>"],
-  "dataSource": "real_spotify_comparison"
+  "emotionalCore": "<what emotion this song conveys and how well it's executed based on valence score>",
+  "viralLine": "<the single most memorable moment — or 'none identified' if unclear>",
+  "marketInsight": "<1 specific current ${effectiveGenre} market insight this artist needs to know>",
+  "similarHits": ["<real ${effectiveGenre} hit song 1>", "<real ${effectiveGenre} hit song 2>"],
+  "dataSource": "real_chart_comparison"
 }`;
 
     const claudeResponse = await callClaude(anthropicKey, systemPrompt, userPrompt);
@@ -224,15 +349,13 @@ Return ONLY this JSON (no markdown, no extra text):
     // Parse Claude's JSON response
     let analysis: Record<string, any>;
     try {
-      // Strip markdown code blocks if present
       const clean = claudeResponse.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       analysis = JSON.parse(clean);
     } catch {
-      // Claude returned non-JSON — wrap it gracefully
       console.error("Claude JSON parse failed, raw:", claudeResponse.slice(0, 500));
       analysis = {
         score: baseScore,
-        verdict: claudeResponse.slice(0, 200),
+        verdict: claudeResponse.slice(0, 300),
         strengths: lambdaResult.strengths || [],
         improvements: lambdaResult.improvements || [],
         oneChange: lambdaResult.oneChange || "",
@@ -241,11 +364,11 @@ Return ONLY this JSON (no markdown, no extra text):
         competitorMatch: lambdaResult.competitorMatch || 5,
         emotionalCore: lambdaResult.emotionalCore || "",
         viralLine: lambdaResult.viralLine || "",
-        dataSource: "real_spotify_comparison",
+        dataSource: "real_chart_comparison",
       };
     }
 
-    // 5. Build final enriched result
+    // 6. Build final enriched result
     const finalScore = analysis.score ?? baseScore;
     const dnaScores = buildDnaScores(
       { ...lambdaResult, competitorMatch: analysis.competitorMatch },
@@ -253,29 +376,41 @@ Return ONLY this JSON (no markdown, no extra text):
       finalScore,
     );
 
+    // Build a unique fingerprint string for this song
+    const fingerprint = [
+      effectiveGenre.toLowerCase().replace(/\s+/g, "-"),
+      songBpm ? `${Math.round(songBpm)}bpm` : null,
+      songEnergy != null ? `e${Math.round(songEnergy * 10)}` : null,
+      songDance != null ? `d${Math.round(songDance * 10)}` : null,
+      songValence != null ? `v${Math.round(songValence * 10)}` : null,
+    ].filter(Boolean).join("_");
+
     const enrichedResult = {
-      // Merge Lambda fields (audio features etc.) with Claude analysis
       ...lambdaResult,
       ...analysis,
       score: finalScore,
+      baseScore,
       dna: dnaScores,
-      // Viral DNA context for UI
+      similarityFingerprint: fingerprint,
+      // Viral DNA context for UI comparison bars
       genreDna: {
         genre: effectiveGenre,
         trackCount: dna?.track_count || 0,
         avgBpm: dna?.avg_bpm,
+        bpmMin: dna?.bpm_min,
+        bpmMax: dna?.bpm_max,
         avgEnergy: dna?.avg_energy,
         avgDanceability: dna?.avg_danceability,
         avgValence: dna?.avg_valence,
+        avgLoudness: dna?.avg_loudness,
         topKeys: dna?.top_keys || [],
         avgPopularity: dna?.avg_popularity,
         topHits: (topHits || []).map(h => h.title + " – " + h.artist),
       },
-      dataSource: "real_spotify_comparison",
+      dataSource: "real_chart_comparison",
     };
 
-    // 6. Update Supabase analysis record with enriched result (if we have analysisId or userId)
-    const { analysisId } = body;
+    // 7. Update Supabase analysis record
     if (analysisId) {
       await supabase
         .from("viralize_analyses")

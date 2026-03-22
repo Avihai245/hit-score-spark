@@ -165,6 +165,7 @@ const enrichWithSpotifyDna = async (
   genre: string,
   goal: string,
   analysisId?: string | null,
+  fileSizeBytes?: number,
 ): Promise<any> => {
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/analyze-song`, {
@@ -173,7 +174,7 @@ const enrichWithSpotifyDna = async (
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${SUPABASE_ANON}`,
       },
-      body: JSON.stringify({ lambdaResult, title, genre, goal, analysisId }),
+      body: JSON.stringify({ lambdaResult, title, genre, goal, analysisId, fileSizeBytes }),
     });
     if (!res.ok) {
       console.warn('analyze-song edge function returned', res.status, '— using Lambda result');
@@ -353,7 +354,7 @@ const Analyze = () => {
             });
           }
           // Enrich with real Spotify viral DNA + Claude
-          const enriched = await enrichWithSpotifyDna(analysisData, title || file.name, genre || analysisData.genre || '', goal || '', analysisId);
+          const enriched = await enrichWithSpotifyDna(analysisData, title || file.name, genre || analysisData.genre || '', goal || '', analysisId, file?.size);
           navigate("/results", { state: { results: enriched, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
           return;
         }
@@ -407,7 +408,7 @@ const Analyze = () => {
               });
             }
             // Enrich with real Spotify viral DNA + Claude (updates the saved record too)
-            const enriched = await enrichWithSpotifyDna(data, title || file.name, genre || data.genre || '', goal || '', analysisId);
+            const enriched = await enrichWithSpotifyDna(data, title || file.name, genre || data.genre || '', goal || '', analysisId, file?.size);
             setTimeout(() => {
               setLoading(false);
               navigate("/results", { state: { results: enriched, title: title || file.name, goal, uploadedFile: file, songGenre: genre, analysisId, s3Key } });
