@@ -175,7 +175,7 @@ const Navbar = () => {
                 </button>
 
                 {dropdownOpen &&
-              <div className="absolute right-0 top-full mt-2 w-56 bg-[#111111] border border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
+              <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-56 bg-[#111111] border border-white/10 rounded-2xl shadow-xl overflow-hidden z-50">
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-white/10">
                       <p className="text-sm font-semibold text-white truncate">

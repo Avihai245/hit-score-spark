@@ -1679,6 +1679,15 @@ export default function Workspace() {
             Desktop: fixed 260px column
             Mobile: full-screen overlay when mobileView === 'create'
         ═══════════════════════════════ */}
+        {/* Mobile backdrop — tap outside create panel to close */}
+        {mobileView === 'create' && (
+          <div className="fixed inset-0 z-10 bg-black/50 lg:hidden" onClick={() => setMobileView('feed')} />
+        )}
+        {/* Mobile backdrop — tap outside detail panel to close */}
+        {mobileView === 'detail' && (
+          <div className="fixed inset-0 z-10 bg-black/50 xl:hidden" onClick={() => setMobileView('feed')} />
+        )}
+
         <div className={`shrink-0 border-r border-border/40 bg-background flex flex-col overflow-hidden
           lg:w-[260px] xl:w-[280px]
           ${mobileView === 'create' ? 'flex w-full absolute inset-0 z-20' : 'hidden lg:flex'}`}>
@@ -2362,7 +2371,7 @@ export default function Workspace() {
                             <div className={`w-9 h-9 rounded-full bg-white/90 flex items-center justify-center transition-all ${
                               isCurrentlyPlaying
                                 ? 'opacity-100'
-                                : 'opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100'
+                                : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 scale-100 sm:scale-90 sm:group-hover:scale-100'
                             } shadow-lg`}>
                               {isCurrentlyPlaying
                                 ? <Pause className="w-4 h-4 text-black" />
@@ -2446,8 +2455,8 @@ export default function Workspace() {
 
                       {/* Action menu — appears on hover */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        {/* Top row: like / share / download always visible on hover */}
-                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* Top row: like / share / download — visible on hover (desktop) or always (mobile) */}
+                        <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button onClick={e => handleLike(item.data.id, e)}
                             className={`p-1.5 rounded-full transition-all hover:bg-white/10 ${isLiked ? 'text-red-400' : 'text-white/50 hover:text-white'}`}>
                             <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
@@ -2470,8 +2479,8 @@ export default function Workspace() {
                           )}
                         </div>
 
-                        {/* Bottom row: primary action buttons */}
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {/* Bottom row: primary action buttons — visible on hover (desktop) or always (mobile) */}
+                        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           {/* Analyze — only for analyses or if we want to re-scan */}
                           {item.type === 'analysis' && (
                             <button
@@ -2657,10 +2666,12 @@ export default function Workspace() {
           {/* Create + Detail buttons */}
           <div className="flex items-center gap-1 px-2 shrink-0">
             <button onClick={() => setMobileView('create')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                mobileView === 'create' ? 'bg-amber-500 text-black' : 'bg-muted text-muted-foreground hover:text-foreground'
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all shadow-sm ${
+                mobileView === 'create'
+                  ? 'bg-amber-500 text-black'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 text-black'
               }`}>
-              <Sparkles className="w-3.5 h-3.5" /> Create
+              <Zap className="w-3.5 h-3.5" /> Scan &amp; Create
             </button>
             {activeItem && (
               <button onClick={() => setMobileView('detail')}
