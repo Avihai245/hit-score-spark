@@ -208,7 +208,7 @@ const RemixCard = ({ remix, onDelete }: { remix: Remix; onDelete: (id: string) =
       <div className="relative h-36 bg-gradient-to-br from-yellow-500/30 to-purple-600/30 flex items-center justify-center overflow-hidden">
         {/* AI cover image */}
         {remix.image_url ? (
-          <img src={remix.image_url} alt={remix.remix_title || 'Remix'} className="absolute inset-0 w-full h-full object-cover" />
+          <img src={remix.image_url} alt={remix.remix_title || remix.title || 'Remix'} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
           /* Animated waveform when no cover */
           <div className="flex items-end gap-[3px] h-16 absolute inset-x-4">

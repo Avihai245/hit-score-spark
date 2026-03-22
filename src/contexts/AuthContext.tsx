@@ -168,9 +168,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signInWithGoogle = async () => {
+    // Use saved return URL if available, otherwise default to /analyze
+    const returnTo = localStorage.getItem('santo_oauth_return') || '/analyze';
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + '/analyze' },
+      options: { redirectTo: window.location.origin + returnTo },
     });
     return { error: error as Error | null };
   };

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Lock, Upload, Music, X, Check, Zap } from "lucide-react";
+import { Lock, Upload, Music, X, Check, Zap, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabase";
@@ -243,6 +243,7 @@ const Analyze = () => {
   const [genre, setGenre] = useState(prefill?.genre || "");
   const [goal, setGoal] = useState(prefill?.goal || "");
   const [dragOver, setDragOver] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoSubmitRef = useRef(false);
 
@@ -306,6 +307,7 @@ const Analyze = () => {
     }
 
     setLoading(true);
+    setTimedOut(false);
     setCurrentStep(0);
     setCompletedSteps([]);
 
@@ -371,9 +373,10 @@ const Analyze = () => {
       const pollResult = async () => {
         if (Date.now() - pollStart > maxPollTime) {
           setLoading(false);
+          setTimedOut(true);
           toast({
-            title: "Timeout",
-            description: "Analysis taking longer than expected. Please try again with a shorter MP3 file (under 5 minutes).",
+            title: "Analysis timed out",
+            description: "Your file and settings are saved — just click Analyze again to retry.",
             variant: "destructive",
           });
           return;
@@ -660,6 +663,20 @@ const Analyze = () => {
             Based on patterns from top-performing tracks across Spotify • Apple Music • TikTok • YouTube.
           </p>
         </motion.div>
+
+        {timedOut && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300"
+          >
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0 text-amber-400" />
+            <div>
+              <p className="font-semibold">Analysis timed out</p>
+              <p className="text-amber-300/70 text-xs mt-0.5">Your file and settings are saved below. Click <strong>Analyze</strong> to try again — shorter files (&lt;5 min) process faster.</p>
+            </div>
+          </motion.div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <motion.div

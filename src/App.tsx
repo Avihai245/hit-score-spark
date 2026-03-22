@@ -61,7 +61,7 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 
@@ -134,7 +134,7 @@ const AnimatedRoutes = () => {
           <Route path="/explore" element={<ProtectedRoute><Explore /></ProtectedRoute>} />
           <Route path="/discover" element={<ProtectedRoute><Discover /></ProtectedRoute>} />
           <Route path="/notifications" element={<Navigate to="/dashboard/notifications" replace />} />
-          <Route path="/auth" element={<Navigate to="/analyze" replace />} />
+          <Route path="/auth" element={<Navigate to="/" replace />} />
           <Route path="/search" element={<Navigate to="/dashboard" replace />} />
           <Route path="/song/:id" element={<ProtectedRoute><SongDetail /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

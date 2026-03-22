@@ -29,12 +29,27 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     setLoading(false);
   };
 
+  const friendlyError = (msg: string): string => {
+    const m = msg.toLowerCase();
+    if (m.includes('invalid login') || m.includes('invalid credentials') || m.includes('wrong password'))
+      return 'Wrong email or password. Please try again.';
+    if (m.includes('already registered') || m.includes('user already exists'))
+      return 'This email already has an account. Sign in instead.';
+    if (m.includes('email not confirmed') || m.includes('not confirmed'))
+      return 'Check your inbox and click the confirmation link first.';
+    if (m.includes('too many requests') || m.includes('rate limit'))
+      return 'Too many attempts. Please wait a minute and try again.';
+    if (m.includes('password') && m.includes('short'))
+      return 'Password must be at least 6 characters.';
+    return msg;
+  };
+
   const handleSignIn = async () => {
     setError(null);
     setLoading(true);
     const { error } = await signIn(email, password);
     setLoading(false);
-    if (error) return setError(error.message);
+    if (error) return setError(friendlyError(error.message));
     onClose();
     reset();
     navigate('/analyze');
@@ -45,7 +60,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
     setLoading(true);
     const { error } = await signUp(email, password);
     setLoading(false);
-    if (error) return setError(error.message);
+    if (error) return setError(friendlyError(error.message));
     setError(null);
     onClose();
     reset();
@@ -54,8 +69,13 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
 
   const handleGoogle = async () => {
     setError(null);
+    // Save current page so we can return after OAuth redirect
+    const returnTo = window.location.pathname;
+    if (returnTo && returnTo !== '/' && returnTo !== '/auth') {
+      localStorage.setItem('santo_oauth_return', returnTo);
+    }
     const { error } = await signInWithGoogle();
-    if (error) setError(error.message);
+    if (error) setError(friendlyError(error.message));
   };
 
   return (

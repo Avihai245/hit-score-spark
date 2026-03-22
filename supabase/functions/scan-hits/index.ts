@@ -46,9 +46,9 @@ const GENRE_MAP: Record<string, string> = {
   "afrobeats":    "Afrobeats",
   "afropop":      "Afrobeats",
   "dance & electronic": "EDM",
-  "country":      "Pop",   // map country to Pop for DNA purposes
-  "k-pop":        "Pop",
-  "j-pop":        "Pop",
+  "country":      "Country",
+  "k-pop":        "K-Pop",
+  "j-pop":        "K-Pop",
 };
 
 function mapGenre(appleGenre: string): string {
@@ -70,6 +70,8 @@ const GENRE_DEFAULTS: Record<string, { bpm: number; energy: number; danceability
   "Latin":        { bpm: 110, energy: 0.75, danceability: 0.82, valence: 0.72, acousticness: 0.15, loudness: -5.5,  speechiness: 0.09 },
   "Afrobeats":    { bpm: 104, energy: 0.72, danceability: 0.82, valence: 0.70, acousticness: 0.18, loudness: -5.8,  speechiness: 0.10 },
   "Melodic House":{ bpm: 124, energy: 0.80, danceability: 0.78, valence: 0.50, acousticness: 0.06, loudness: -5.0,  speechiness: 0.04 },
+  "Country":      { bpm: 102, energy: 0.62, danceability: 0.60, valence: 0.65, acousticness: 0.35, loudness: -6.5,  speechiness: 0.04 },
+  "K-Pop":        { bpm: 118, energy: 0.78, danceability: 0.77, valence: 0.62, acousticness: 0.10, loudness: -4.8,  speechiness: 0.08 },
   "Other":        { bpm: 115, energy: 0.68, danceability: 0.67, valence: 0.55, acousticness: 0.15, loudness: -6.0,  speechiness: 0.07 },
 };
 
