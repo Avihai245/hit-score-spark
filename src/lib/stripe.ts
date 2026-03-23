@@ -1,5 +1,5 @@
 import { loadStripe } from '@stripe/stripe-js';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '@/lib/supabase';
 
 export const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
@@ -26,8 +26,8 @@ export const PRICES = {
 };
 
 // Reuse env vars — no hardcoded credentials
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = supabaseUrl;
+const SUPABASE_ANON_KEY = supabaseAnonKey;
 
 // Creates Stripe Checkout Session via Supabase Edge Function
 export const createCheckoutSession = async (
