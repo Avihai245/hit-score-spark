@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
+export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
@@ -105,8 +105,9 @@ export const creditsToActions = (credits: number) => ({
   viral: Math.floor(credits / CREDIT_COSTS.viral),
 });
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
+// Reuse the same URL/key from the top of the file
+const SUPABASE_URL = supabaseUrl;
+const SUPABASE_ANON = supabaseAnonKey;
 
 export const deductCredits = async (userId: string, amount: number): Promise<{ success: boolean; newCredits?: number }> => {
   try {
@@ -127,7 +128,7 @@ export const refreshMonthlyCredits = async (userId: string, plan: Plan) => {
   const monthly = PLAN_LIMITS[plan]?.monthlyCredits ?? 0;
   if (!monthly) return null;
   const { data, error } = await supabase
-    .from('profiles')
+    .from('viralize_users')
     .update({ credits: monthly, credits_refreshed_at: new Date().toISOString() })
     .eq('id', userId).select().single();
   if (error) console.error('refreshMonthlyCredits error:', error);
