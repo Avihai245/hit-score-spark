@@ -152,8 +152,8 @@ const LiveDataFeed = ({ elapsedSeconds }: { elapsedSeconds: number }) => {
   );
 };
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = supabaseUrl;
+const SUPABASE_ANON = supabaseAnonKey;
 
 /**
  * Enriches Lambda's raw analysis with real Spotify viral DNA via Claude.
