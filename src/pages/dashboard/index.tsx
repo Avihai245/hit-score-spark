@@ -16,7 +16,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
-import { supabase, PLAN_LIMITS, CREDIT_COSTS, deductCredits } from '@/lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey, PLAN_LIMITS, CREDIT_COSTS, deductCredits } from '@/lib/supabase';
 import { saveRemixesToLocalStorage } from '@/lib/remixStorage';
 import { createCheckoutSession, PRICES } from '@/lib/stripe';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
@@ -34,8 +34,8 @@ import {
 } from 'lucide-react';
 
 const LAMBDA_URL = import.meta.env.VITE_LAMBDA_URL || 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = supabaseUrl;
+const SUPABASE_ANON = supabaseAnonKey;
 
 const GENERATION_KEY = (uid: string) => `hitcheck_generating_${uid}`;
 const LYRICS_KEY = (taskId: string) => `hitcheck_lyrics_${taskId}`;
