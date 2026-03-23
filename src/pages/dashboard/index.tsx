@@ -778,7 +778,7 @@ const UpgradeGate = () => (
    WORKSPACE
 ════════════════════════════════════════════════════ */
 export default function Workspace() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, session, profile, refreshProfile } = useAuth();
   const { playTrack, currentTrack, isPlaying, progress, currentTime, duration, togglePlay, seek, volume, setVolume } = useAudioPlayer();
   const navigate = useNavigate();
 
@@ -893,21 +893,28 @@ export default function Workspace() {
         const tracks: any[] = [];
         if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: pending.version1Label });
         if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: pending.version2Label });
-        // Save to Supabase — deduplicate by audio_url
+        // Save to Supabase via edge function (service_role key — bypasses RLS)
         const savedResumeUrls = new Set<string>();
         for (const t of tracks) {
           if (!t.audioUrl || savedResumeUrls.has(t.audioUrl)) continue;
           savedResumeUrls.add(t.audioUrl);
           try {
-            const { data: existing } = await supabase
-              .from('viralize_remixes').select('id')
-              .eq('user_id', user.id).eq('audio_url', t.audioUrl).limit(1);
-            if (existing && existing.length > 0) continue;
-            await supabase.from('viralize_remixes').insert({
-              user_id: user.id, analysis_id: pending.analysisId,
-              audio_url: t.audioUrl, image_url: t.imageUrl || null,
-              suno_task_id: pending.taskIdV1, genre: pending.genre,
-              original_title: pending.title, remix_title: t.label, status: 'complete',
+            await fetch(`${SUPABASE_URL}/functions/v1/save-remix`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON}`,
+              },
+              body: JSON.stringify({
+                userId: user.id,
+                analysisId: pending.analysisId,
+                audioUrl: t.audioUrl,
+                imageUrl: t.imageUrl || null,
+                sunoTaskId: pending.taskIdV1,
+                genre: pending.genre,
+                originalTitle: pending.title,
+                remixTitle: t.label,
+              }),
             });
           } catch {}
         }
@@ -1089,19 +1096,7 @@ export default function Workspace() {
         if (data.status === 'complete') {
           if (!data.score) throw new Error('Analysis returned no results — please try again');
 
-          // Step 1: Save raw result to Supabase to get analysisId
-          if (user) {
-            const { data: ins, error: insErr } = await supabase.from('viralize_analyses').insert({
-              user_id: user.id, title: songTitle || uploadFile.name,
-              genre: songGenre || data.genre || '', score: data.score,
-              verdict: data.verdict, full_result: data,
-            }).select('*').single();
-            if (!insErr && ins) {
-              insertedAnalysis = ins;
-            }
-          }
-
-          // Step 2: Enrich with Claude AI + AssemblyAI transcription + viral DNA comparison
+          // Step 1+2: Enrich with Claude AI + save to DB via edge function (uses service_role key — bypasses RLS)
           setAnalyzeStep('Building hit intelligence with AI…');
           let enrichedData = data;
           try {
@@ -1109,23 +1104,30 @@ export default function Workspace() {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${SUPABASE_ANON}`,
+                // Use user's session JWT so edge fn gets auth context; fall back to anon
+                'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON}`,
               },
               body: JSON.stringify({
                 lambdaResult: data,
                 title: songTitle || uploadFile.name,
                 genre: songGenre || data.genre || '',
                 goal: 'maximize streams',
-                analysisId: insertedAnalysis?.id || undefined,
+                userId: user?.id,        // edge fn inserts analysis using service_role key
                 fileSizeBytes: uploadFile.size,
                 s3Key,
               }),
             });
             if (enrichRes.ok) {
-              enrichedData = await enrichRes.json();
+              const enrichJson = await enrichRes.json();
+              enrichedData = enrichJson;
               enrichedData.s3Key = s3Key;
+              // Edge function returns analysisId of the inserted/updated DB record
+              if (enrichJson.analysisId) {
+                insertedAnalysis = { id: enrichJson.analysisId, user_id: user?.id, title: songTitle || uploadFile.name, genre: songGenre || data.genre || '', score: enrichJson.score || data.score, created_at: new Date().toISOString(), full_result: enrichedData };
+              }
             } else {
-              console.warn('analyze-song enrichment failed, using raw Lambda result');
+              const errText = await enrichRes.text();
+              console.warn('analyze-song enrichment failed:', enrichRes.status, errText);
             }
           } catch (enrichErr) {
             console.warn('analyze-song enrichment error (non-fatal):', enrichErr);
@@ -1271,33 +1273,36 @@ export default function Workspace() {
       const tracks: any[] = [];
       if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: version1?.label || 'Faithful Remix' });
       if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: version2?.label || 'Viral Edition' });
-      // Save to Supabase (source of truth) — deduplicate by audio_url
+      // Save to Supabase via edge function (service_role key — bypasses RLS)
       const savedUrls = new Set<string>();
       for (const t of tracks) {
         if (!t.audioUrl || savedUrls.has(t.audioUrl)) continue;
         savedUrls.add(t.audioUrl);
         try {
-          // Check not already saved (prevent duplicate on resume)
-          const { data: existing } = await supabase
-            .from('viralize_remixes')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('audio_url', t.audioUrl)
-            .limit(1);
-          if (existing && existing.length > 0) continue;
-
-          await supabase.from('viralize_remixes').insert({
-            user_id: user.id,
-            analysis_id: activeItem?.type === 'analysis' ? activeItem.data.id : null,
-            audio_url: t.audioUrl,
-            image_url: t.imageUrl || null,
-            suno_task_id: taskIdV1,
-            genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop',
-            original_title: activeItem?.type === 'analysis' ? activeItem.data.title : null,
-            remix_title: t.label,
-            status: 'complete',
+          const saveRes = await fetch(`${SUPABASE_URL}/functions/v1/save-remix`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON}`,
+            },
+            body: JSON.stringify({
+              userId: user.id,
+              analysisId: activeItem?.type === 'analysis' ? activeItem.data.id : null,
+              audioUrl: t.audioUrl,
+              imageUrl: t.imageUrl || null,
+              sunoTaskId: taskIdV1,
+              genre: activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop',
+              originalTitle: activeItem?.type === 'analysis' ? activeItem.data.title : null,
+              remixTitle: t.label,
+            }),
           });
-        } catch {}
+          if (!saveRes.ok) {
+            const errText = await saveRes.text();
+            console.error('save-remix failed:', saveRes.status, errText);
+          }
+        } catch (saveErr) {
+          console.error('save-remix error:', saveErr);
+        }
       }
       if (user) clearPendingGeneration(user.id);
       // ✅ Save lyrics to localStorage for each generated track (persists across sessions)

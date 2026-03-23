@@ -504,9 +504,32 @@ Return ONLY this JSON:
     enrichedResult.improvedLyrics = lyricsResult.improvedLyrics;
     enrichedResult.lyricsSource = realTranscript ? "transcribed" : "ai_generated";
 
-    // 8. Update Supabase analysis record
-    if (analysisId) {
-      await supabase
+    // 8. Save/update Supabase analysis record (using service_role key — bypasses RLS)
+    let effectiveAnalysisId = analysisId || null;
+
+    if (!effectiveAnalysisId && userId) {
+      // INSERT new analysis record (first time saving this scan)
+      const { data: newRow, error: insertErr } = await supabase
+        .from("viralize_analyses")
+        .insert({
+          user_id: userId,
+          title: title || lambdaResult.title || "Untitled",
+          genre: effectiveGenre,
+          score: finalScore,
+          verdict: analysis.verdict || lambdaResult.verdict || "",
+          full_result: enrichedResult,
+        })
+        .select("id")
+        .single();
+      if (insertErr) {
+        console.error("viralize_analyses INSERT error:", insertErr.message, insertErr.code);
+      } else if (newRow) {
+        effectiveAnalysisId = newRow.id;
+        console.log("viralize_analyses inserted id:", effectiveAnalysisId);
+      }
+    } else if (effectiveAnalysisId) {
+      // UPDATE existing record with enriched data
+      const { error: updateErr } = await supabase
         .from("viralize_analyses")
         .update({
           score: finalScore,
@@ -514,10 +537,13 @@ Return ONLY this JSON:
           full_result: enrichedResult,
           genre: effectiveGenre,
         })
-        .eq("id", analysisId);
+        .eq("id", effectiveAnalysisId);
+      if (updateErr) {
+        console.error("viralize_analyses UPDATE error:", updateErr.message);
+      }
     }
 
-    return new Response(JSON.stringify(enrichedResult), {
+    return new Response(JSON.stringify({ ...enrichedResult, analysisId: effectiveAnalysisId }), {
       headers: { ...cors, "Content-Type": "application/json" },
     });
 
