@@ -1,27 +1,67 @@
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
-import { Megaphone, Send, Bell, Users, Filter } from 'lucide-react';
+import { Megaphone, Send, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
 
-const HISTORY = [
-  { id: 1, title: 'New AI Remix Feature', type: 'product_update', audience: 'All Users', sent: '3 days ago', status: 'delivered' },
-  { id: 2, title: 'Pro Plan Price Update', type: 'billing', audience: 'Pro Users', sent: '1 week ago', status: 'delivered' },
-  { id: 3, title: 'Scheduled Maintenance', type: 'maintenance', audience: 'All Users', sent: '2 weeks ago', status: 'delivered' },
-];
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  audience: string;
+  created_at: string;
+}
 
 export default function AdminNotifications() {
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [audience, setAudience] = useState('all');
+  const [history, setHistory] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
-  const handleSend = () => {
+  const loadHistory = async () => {
+    const { data, error } = await supabase
+      .from('admin_notifications')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data) setHistory(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { loadHistory(); }, []);
+
+  const handleSend = async () => {
     if (!title || !message) return;
-    toast.success('Notification sent (placeholder)');
-    setTitle('');
-    setMessage('');
+    setSending(true);
+    const { error } = await supabase
+      .from('admin_notifications')
+      .insert({ title, message, audience, sent_by: user?.id });
+    if (error) {
+      toast.error('Failed to send: ' + error.message);
+    } else {
+      toast.success('Notification sent');
+      setTitle('');
+      setMessage('');
+      loadHistory();
+    }
+    setSending(false);
+  };
+
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days}d ago`;
+    return `${Math.floor(days / 7)}w ago`;
   };
 
   return (
@@ -47,12 +87,12 @@ export default function AdminNotifications() {
                   className="px-3 py-2 bg-muted/30 border border-border rounded-lg text-sm">
                   <option value="all">All Users</option>
                   <option value="free">Free Users</option>
-                  <option value="paid">Paid Users</option>
                   <option value="pro">Pro Users</option>
                   <option value="studio">Studio Users</option>
                 </select>
-                <Button onClick={handleSend} className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-lg gap-1.5">
-                  <Send className="w-3.5 h-3.5" /> Send
+                <Button onClick={handleSend} disabled={sending || !title || !message}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 rounded-lg gap-1.5">
+                  {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Send
                 </Button>
               </div>
             </div>
@@ -63,18 +103,28 @@ export default function AdminNotifications() {
             <div className="px-4 py-3 border-b border-border">
               <h2 className="text-sm font-semibold">Send History</h2>
             </div>
-            <div className="divide-y divide-border">
-              {HISTORY.map(h => (
-                <div key={h.id} className="px-4 py-3 flex items-center gap-3">
-                  <Megaphone className="w-4 h-4 text-primary shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{h.title}</p>
-                    <p className="text-xs text-muted-foreground">{h.audience} · {h.sent}</p>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground text-sm">
+                No notifications sent yet
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {history.map(h => (
+                  <div key={h.id} className="px-4 py-3 flex items-center gap-3">
+                    <Megaphone className="w-4 h-4 text-primary shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{h.title}</p>
+                      <p className="text-xs text-muted-foreground">{h.audience === 'all' ? 'All Users' : `${h.audience} Users`} \u00b7 {timeAgo(h.created_at)}</p>
+                    </div>
+                    <Badge className="bg-emerald-500/15 text-emerald-400 border-0 text-[10px]">delivered</Badge>
                   </div>
-                  <Badge className="bg-emerald-500/15 text-emerald-400 border-0 text-[10px]">{h.status}</Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
