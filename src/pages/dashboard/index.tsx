@@ -34,8 +34,8 @@ import {
 } from 'lucide-react';
 
 const LAMBDA_URL = import.meta.env.VITE_LAMBDA_URL || 'https://u2yjblp3w5.execute-api.eu-west-1.amazonaws.com/prod/analyze';
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://euszgnaahwmdbfdewaky.supabase.co';
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1c3pnbmFhaHdtZGJmZGV3YWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Njk5NTAsImV4cCI6MjA4OTI0NTk1MH0.oTg96pXF8PraxphGOCszHuP8SoMpCBDXL6C48OrNbEI';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 const GENERATION_KEY = (uid: string) => `hitcheck_generating_${uid}`;
 const LYRICS_KEY = (taskId: string) => `hitcheck_lyrics_${taskId}`;
