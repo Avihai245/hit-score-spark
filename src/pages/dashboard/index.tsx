@@ -591,6 +591,8 @@ const WorkspacePlayer = () => {
     return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   };
 
+  const [showVol, setShowVol] = useState(false);
+
   if (!currentTrack) {
     return (
       <div className="h-14 border-t border-border/40 bg-card/60 flex items-center px-4 gap-3 shrink-0">
@@ -601,8 +603,6 @@ const WorkspacePlayer = () => {
       </div>
     );
   }
-
-  const [showVol, setShowVol] = useState(false);
 
   const handleDownload = async () => {
     if (!currentTrack?.audioUrl) return;
@@ -1230,8 +1230,8 @@ export default function Workspace() {
           genre: songGenreForCover,
           style: createStyle || 'same',
           customLyrics: effectiveLyrics,
-          bpm: fr.bpmEstimate || fr.bpm || fr.genreDna?.avgBpm,
-          energy: fr.energyLevel,
+          bpm: fr.bpmEstimate ? parseFloat(String(fr.bpmEstimate)) : (fr.bpm || fr.genreDna?.avgBpm || undefined),
+          energy: fr.energyLevel != null ? (Number(fr.energyLevel) > 1 ? Number(fr.energyLevel) / 10 : Number(fr.energyLevel)) : undefined,
           emotionalCore: fr.emotionalCore,
           viralLine: fr.viralLine,
           oneChange: fr.oneChange,
@@ -1900,6 +1900,36 @@ export default function Workspace() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* DNA Breakdown */}
+                  {lastAnalysisResult.dna?.length > 0 && (
+                    <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">🧬 DNA Breakdown</p>
+                      <div className="space-y-1.5">
+                        {lastAnalysisResult.dna.map((d: { label: string; value: number; max: number }) => (
+                          <div key={d.label} className="flex items-center gap-2">
+                            <span className="text-[9px] text-muted-foreground w-24 shrink-0 truncate">{d.label}</span>
+                            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                              <div className="h-full rounded-full bg-primary" style={{ width: `${(d.value / d.max) * 100}%` }} />
+                            </div>
+                            <span className="text-[9px] text-foreground font-bold w-5 text-right shrink-0">{d.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Similar Hits */}
+                  {lastAnalysisResult.similarHits?.length > 0 && (
+                    <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">🎯 Similar Hits</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lastAnalysisResult.similarHits.map((h: string, i: number) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">{h}</span>
+                        ))}
+                      </div>
                     </div>
                   )}
 
