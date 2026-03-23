@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { AdminNav } from '@/components/admin/AdminNav';
 import { AdminGuard } from '@/components/admin/AdminGuard';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '@/lib/supabase';
 import { toast } from 'sonner';
 import {
   Search, Plus, Save, ExternalLink, RefreshCw, Zap, ChevronRight, Music2, X,
@@ -272,8 +272,8 @@ export default function AdminSunoEngine() {
     setFetchingLive(true);
     try {
       // Call Lambda generate-lyrics action to get Deezer DNA for genre
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+      const SUPABASE_URL = supabaseUrl;
+      const SUPABASE_ANON_KEY = supabaseAnonKey;
       const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-lyrics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
@@ -303,8 +303,8 @@ export default function AdminSunoEngine() {
     if (!selected) return;
     setGeneratingStyle(true);
     try {
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+      const SUPABASE_URL = supabaseUrl;
+      const SUPABASE_ANON_KEY = supabaseAnonKey;
       const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-lyrics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
