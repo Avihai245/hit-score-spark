@@ -19,6 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
+import PlatformScores from "@/components/PlatformScores";
+import TikTokClipRecommender from "@/components/TikTokClipRecommender";
+import SideBySidePlayer from "@/components/SideBySidePlayer";
 
 /* âââââââââââââââââââââââââââââââââââââââââ
    OFFICIAL PLATFORM SVG LOGOS
@@ -972,6 +975,9 @@ const Results = () => {
       })();
 
   // Critical issues with humanized titles
+  const platform_scores = (analysisData as any)?.platform_scores ?? {};
+  const tiktok_clip = (analysisData as any)?.tiktok_clip ?? null;
+  const suno_prompt_text = (analysisData as any)?.suno_prompt ?? null;
   const criticalIssues = (improvements || []).slice(0, 4).map((imp: string, i: number) => {
     const isHook = imp.toLowerCase().includes('hook');
     const isEnergy = imp.toLowerCase().includes('energy') || imp.toLowerCase().includes('dynamic');
@@ -1256,7 +1262,23 @@ const Results = () => {
               What's Holding You Back
             </h2>
             <div className="space-y-3">
-              {criticalIssues.map((issue, i) => (
+              
+            {/* Platform Fit Scores */}
+            {Object.keys(platform_scores).length > 0 && (
+              <div className="mt-6 mb-4">
+                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-3">Platform Fit Scores</h3>
+                <PlatformScores scores={platform_scores} />
+              </div>
+            )}
+
+            {/* TikTok Clip Recommender */}
+            {tiktok_clip && (
+              <div className="mt-4 mb-6">
+                <TikTokClipRecommender clip={tiktok_clip} />
+              </div>
+            )}
+
+{criticalIssues.map((issue, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -10 }}
@@ -1624,5 +1646,15 @@ const Results = () => {
     </div>
   );
 };
+
+            {/* Side by Side Player */}
+            {suno_prompt_text && (
+              <div className="mt-6">
+                <SideBySidePlayer
+                  sunoPrompt={suno_prompt_text}
+                  originalTitle={analysisData?.title}
+                />
+              </div>
+            )}
 
 export default Results;
