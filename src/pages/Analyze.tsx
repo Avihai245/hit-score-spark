@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { ParticleField } from "@/components/ParticleField";
 import { DataStream, ScanLine } from "@/components/DataStream";
+import UrlUploadInput from "@/components/UrlUploadInput";
 
 const genres = ["Pop", "Hip Hop", "R&B", "Indie Pop", "Melodic House", "EDM", "Rock", "Latin", "Afrobeats", "Other"];
 const goals = [
@@ -277,7 +278,7 @@ const Analyze = () => {
   };
 
   const acceptFile = useCallback((f: File) => {
-    const valid = ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/wave"];
+    const valid = ["audio/mpeg,audio/flac,audio/x-flac", "audio/wav", "audio/x-wav", "audio/wave"];
     if (!valid.includes(f.type) && !f.name.match(/\.(mp3|wav)$/i)) {
       toast({ title: "Invalid file", description: "Please upload an MP3 or WAV file.", variant: "destructive" });
       return;
@@ -696,7 +697,7 @@ const Analyze = () => {
               onClick={() => {
                 const inp = document.createElement("input");
                 inp.type = "file";
-                inp.accept = ".mp3,.wav,audio/mpeg,audio/wav";
+                inp.accept = ".mp3,.wav,.flac,.m4a,audio/mpeg,audio/flac,audio/x-flac,audio/wav";
                 inp.onchange = () => { if (inp.files?.[0]) acceptFile(inp.files[0]); };
                 inp.click();
               }}
@@ -787,6 +788,22 @@ const Analyze = () => {
                   className="h-12"
                 />
               </div>
+
+      {/* ─── Analyze from URL ─────────────────────────────────────── */}
+      <div className="mt-6 p-5 rounded-2xl border border-white/10 bg-white/5">
+        <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">
+          🔗 Or Analyze from URL
+        </h3>
+        <p className="text-xs text-white/40 mb-4">
+          Paste a YouTube, Spotify or SoundCloud link — audio is extracted automatically.
+        </p>
+        <UrlUploadInput
+          onUrlSubmit={(url, platform) => {
+            console.log('URL submitted:', url, platform);
+            // TODO: wire to yt-dlp extraction endpoint
+          }}
+        />
+      </div>
 
               <div>
                 <label className="mb-2 block text-sm font-semibold">
