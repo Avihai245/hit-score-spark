@@ -20,9 +20,9 @@ import {
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
 import { toast } from "sonner";
 
-/* ─────────────────────────────────────────
+/* âââââââââââââââââââââââââââââââââââââââââ
    OFFICIAL PLATFORM SVG LOGOS
-   ───────────────────────────────────────── */
+   âââââââââââââââââââââââââââââââââââââââââ */
 const SpotifyLogo = ({ className = "h-4 w-4" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="#1DB954">
     <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
@@ -54,7 +54,7 @@ const YouTubeLogo = ({ className = "h-4 w-4" }: { className?: string }) => (
   </svg>
 );
 
-/* ─── Score helpers ─── */
+/* âââ Score helpers âââ */
 const scoreColor = (s: number) => {
   if (s < 40) return "hsl(0 84% 60%)";
   if (s < 65) return "hsl(25 95% 53%)";
@@ -69,7 +69,7 @@ const confidenceFromScore = (s: number) => {
   return 65;
 };
 
-/* ─── Emotional headline based on score ─── */
+/* âââ Emotional headline based on score âââ */
 const getEmotionalHeadline = (s: number) => {
   if (s < 40) return "Your track needs work before release. Here's the fix.";
   if (s < 60) return "You're close. A couple of changes can push this into viral territory.";
@@ -77,15 +77,15 @@ const getEmotionalHeadline = (s: number) => {
   return "This track is ready. Here's how to maximize it.";
 };
 
-/* ─── Status badge for DNA scores ─── */
+/* âââ Status badge for DNA scores âââ */
 const getStatusBadge = (value: number, max: number) => {
   const pct = (value / max) * 10;
-  if (pct >= 8) return { emoji: "✅", label: "Strong", borderClass: "border-green-500/30", bgClass: "bg-green-500/[0.05]", textClass: "text-green-400" };
-  if (pct >= 6) return { emoji: "⚠️", label: "Needs Work", borderClass: "border-yellow-500/30", bgClass: "bg-yellow-500/[0.05]", textClass: "text-yellow-400" };
-  return { emoji: "🔴", label: "Fix This First", borderClass: "border-red-500/30", bgClass: "bg-red-500/[0.05]", textClass: "text-red-400" };
+  if (pct >= 8) return { emoji: "â", label: "Strong", borderClass: "border-green-500/30", bgClass: "bg-green-500/[0.05]", textClass: "text-green-400" };
+  if (pct >= 6) return { emoji: "â ï¸", label: "Needs Work", borderClass: "border-yellow-500/30", bgClass: "bg-yellow-500/[0.05]", textClass: "text-yellow-400" };
+  return { emoji: "ð´", label: "Fix This First", borderClass: "border-red-500/30", bgClass: "bg-red-500/[0.05]", textClass: "text-red-400" };
 };
 
-/* ─── Plain-English descriptions for DNA metrics ─── */
+/* âââ Plain-English descriptions for DNA metrics âââ */
 const getDnaDescription = (label: string, value: number, hookAnalysis?: string, emotionalCore?: string) => {
   // Parse hook timing from raw analysis if available
   const parseHookTime = (raw?: string) => {
@@ -108,47 +108,47 @@ const getDnaDescription = (label: string, value: number, hookAnalysis?: string, 
 
       return {
         high: hookTime
-          ? `Your hook is strong and arrives at ${hookTime} — right in the window where listeners decide to stay.`
-          : "Your hook grabs attention quickly — listeners will want to keep playing.",
+          ? `Your hook is strong and arrives at ${hookTime} â right in the window where listeners decide to stay.`
+          : "Your hook grabs attention quickly â listeners will want to keep playing.",
         mid: hookTime && lateness !== null && lateness > 0
-          ? `Your hook is strong, but it arrives at ${hookTime} — ${lateness} seconds after the window where listeners decide to stay or skip.`
+          ? `Your hook is strong, but it arrives at ${hookTime} â ${lateness} seconds after the window where listeners decide to stay or skip.`
           : "Your hook is decent but could land earlier to catch listeners before they skip.",
         low: hookTime && lateness !== null && lateness > 0
-          ? `Your hook arrives at ${hookTime} — ${lateness} seconds after the moment most listeners decide to skip.`
-          : "Your hook isn't grabbing attention fast enough — most listeners will skip before it lands.",
+          ? `Your hook arrives at ${hookTime} â ${lateness} seconds after the moment most listeners decide to skip.`
+          : "Your hook isn't grabbing attention fast enough â most listeners will skip before it lands.",
       };
     })(),
     "Replay Value": {
-      high: "People will want to listen to this on repeat — that drives saves and algorithmic push.",
+      high: "People will want to listen to this on repeat â that drives saves and algorithmic push.",
       mid: "It's enjoyable, but doesn't quite create that addictive loop that drives replays.",
-      low: "Listeners probably won't come back for a second play — replays are what trigger algorithms.",
+      low: "Listeners probably won't come back for a second play â replays are what trigger algorithms.",
     },
     "Emotional Impact": {
-      high: "The emotional tone of your track connects — this is a real strength for playlist placement and audience targeting.",
+      high: "The emotional tone of your track connects â this is a real strength for playlist placement and audience targeting.",
       mid: "There's feeling here, but it could hit deeper to create the kind of emotional connection that drives saves.",
-      low: "The emotional connection feels flat — try adding more contrast between sections to make listeners feel something.",
+      low: "The emotional connection feels flat â try adding more contrast between sections to make listeners feel something.",
     },
     "Structure Quality": {
-      high: "Your song structure follows the patterns that hit songs use — sections flow naturally.",
+      high: "Your song structure follows the patterns that hit songs use â sections flow naturally.",
       mid: "The structure is okay but could flow better between sections to keep listeners engaged.",
-      low: "The arrangement feels off — listeners might lose interest before the best parts arrive.",
+      low: "The arrangement feels off â listeners might lose interest before the best parts arrive.",
     },
     "Market Fit": {
-      high: "This fits what's trending right now — you're in a great lane for discovery.",
+      high: "This fits what's trending right now â you're in a great lane for discovery.",
       mid: "You're in the right space but a few tweaks would help you compete with what's charting.",
       low: "This doesn't match what's performing well in your genre right now.",
     },
     "Platform Readiness": {
-      high: "Streaming algorithms will love this track — it's optimized for recommendations.",
+      high: "Streaming algorithms will love this track â it's optimized for recommendations.",
       mid: "Algorithms might pick this up, but it's not fully optimized for discovery yet.",
-      low: "This track won't get recommended in its current form — algorithms need clearer signals.",
+      low: "This track won't get recommended in its current form â algorithms need clearer signals.",
     },
   };
   const tier = value >= 8 ? "high" : value >= 6 ? "mid" : "low";
   return descriptions[label]?.[tier] || "This metric affects how your track performs.";
 };
 
-/* ─── Translate issue titles to plain language ─── */
+/* âââ Translate issue titles to plain language âââ */
 const humanizeIssueTitle = (title: string, imp: string) => {
   const lower = imp.toLowerCase();
   if (lower.includes('hook')) return "Your hook arrives too late";
@@ -161,7 +161,7 @@ const humanizeIssueTitle = (title: string, imp: string) => {
   return title;
 };
 
-/* ─── Score Gauge (smaller, secondary) ─── */
+/* âââ Score Gauge (smaller, secondary) âââ */
 const ScoreGauge = ({ score, size = "default" }: { score: number; size?: "default" | "small" }) => {
   const r = size === "small" ? 50 : 80;
   const dim = size === "small" ? 120 : 180;
@@ -225,7 +225,7 @@ const ScoreGauge = ({ score, size = "default" }: { score: number; size?: "defaul
   );
 };
 
-/* ─── Section wrapper ─── */
+/* âââ Section wrapper âââ */
 const Section = ({ children, delay = 0, className = "", id }: { children: ReactNode; delay?: number; className?: string; id?: string }) => (
   <motion.section
     id={id}
@@ -239,7 +239,7 @@ const Section = ({ children, delay = 0, className = "", id }: { children: ReactN
   </motion.section>
 );
 
-/* ─── Scroll-spy Nav ─── */
+/* âââ Scroll-spy Nav âââ */
 const NAV_ITEMS = [
   { id: "hero", label: "Your Score" },
   { id: "holding-back", label: "What to Fix" },
@@ -283,7 +283,7 @@ const ScrollNav = ({ activeSection }: { activeSection: string }) => (
   </>
 );
 
-/* ─── Remix helpers (preserved) ─── */
+/* âââ Remix helpers (preserved) âââ */
 const remixStyles = [
   { value: "same", label: "Same vibe (enhanced)" },
   { value: "energetic", label: "More energetic" },
@@ -329,13 +329,13 @@ const remixPlatformSteps = [
 ];
 
 const remixDataFeedLines = [
-  "Spotify API → fetching genre benchmark data...",
+  "Spotify API â fetching genre benchmark data...",
   "BPM match: analyzing tempo against top 200 chart entries",
-  "Apple Music → scanning editorial playlist criteria",
+  "Apple Music â scanning editorial playlist criteria",
   "Harmonic analysis: key detection & chord progression mapping",
-  "TikTok Sounds API → viral hook pattern database loaded",
+  "TikTok Sounds API â viral hook pattern database loaded",
   "Cross-referencing 847 trending sounds from last 30 days",
-  "YouTube Music → recommendation signal optimization",
+  "YouTube Music â recommendation signal optimization",
   "Melody contour analysis: 94% match with viral patterns",
   "AI engine: applying production enhancements",
   "Vocal clarity optimization in progress",
@@ -406,7 +406,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
                 {isDone ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> : <PlatformIcon type={step.icon} />}
               </div>
               <span className={`flex-1 ${isCurrent ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
-                {step.platform && <span className="font-semibold">{step.platform} — </span>}{step.label}
+                {step.platform && <span className="font-semibold">{step.platform} â </span>}{step.label}
               </span>
               {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />}
             </motion.div>
@@ -425,7 +425,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
         <div ref={feedRef} className="rounded-lg bg-background border border-border p-3 h-28 overflow-y-auto font-mono text-[10px] space-y-1 scrollbar-thin">
           {feedLines.map((line, i) => (
             <motion.div key={`${i}-${line}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-muted-foreground">
-              <span className="text-emerald-400/70">▸</span> {line}
+              <span className="text-emerald-400/70">â¸</span> {line}
             </motion.div>
           ))}
           <span className="text-accent inline-block animate-pulse">_</span>
@@ -435,7 +435,7 @@ const RemixProcessingUI = ({ elapsed }: { elapsed: number }) => {
   );
 };
 
-/* ─── Lyrics Editor ─── */
+/* âââ Lyrics Editor âââ */
 const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLyricsReady: (lyrics: string) => void }) => {
   const original = analysisData?.originalLyrics || "";
   const improved = analysisData?.improvedLyrics || "";
@@ -473,7 +473,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
           <div className="flex items-center justify-between">
             <label className="text-sm font-bold text-foreground flex items-center gap-2">
               <Mic2 className="h-4 w-4 text-primary" /> Song Lyrics
-              <span className="text-[10px] font-normal text-muted-foreground/60 bg-primary/10 px-2 py-0.5 rounded-full">AI-generated · edit as needed</span>
+              <span className="text-[10px] font-normal text-muted-foreground/60 bg-primary/10 px-2 py-0.5 rounded-full">AI-generated Â· edit as needed</span>
             </label>
             {improved && (
               <div className="flex items-center gap-2">
@@ -532,7 +532,7 @@ const LyricsEditor = ({ analysisData, onLyricsReady }: { analysisData: any; onLy
   );
 };
 
-/* ─── AI Remix Section (preserved) ─── */
+/* âââ AI Remix Section (preserved) âââ */
 const AiRemixSection = ({
   uploadedFile, existingS3Key, songTitle, songGenre, analysisData, analysisId
 }: {
@@ -614,10 +614,32 @@ const AiRemixSection = ({
       setStatus("processing");
       timerRef.current = setInterval(() => setElapsed(e => e + 1), 1000);
 
-      // Always send a rich prompt — never empty. Fallback to buildAutoPrompt() if user hasn't typed lyrics.
+      // Always send a rich prompt â never empty. Fallback to buildAutoPrompt() if user hasn't typed lyrics.
       const effectiveLyrics = lyrics.trim() || buildAutoPrompt();
 
-      // Send a slim, targeted payload — NOT the full analysis blob (which can be huge and cause Lambda failures)
+      // Fetch genre DNA for enriched style
+      const effectiveGenre = songGenre || analysisData?.genre || "pop";
+      let genreDna: any = null;
+      try {
+        const { data: dnaRows } = await supabase
+          .from('suno_genre_dna')
+          .select('suno_style_prefix, suno_style_suffix, viral_elements, bpm_range, typical_key, hook_timing, reference_artists')
+          .ilike('genre', `%${effectiveGenre}%`)
+          .limit(1);
+        if (dnaRows && dnaRows.length > 0) genreDna = dnaRows[0];
+      } catch (e) { console.warn('[GenreDNA] fetch failed:', e); }
+
+      // Build enriched style from user style + genre DNA
+      const styleComponents = [
+        style && style !== 'same' && style !== 'radio' ? style : '',
+        genreDna?.suno_style_prefix || '',
+        genreDna?.suno_style_suffix || '',
+        ...(genreDna?.viral_elements || []).slice(0, 4),
+        'full song structure', 'professional mix', 'radio ready',
+      ].filter(Boolean);
+      const enrichedStyle = [...new Set(styleComponents.map((s: string) => s.toLowerCase().trim()))].join(', ');
+
+      // Send enriched payload with genre DNA + sunoVersion
       const coverRes = await fetch(LAMBDA_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -625,8 +647,8 @@ const AiRemixSection = ({
           action: "suno-cover",
           s3Key,
           title: songTitle,
-          genre: songGenre || analysisData?.genre || "pop",
-          style,
+          genre: effectiveGenre,
+          style: enrichedStyle,
           customLyrics: effectiveLyrics,
           bpm: analysisData?.bpmEstimate || analysisData?.bpm || analysisData?.genreDna?.avgBpm,
           energy: analysisData?.energyLevel,
@@ -634,6 +656,18 @@ const AiRemixSection = ({
           viralLine: analysisData?.viralLine,
           oneChange: analysisData?.oneChange,
           improvements: (analysisData?.improvements || []).slice(0, 3),
+          sunoVersion: 'v5',
+          genreDna: genreDna ? {
+            stylePrefix: genreDna.suno_style_prefix,
+            styleSuffix: genreDna.suno_style_suffix,
+            viralElements: genreDna.viral_elements,
+            bpmRange: genreDna.bpm_range,
+            typicalKey: genreDna.typical_key,
+            hookTiming: genreDna.hook_timing,
+            referenceArtists: genreDna.reference_artists,
+          } : undefined,
+          make_instrumental: !lyrics.trim(),
+          duration: 'full',
         }),
       });
       const coverData = await coverRes.json();
@@ -682,7 +716,7 @@ const AiRemixSection = ({
       if (user) saveRemixesToLocalStorage(user.id, localEntries);
 
       if (tracks[0]?.audioUrl) {
-        playTrack({ id: `remix_${Date.now()}_0`, title: `${songTitle || 'AI Song'} – ${tracks[0].label || 'Remix'}`, audioUrl: tracks[0].audioUrl, imageUrl: tracks[0].imageUrl || undefined, sourceTitle: songTitle || undefined });
+        playTrack({ id: `remix_${Date.now()}_0`, title: `${songTitle || 'AI Song'} â ${tracks[0].label || 'Remix'}`, audioUrl: tracks[0].audioUrl, imageUrl: tracks[0].imageUrl || undefined, sourceTitle: songTitle || undefined });
       }
 
       if (user && tracks.length > 0) {
@@ -697,8 +731,8 @@ const AiRemixSection = ({
             else console.warn('Supabase save error:', saveErr.message, saveErr.code);
           } catch (e) { console.warn('Supabase save exception:', e); }
         }
-        if (savedCount > 0) toast.success(`✅ ${savedCount} song${savedCount > 1 ? 's' : ''} saved to your library!`, { action: { label: 'View Library', onClick: () => window.location.href = '/library' } });
-        else toast.info('Songs ready! Saved locally — find them in your Library.', { action: { label: 'View Library', onClick: () => window.location.href = '/library' } });
+        if (savedCount > 0) toast.success(`â ${savedCount} song${savedCount > 1 ? 's' : ''} saved to your library!`, { action: { label: 'View Library', onClick: () => window.location.href = '/library' } });
+        else toast.info('Songs ready! Saved locally â find them in your Library.', { action: { label: 'View Library', onClick: () => window.location.href = '/library' } });
       }
 
       setResult({ tracks });
@@ -730,7 +764,7 @@ const AiRemixSection = ({
           whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
         >
           <Zap className="h-4 w-4" />
-          ⚡ One-Click: Fix Everything &amp; Generate Hit
+          â¡ One-Click: Fix Everything &amp; Generate Hit
         </motion.button>
       )}
 
@@ -739,7 +773,7 @@ const AiRemixSection = ({
           {existingS3Key ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-green-500/5 border border-green-500/20">
               <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
-              <p className="text-sm text-green-300 font-medium">Audio file ready from your scan ✓</p>
+              <p className="text-sm text-green-300 font-medium">Audio file ready from your scan â</p>
             </div>
           ) : file ? (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
@@ -814,9 +848,9 @@ const AiRemixSection = ({
             <div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-400" />
-                <h3 className="text-base font-bold text-foreground">🎉 Your AI Songs Are Ready!</h3>
+                <h3 className="text-base font-bold text-foreground">ð Your AI Songs Are Ready!</h3>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">Two unique versions — playing automatically below ↓</p>
+              <p className="text-xs text-muted-foreground mt-1">Two unique versions â playing automatically below â</p>
             </div>
             <Link to="/library" className="text-xs text-primary hover:text-primary/80 border border-primary/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 flex-shrink-0 ml-3">
               <Headphones className="h-3.5 w-3.5" /> My Library
@@ -826,7 +860,7 @@ const AiRemixSection = ({
             {result.tracks.map((track: any, i: number) => (
               <div key={i} className={`rounded-xl border p-4 ${i === 0 ? "border-blue-500/30 bg-blue-500/5" : "border-purple-500/30 bg-purple-500/5"}`}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-lg">{i === 0 ? "🎸" : "🚀"}</span>
+                  <span className="text-lg">{i === 0 ? "ð¸" : "ð"}</span>
                   <div>
                     <p className={`text-sm font-bold ${i === 0 ? "text-blue-300" : "text-purple-300"}`}>{track.label}</p>
                     <p className="text-xs text-muted-foreground leading-snug">{track.description}</p>
@@ -834,7 +868,7 @@ const AiRemixSection = ({
                 </div>
                 {track.imageUrl && <img src={track.imageUrl} alt={track.label} className="w-full h-28 object-cover rounded-lg mb-3" />}
                 <div className="flex gap-2 mb-2">
-                  <button onClick={() => { playTrack({ id: `remix_${Date.now()}_${i}`, title: `${songTitle || 'AI Song'} – ${track.label || 'Remix'}`, audioUrl: track.audioUrl, sourceTitle: songTitle || undefined }); }}
+                  <button onClick={() => { playTrack({ id: `remix_${Date.now()}_${i}`, title: `${songTitle || 'AI Song'} â ${track.label || 'Remix'}`, audioUrl: track.audioUrl, sourceTitle: songTitle || undefined }); }}
                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all ${i === 0 ? 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/30' : 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30'}`}>
                     <Play className="h-4 w-4" /> Play Now
                   </button>
@@ -849,7 +883,7 @@ const AiRemixSection = ({
             ))}
           </div>
           <button onClick={() => { setStatus("idle"); setResult(null); setError(""); }} className="w-full py-2 text-xs text-muted-foreground hover:text-foreground border border-border/30 rounded-lg transition-colors">
-            ↩ Create another version
+            â© Create another version
           </button>
         </div>
       )}
@@ -857,7 +891,7 @@ const AiRemixSection = ({
   );
 };
 
-/* ─── DNA Score Card (extracted for hooks compliance) ─── */
+/* âââ DNA Score Card (extracted for hooks compliance) âââ */
 const DnaCard = ({ dna, index, hookAnalysis, emotionalCore }: { dna: { label: string; value: number; max: number }; index: number; hookAnalysis?: string; emotionalCore?: string }) => {
   const badge = getStatusBadge(dna.value, dna.max);
   const description = getDnaDescription(dna.label, dna.value, hookAnalysis, emotionalCore);
@@ -883,9 +917,9 @@ const DnaCard = ({ dna, index, hookAnalysis, emotionalCore }: { dna: { label: st
   );
 };
 
-/* ═══════════════════════════════════════════════
-   MAIN RESULTS PAGE — REDESIGNED
-   ═══════════════════════════════════════════════ */
+/* âââââââââââââââââââââââââââââââââââââââââââââââ
+   MAIN RESULTS PAGE â REDESIGNED
+   âââââââââââââââââââââââââââââââââââââââââââââââ */
 const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -952,7 +986,7 @@ const Results = () => {
            : isLyric ? "Generic lyrics get 50% fewer saves and shares."
            : "This reduces how often algorithms recommend your track.",
       fix: imp,
-      impact: isHook ? "+15–20 points" : isEnergy ? "+10–15 points" : isLyric ? "+8–12 points" : "+10–15 points",
+      impact: isHook ? "+15â20 points" : isEnergy ? "+10â15 points" : isLyric ? "+8â12 points" : "+10â15 points",
     };
   });
 
@@ -964,7 +998,7 @@ const Results = () => {
   const gap = avgTopScore - score;
 
   // Share URL
-  const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`My song "${title}" scored ${score}/100 on Santo!\n\nCheck yours → santo.fm`)}`;
+  const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`My song "${title}" scored ${score}/100 on Santo!\n\nCheck yours â santo.fm`)}`;
 
   // Estimated impact from oneChange
   const oneChangeImpact = Math.min(25, Math.max(12, Math.round((100 - score) * 0.35)));
@@ -996,12 +1030,12 @@ const Results = () => {
 
       <div className="max-w-2xl mx-auto space-y-8 relative z-10">
 
-        {/* ═══ SECTION 1 — HERO ═══ */}
+        {/* âââ SECTION 1 â HERO âââ */}
         <Section delay={0} id="hero">
           <div className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-6 md:p-8 relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
-            {/* 1A — Emotional Headline + Score */}
+            {/* 1A â Emotional Headline + Score */}
             <div className="flex flex-col md:flex-row items-center md:items-start gap-5">
               <div className="flex-1 text-center md:text-left">
                 <motion.h1
@@ -1018,7 +1052,7 @@ const Results = () => {
                   transition={{ delay: 0.6 }}
                   className="text-sm text-muted-foreground mt-2"
                 >
-                  "{title}" {songGenre ? `· ${songGenre}` : ''}
+                  "{title}" {songGenre ? `Â· ${songGenre}` : ''}
                 </motion.p>
 
                 {/* Share row */}
@@ -1044,7 +1078,7 @@ const Results = () => {
               </div>
             </div>
 
-            {/* 1B — #1 Fix */}
+            {/* 1B â #1 Fix */}
             {oneChange && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -1053,42 +1087,42 @@ const Results = () => {
                 className="mt-6 rounded-xl border-2 border-accent/40 bg-accent/[0.06] p-4"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">🎯</span>
+                  <span className="text-lg">ð¯</span>
                   <span className="text-sm font-black text-accent uppercase tracking-wider">Your Biggest Opportunity Right Now</span>
                 </div>
                 <p className="text-base font-bold text-foreground leading-relaxed">
                   {oneChange}
                 </p>
                 <p className="text-sm text-accent font-semibold mt-2">
-                  → Estimated impact: +{oneChangeImpact} points on your viral score
+                  â Estimated impact: +{oneChangeImpact} points on your viral score
                 </p>
               </motion.div>
             )}
 
-            {/* 1C — Confidence & Context */}
+            {/* 1C â Confidence & Context */}
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.8 }}
               className="text-xs text-muted-foreground mt-4 text-center"
             >
-              Based on patterns from 500K+ tracks · Confidence: {confidence}% · {isRealAudio ? "Audio Analysis" : "Pattern Analysis"} {songGenre ? `· ${songGenre}` : ''}
+              Based on patterns from 500K+ tracks Â· Confidence: {confidence}% Â· {isRealAudio ? "Audio Analysis" : "Pattern Analysis"} {songGenre ? `Â· ${songGenre}` : ''}
             </motion.p>
           </div>
         </Section>
 
-        {/* ═══ Paywall ═══ */}
+        {/* âââ Paywall âââ */}
         {user && hasExhaustedFreeAnalysis && (
           <Section delay={1}>
             <div className="rounded-xl border border-primary/30 bg-primary/[0.06] p-6 text-center space-y-3">
-              <p className="text-sm font-bold text-primary">🔒 Upgrade to unlock full analysis</p>
-              <p className="text-xs text-muted-foreground">Your score: {score}/100 — Get detailed insights with a Pro plan</p>
+              <p className="text-sm font-bold text-primary">ð Upgrade to unlock full analysis</p>
+              <p className="text-xs text-muted-foreground">Your score: {score}/100 â Get detailed insights with a Pro plan</p>
               <a href="/pricing" className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition">View Plans</a>
             </div>
           </Section>
         )}
 
-        {/* ═══ SCORE BREAKDOWN (merged into hero scroll target) ═══ */}
+        {/* âââ SCORE BREAKDOWN (merged into hero scroll target) âââ */}
         <Section delay={2}>
           <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
             Why You Scored {score}
@@ -1100,7 +1134,7 @@ const Results = () => {
           </div>
         </Section>
 
-        {/* ═══ FEATURE COMPARISON — Your Song vs Genre DNA ═══ */}
+        {/* âââ FEATURE COMPARISON â Your Song vs Genre DNA âââ */}
         {genreDna && (bpmEstimate || danceability || valence) && (
           <Section delay={2.5}>
             <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
@@ -1164,13 +1198,13 @@ const Results = () => {
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{row.label}</span>
                         <span className={`text-xs font-bold ${isClose ? "text-green-400" : isAbove ? "text-blue-400" : "text-orange-400"}`}>
-                          {isClose ? "✓ On target" : isAbove ? `+${diff}${row.unit} above avg` : `${diff}${row.unit} below avg`}
+                          {isClose ? "â On target" : isAbove ? `+${diff}${row.unit} above avg` : `${diff}${row.unit} below avg`}
                         </span>
                       </div>
                       <div className="relative h-5">
                         {/* Background track */}
                         <div className="absolute inset-0 rounded-full bg-white/5" />
-                        {/* Range band (min–max if available) */}
+                        {/* Range band (minâmax if available) */}
                         {row.minVal != null && row.maxVal != null && (
                           <div
                             className="absolute top-0 bottom-0 rounded-full bg-white/10"
@@ -1199,7 +1233,7 @@ const Results = () => {
                         <span>Your song: <span className="text-foreground/80 font-semibold">{row.format(row.songVal!)}{row.unit}</span></span>
                         <span>Genre avg: <span className="text-foreground/80 font-semibold">{row.format(row.avgVal!)}{row.unit}</span>
                           {row.minVal != null && row.maxVal != null && (
-                            <span className="ml-1">(range {row.format(row.minVal)}–{row.format(row.maxVal)})</span>
+                            <span className="ml-1">(range {row.format(row.minVal)}â{row.format(row.maxVal)})</span>
                           )}
                         </span>
                       </div>
@@ -1215,7 +1249,7 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ SECTION 3 — WHAT'S HOLDING YOU BACK ═══ */}
+        {/* âââ SECTION 3 â WHAT'S HOLDING YOU BACK âââ */}
         {criticalIssues.length > 0 && (
           <Section delay={3} id="holding-back">
             <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
@@ -1232,7 +1266,7 @@ const Results = () => {
                   className="rounded-xl border border-red-500/20 bg-red-500/[0.03] p-5 space-y-3"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg flex-shrink-0">🔴</span>
+                    <span className="text-lg flex-shrink-0">ð´</span>
                     <h3 className="text-base font-bold text-foreground leading-snug">{issue.title}</h3>
                   </div>
                   <div className="pl-8 space-y-3">
@@ -1243,7 +1277,7 @@ const Results = () => {
                     <div>
                       <p className="text-[10px] text-green-400/80 font-bold uppercase tracking-widest mb-1">The fix</p>
                       <p className="text-sm text-foreground/80 leading-relaxed">{issue.fix}</p>
-                      <p className="text-sm text-accent font-semibold mt-1">→ {issue.impact}</p>
+                      <p className="text-sm text-accent font-semibold mt-1">â {issue.impact}</p>
                     </div>
                     <button
                       onClick={() => document.getElementById("viral-cta")?.scrollIntoView({ behavior: "smooth", block: "start" })}
@@ -1258,11 +1292,11 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ SECTION 4 — WHAT'S WORKING ═══ */}
+        {/* âââ SECTION 4 â WHAT'S WORKING âââ */}
         {topStrengths.length > 0 && (
           <Section delay={4} id="working">
             <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
-              What's Already Working For You 💪
+              What's Already Working For You ðª
             </h2>
             <div className="space-y-3">
               {topStrengths.map((strength: string, i: number) => (
@@ -1275,13 +1309,13 @@ const Results = () => {
                   className="rounded-xl border border-green-500/25 bg-green-500/[0.05] p-4"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg flex-shrink-0">✅</span>
+                    <span className="text-lg flex-shrink-0">â</span>
                     <p className="text-sm font-medium text-foreground leading-relaxed">{strength}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
-            {/* CTA — turn strengths into action */}
+            {/* CTA â turn strengths into action */}
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
@@ -1294,14 +1328,14 @@ const Results = () => {
                   onClick={() => document.getElementById("plan")?.scrollIntoView({ behavior: "smooth", block: "start" })}
                   className="inline-flex items-center gap-1 text-accent font-bold hover:text-accent/80 transition-colors"
                 >
-                  → See Your 7-Day Plan for how <ArrowRight className="h-3 w-3" />
+                  â See Your 7-Day Plan for how <ArrowRight className="h-3 w-3" />
                 </button>
               </p>
             </motion.div>
           </Section>
         )}
 
-        {/* ═══ SIMILAR HITS — tracks in the genre DNA ═══ */}
+        {/* âââ SIMILAR HITS â tracks in the genre DNA âââ */}
         {(similarHits?.length > 0 || similarSongs?.length > 0) && (
           <Section delay={4.5}>
             <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
@@ -1341,7 +1375,7 @@ const Results = () => {
           </Section>
         )}
 
-        {/* ═══ YOU VS TOP TRACKS (sub-section of What to Fix, no separate nav) ═══ */}
+        {/* âââ YOU VS TOP TRACKS (sub-section of What to Fix, no separate nav) âââ */}
         <Section delay={5}>
           <div className="rounded-xl border border-border bg-card/50 p-5 space-y-4">
             <h3 className="text-base font-black font-heading text-foreground">
@@ -1382,8 +1416,8 @@ const Results = () => {
 
             <p className="text-sm text-center font-semibold text-foreground/80">
               {gap > 0
-                ? `${gap} points behind top tracks — fixable with the steps below`
-                : "You're already performing at top-track level 🔥"
+                ? `${gap} points behind top tracks â fixable with the steps below`
+                : "You're already performing at top-track level ð¥"
               }
             </p>
           </div>
@@ -1411,7 +1445,7 @@ const Results = () => {
           )}
         </Section>
 
-        {/* ═══ SECTION 6 — 7-DAY PLAN ═══ */}
+        {/* âââ SECTION 6 â 7-DAY PLAN âââ */}
         <Section delay={6} id="plan">
           <h2 className="text-lg md:text-xl font-black font-heading text-foreground mb-4">
             Your 7-Day Plan to Hit {targetScore}+
@@ -1421,12 +1455,12 @@ const Results = () => {
             {/* Day 1-2 */}
             <div className="rounded-xl border-2 border-accent/30 bg-accent/[0.06] p-5">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-black text-accent bg-accent/15 px-2.5 py-1 rounded-md">DAY 1–2</span>
-                <span className="text-xs font-bold text-accent/70">· Highest impact</span>
+                <span className="text-xs font-black text-accent bg-accent/15 px-2.5 py-1 rounded-md">DAY 1â2</span>
+                <span className="text-xs font-bold text-accent/70">Â· Highest impact</span>
               </div>
               <p className="text-base font-bold text-foreground leading-relaxed">
                 {hookAnalysis && hookAnalysis.match(/(\d+:\d{2})/)
-                  ? `Move your hook to 0:07. Right now it hits at ${hookAnalysis.match(/(\d+:\d{2})/)?.[1]} — that's past the moment most listeners decide to skip. Use AI Remix to shift it automatically.`
+                  ? `Move your hook to 0:07. Right now it hits at ${hookAnalysis.match(/(\d+:\d{2})/)?.[1]} â that's past the moment most listeners decide to skip. Use AI Remix to shift it automatically.`
                   : oneChange
                     ? `${oneChange} Use AI Remix to fix this automatically.`
                     : (improvements?.[0] || "Fix the primary issue identified above. Use AI Remix to handle it automatically.")
@@ -1442,25 +1476,25 @@ const Results = () => {
                 </span>
               </motion.button>
               <p className="text-xs text-center text-accent/70 font-medium mt-2">
-                Takes 2 minutes · adds an estimated {oneChangeImpact}–{oneChangeImpact + 5} points
+                Takes 2 minutes Â· adds an estimated {oneChangeImpact}â{oneChangeImpact + 5} points
               </p>
             </div>
 
             {/* Day 3-4 */}
             <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black text-primary bg-primary/15 px-2 py-0.5 rounded-md">DAY 3–4</span>
+                <span className="text-xs font-black text-primary bg-primary/15 px-2 py-0.5 rounded-md">DAY 3â4</span>
               </div>
               <p className="text-sm font-bold text-foreground leading-relaxed">
-                {improvements?.[1] || "Punch up verse energy — add a riser or drum fill before chorus"}
+                {improvements?.[1] || "Punch up verse energy â add a riser or drum fill before chorus"}
               </p>
-              <p className="text-xs text-primary font-semibold mt-1">→ adds 8–12 points</p>
+              <p className="text-xs text-primary font-semibold mt-1">â adds 8â12 points</p>
             </div>
 
             {/* Day 5-7 */}
             <div className="rounded-xl border border-green-500/20 bg-green-500/[0.04] p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-black text-green-400 bg-green-500/15 px-2 py-0.5 rounded-md">DAY 5–7</span>
+                <span className="text-xs font-black text-green-400 bg-green-500/15 px-2 py-0.5 rounded-md">DAY 5â7</span>
               </div>
               <p className="text-sm font-bold text-foreground leading-relaxed">
                 Re-upload and re-analyze to measure your improvement
@@ -1477,11 +1511,11 @@ const Results = () => {
             viewport={{ once: true }}
             className="text-sm font-bold text-center text-foreground/80 mt-4 p-3 rounded-lg bg-card border border-border"
           >
-            Do all 3 → you're likely hitting {targetScore}–{Math.min(100, targetScore + 6)} by end of week.
+            Do all 3 â you're likely hitting {targetScore}â{Math.min(100, targetScore + 6)} by end of week.
           </motion.p>
         </Section>
 
-        {/* ═══ SECTION 7 — CONVERSION CTA ═══ */}
+        {/* âââ SECTION 7 â CONVERSION CTA âââ */}
         <Section delay={7}>
           {canRemix ? (
             <AiRemixSection uploadedFile={uploadedFile || null} existingS3Key={s3Key} songTitle={title} songGenre={songGenre} analysisData={results} analysisId={analysisId} />
@@ -1490,7 +1524,7 @@ const Results = () => {
               <div className="max-w-md mx-auto space-y-5">
                 <div className="space-y-2">
                   <p className="text-xl md:text-2xl font-black font-heading text-foreground">
-                    ⚡ Turn This Into an Algorithm Hit
+                    â¡ Turn This Into an Algorithm Hit
                   </p>
                   <p className="text-base text-foreground/80 leading-relaxed">
                     Your scan data is already imported. One click to generate.
@@ -1506,14 +1540,14 @@ const Results = () => {
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-black text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg shadow-amber-500/20"
                     whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   >
-                    ⚡ Turn This Into an Algorithm Hit
+                    â¡ Turn This Into an Algorithm Hit
                   </motion.button>
                   <motion.button
                     onClick={() => setShowRemixPaywall(true)}
                     className="w-full py-3.5 rounded-xl border border-primary/30 bg-primary/[0.06] text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors"
                     whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                   >
-                    <Rocket className="h-4 w-4" /> Get Unlimited Algorithm Hits — $19/mo
+                    <Rocket className="h-4 w-4" /> Get Unlimited Algorithm Hits â $19/mo
                   </motion.button>
                 </div>
 
@@ -1522,7 +1556,7 @@ const Results = () => {
                   <p className="text-sm text-foreground/60 italic">
                     "I went from 58 to 84 with one remix"
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">— @axelbeats</p>
+                  <p className="text-xs text-muted-foreground mt-1">â @axelbeats</p>
                 </div>
               </div>
             </div>
@@ -1534,7 +1568,7 @@ const Results = () => {
           {showRemixPaywall && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowRemixPaywall(false)}>
               <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} className="rounded-xl border border-primary/30 bg-card p-8 max-w-md mx-4 text-center space-y-4" onClick={e => e.stopPropagation()}>
-                <p className="text-lg font-bold text-primary">🎵 Unlock AI Remix</p>
+                <p className="text-lg font-bold text-primary">ðµ Unlock AI Remix</p>
                 <p className="text-sm text-muted-foreground">Upgrade to remix "{title}" (Score: {score}/100)</p>
                 <a href="/pricing" className="inline-block px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition">View Plans</a>
                 <button onClick={() => setShowRemixPaywall(false)} className="block mx-auto text-xs text-muted-foreground hover:text-foreground transition">Maybe later</button>
@@ -1583,7 +1617,7 @@ const Results = () => {
             className="w-full py-3.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-bold text-sm flex items-center justify-center gap-2"
             style={{ minHeight: 48 }}
           >
-            ⚡ Turn This Into an Algorithm Hit
+            â¡ Turn This Into an Algorithm Hit
           </button>
         </motion.div>
       )}
