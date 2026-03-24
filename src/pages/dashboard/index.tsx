@@ -1,11 +1,11 @@
 /**
- * HitCheck — Main Workspace
+ * HitCheck â Main Workspace
  *
  * 3-panel workspace layout:
- *   LEFT  (280px) — Audio upload · Lyrics editor · Style tags · Create button
- *   CENTER (flex) — Song feed with Liked/All/Uploads tabs + inline actions
- *   RIGHT  (300px) — Active song detail: lyrics · style · waveform · actions
- *   BOTTOM — Full sticky player: progress · like · download · share
+ *   LEFT  (280px) â Audio upload Â· Lyrics editor Â· Style tags Â· Create button
+ *   CENTER (flex) â Song feed with Liked/All/Uploads tabs + inline actions
+ *   RIGHT  (300px) â Active song detail: lyrics Â· style Â· waveform Â· actions
+ *   BOTTOM â Full sticky player: progress Â· like Â· download Â· share
  *
  * No full-page navigation for tab switches.
  * Likes stored in localStorage (instant, no schema migration).
@@ -81,7 +81,7 @@ const extractS3Key = (url: string): string | null => {
   } catch { return null; }
 };
 
-/* ─── Types ─── */
+/* âââ Types âââ */
 interface Analysis {
   id: string; title: string; genre: string; score: number;
   created_at: string; audio_url?: string; thumbnail_url?: string;
@@ -95,7 +95,7 @@ interface Remix {
 type SongItem = { type: 'analysis'; data: Analysis } | { type: 'remix'; data: Remix };
 type CenterTab = 'all' | 'liked' | 'uploads' | 'created';
 
-/* ─── LocalStorage play counts ─── */
+/* âââ LocalStorage play counts âââ */
 const getPlayCounts = (uid: string): Record<string, number> => {
   try { return JSON.parse(localStorage.getItem(`hitcheck_plays_${uid}`) || '{}'); } catch { return {}; }
 };
@@ -107,7 +107,7 @@ const incrementPlayCount = (uid: string, id: string) => {
   } catch {}
 };
 
-/* ─── LocalStorage likes ─── */
+/* âââ LocalStorage likes âââ */
 const getLikes = (userId: string): Set<string> => {
   try { return new Set(JSON.parse(localStorage.getItem(`likes_${userId}`) || '[]')); }
   catch { return new Set(); }
@@ -119,11 +119,11 @@ const toggleLike = (userId: string, id: string): boolean => {
   return likes.has(id);
 };
 
-/* ─── Helpers ─── */
+/* âââ Helpers âââ */
 const getTitle = (item: SongItem): string =>
   item.type === 'analysis'
-    ? (item.data.title || '🎵 Scanned Track')
-    : (item.data.remix_title || (item.data as any).original_title || '⚡ Algorithm Hit');
+    ? (item.data.title || 'ðµ Scanned Track')
+    : (item.data.remix_title || (item.data as any).original_title || 'â¡ Algorithm Hit');
 
 const getStyleTags = (item: SongItem): string => {
   if (item.type === 'remix') return item.data.genre || '';
@@ -183,41 +183,41 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-/* ─── Waveform ─── */
-/* ─── Built-in Workspace Player (no overlap ever) ─── */
-/* ─── Scan steps with platform data ─── */
+/* âââ Waveform âââ */
+/* âââ Built-in Workspace Player (no overlap ever) âââ */
+/* âââ Scan steps with platform data âââ */
 const SCAN_STEPS = [
-  { at: 0,  icon: '🎵', platform: null,       label: 'Uploading & reading audio file',              color: 'text-muted-foreground' },
-  { at: 6,  icon: '🟢', platform: 'Spotify',  label: 'Scanning Spotify hit patterns & playlist data', color: 'text-emerald-400' },
-  { at: 16, icon: '🍎', platform: 'Apple',    label: 'Analyzing Apple Music chart performance',       color: 'text-pink-400' },
-  { at: 26, icon: '📱', platform: 'TikTok',   label: 'Cross-referencing TikTok viral sound trends',   color: 'text-white' },
-  { at: 36, icon: '▶️', platform: 'YouTube',  label: 'Mapping YouTube Music recommendation signals',  color: 'text-red-400' },
-  { at: 48, icon: '🎙️', platform: null,       label: 'Extracting BPM, key & hook timing',            color: 'text-primary' },
-  { at: 58, icon: '🧬', platform: null,       label: 'Benchmarking against 500K+ global hits',        color: 'text-accent' },
-  { at: 70, icon: '📊', platform: null,       label: 'Scoring viral coefficient & save-rate',          color: 'text-foreground' },
-  { at: 82, icon: '✍️', platform: null,       label: 'Generating your personalized hit report',        color: 'text-primary' },
+  { at: 0,  icon: 'ðµ', platform: null,       label: 'Uploading & reading audio file',              color: 'text-muted-foreground' },
+  { at: 6,  icon: 'ð¢', platform: 'Spotify',  label: 'Scanning Spotify hit patterns & playlist data', color: 'text-emerald-400' },
+  { at: 16, icon: 'ð', platform: 'Apple',    label: 'Analyzing Apple Music chart performance',       color: 'text-pink-400' },
+  { at: 26, icon: 'ð±', platform: 'TikTok',   label: 'Cross-referencing TikTok viral sound trends',   color: 'text-white' },
+  { at: 36, icon: 'â¶ï¸', platform: 'YouTube',  label: 'Mapping YouTube Music recommendation signals',  color: 'text-red-400' },
+  { at: 48, icon: 'ðï¸', platform: null,       label: 'Extracting BPM, key & hook timing',            color: 'text-primary' },
+  { at: 58, icon: 'ð§¬', platform: null,       label: 'Benchmarking against 500K+ global hits',        color: 'text-accent' },
+  { at: 70, icon: 'ð', platform: null,       label: 'Scoring viral coefficient & save-rate',          color: 'text-foreground' },
+  { at: 82, icon: 'âï¸', platform: null,       label: 'Generating your personalized hit report',        color: 'text-primary' },
 ];
 
 const LIVE_FEED = [
-  'Connecting to Spotify catalog API…',
-  'Pulling global playlist chart data…',
-  'Extracting BPM & tempo signature…',
-  'Scanning Apple Music editorial trends…',
-  'Loading TikTok viral sound fingerprints…',
-  'Comparing hook timing across 847 hits…',
-  'Measuring danceability & energy index…',
-  'Checking algorithmic playlist fit score…',
-  'Analyzing save-rate prediction model…',
-  'Cross-referencing YouTube trending data…',
-  'Mapping frequency spectrum to hit profiles…',
-  'Evaluating skip risk at 0:03, 0:15, 0:30…',
-  'Computing replay potential score…',
-  'Matching against editorial playlist DNA…',
-  'Scoring viral coefficient across platforms…',
-  'Building your personalized hit blueprint…',
+  'Connecting to Spotify catalog APIâ¦',
+  'Pulling global playlist chart dataâ¦',
+  'Extracting BPM & tempo signatureâ¦',
+  'Scanning Apple Music editorial trendsâ¦',
+  'Loading TikTok viral sound fingerprintsâ¦',
+  'Comparing hook timing across 847 hitsâ¦',
+  'Measuring danceability & energy indexâ¦',
+  'Checking algorithmic playlist fit scoreâ¦',
+  'Analyzing save-rate prediction modelâ¦',
+  'Cross-referencing YouTube trending dataâ¦',
+  'Mapping frequency spectrum to hit profilesâ¦',
+  'Evaluating skip risk at 0:03, 0:15, 0:30â¦',
+  'Computing replay potential scoreâ¦',
+  'Matching against editorial playlist DNAâ¦',
+  'Scoring viral coefficient across platformsâ¦',
+  'Building your personalized hit blueprintâ¦',
 ];
 
-/* ─── Viral Creation — cinematic injection pipeline ─── */
+/* âââ Viral Creation â cinematic injection pipeline âââ */
 const VIRAL_STAGES = [
   {
     at: 0, platform: 'Spotify', color: '#1DB954',
@@ -284,22 +284,22 @@ const VIRAL_STAGES = [
 ];
 
 const INJECT_FEED = [
-  '▸ Spotify API → loading chart DNA for genre…',
-  '▸ Hook position: benchmarked against 500K+ viral tracks',
-  '▸ Apple Music → editorial playlist criteria matched',
-  '▸ BPM calibrated: genre sweet spot detected',
-  '▸ Deezer chart → live viral DNA extracted',
-  '▸ Skip risk at 0:03 and 0:15 — patched with hook elements',
-  '▸ YouTube Music → retention signals mapped',
-  '▸ Reference artist patterns loaded into production engine',
-  '▸ Lyric structure: verse/pre-chorus/chorus optimized',
-  '▸ AI V5 style string assembled with viral parameters',
-  '▸ Vocal texture: matched to genre top performers',
-  '▸ Energy curve: calibrated for max save-rate',
-  '▸ Production elements injected: drums, bass, melody',
-  '▸ Hook at 0:20 confirmed — TikTok snip zone secured',
-  '▸ AI engine render queue: 2 versions queued',
-  '▸ Professional mix & master pipeline active',
+  'â¸ Spotify API â loading chart DNA for genreâ¦',
+  'â¸ Hook position: benchmarked against 500K+ viral tracks',
+  'â¸ Apple Music â editorial playlist criteria matched',
+  'â¸ BPM calibrated: genre sweet spot detected',
+  'â¸ Deezer chart â live viral DNA extracted',
+  'â¸ Skip risk at 0:03 and 0:15 â patched with hook elements',
+  'â¸ YouTube Music â retention signals mapped',
+  'â¸ Reference artist patterns loaded into production engine',
+  'â¸ Lyric structure: verse/pre-chorus/chorus optimized',
+  'â¸ AI V5 style string assembled with viral parameters',
+  'â¸ Vocal texture: matched to genre top performers',
+  'â¸ Energy curve: calibrated for max save-rate',
+  'â¸ Production elements injected: drums, bass, melody',
+  'â¸ Hook at 0:20 confirmed â TikTok snip zone secured',
+  'â¸ AI engine render queue: 2 versions queued',
+  'â¸ Professional mix & master pipeline active',
 ];
 
 const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string }) => {
@@ -314,7 +314,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
   return (
     <div className="flex flex-col h-full overflow-y-auto px-3 py-3 space-y-3">
 
-      {/* Waveform — orange/amber for creation */}
+      {/* Waveform â orange/amber for creation */}
       <div className="flex items-end justify-center gap-[1.5px] h-12">
         {Array.from({ length: isMobile ? 16 : 24 }).map((_, i) => (
           <motion.div key={i}
@@ -340,7 +340,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
       {/* Progress */}
       <div className="space-y-1">
         <div className="flex justify-between text-[9px] text-muted-foreground tabular-nums">
-          <span>Building your viral hit…</span><span>{progress}%</span>
+          <span>Building your viral hitâ¦</span><span>{progress}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
           <motion.div
@@ -421,7 +421,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
                 </div>
                 {(done || active) && (
                   <p className={`text-[9px] mt-0.5 ${done ? 'text-emerald-400/60' : 'text-orange-300/70'}`}>
-                    ✓ {s.inject}
+                    â {s.inject}
                   </p>
                 )}
               </div>
@@ -448,7 +448,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
 
       {elapsed > 60 && (
         <p className="text-[10px] text-center text-amber-400/70 animate-pulse">
-          Still rendering… AI engine takes 60–120s. Your song won't be lost even if you navigate away.
+          Still renderingâ¦ AI engine takes 60â120s. Your song won't be lost even if you navigate away.
         </p>
       )}
     </div>
@@ -488,7 +488,7 @@ const ScanLoadingPanel = ({ elapsed, step }: { elapsed: number; step: string }) 
       {/* Progress bar */}
       <div className="space-y-1">
         <div className="flex justify-between text-[9px] text-muted-foreground tabular-nums">
-          <span>Analyzing…</span>
+          <span>Analyzingâ¦</span>
           <span>{progress}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
@@ -572,7 +572,7 @@ const ScanLoadingPanel = ({ elapsed, step }: { elapsed: number; step: string }) 
           <motion.p key={feedLine}
             initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
             className="text-[9px] font-mono text-muted-foreground leading-snug">
-            <span className="text-emerald-400">▸</span> {feedLine}
+            <span className="text-emerald-400">â¸</span> {feedLine}
           </motion.p>
         </AnimatePresence>
       </div>
@@ -599,7 +599,7 @@ const WorkspacePlayer = () => {
         <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
           <Music2 className="w-3.5 h-3.5 text-muted-foreground/30" />
         </div>
-        <p className="text-xs text-muted-foreground/40">No track playing — select a song above</p>
+        <p className="text-xs text-muted-foreground/40">No track playing â select a song above</p>
       </div>
     );
   }
@@ -707,7 +707,7 @@ const Waveform = ({ active = false, small = false }: { active?: boolean; small?:
   </div>
 );
 
-/* ─── Credits Buy Modal ─── */
+/* âââ Credits Buy Modal âââ */
 interface CreditsModalProps { onClose: () => void; onBuy: (priceId: string, packId: string) => void; loading: string | null; }
 const CreditsModal = ({ onClose, onBuy, loading }: CreditsModalProps) => {
   const packs = [
@@ -750,13 +750,13 @@ const CreditsModal = ({ onClose, onBuy, loading }: CreditsModalProps) => {
             </button>
           ))}
         </div>
-        <p className="text-[10px] text-center text-muted-foreground mt-4">Credits never expire · One-time purchase</p>
+        <p className="text-[10px] text-center text-muted-foreground mt-4">Credits never expire Â· One-time purchase</p>
       </div>
     </div>
   );
 };
 
-/* ─── Upgrade gate ─── */
+/* âââ Upgrade gate âââ */
 const UpgradeGate = () => (
   <div className="flex flex-col items-center justify-center text-center h-full px-4 py-8 space-y-4">
     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent/20 to-primary/20 border border-accent/30 flex items-center justify-center">
@@ -769,14 +769,14 @@ const UpgradeGate = () => (
       </p>
     </div>
     <Button asChild size="sm" className="bg-gradient-to-r from-accent to-yellow-500 text-black font-bold border-0 rounded-xl gap-1.5 text-xs">
-      <Link to="/dashboard/billing"><Crown className="w-3.5 h-3.5" /> Upgrade — $29/mo</Link>
+      <Link to="/dashboard/billing"><Crown className="w-3.5 h-3.5" /> Upgrade â $29/mo</Link>
     </Button>
   </div>
 );
 
-/* ═══════════════════════════════════════════════════
+/* âââââââââââââââââââââââââââââââââââââââââââââââââââ
    WORKSPACE
-════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 export default function Workspace() {
   const { user, session, profile, refreshProfile } = useAuth();
   const { playTrack, currentTrack, isPlaying, progress, currentTime, duration, togglePlay, seek, volume, setVolume } = useAudioPlayer();
@@ -786,13 +786,13 @@ export default function Workspace() {
   const canCreate = plan !== 'free' || profile?.is_admin === true;
   const credits = profile?.credits ?? 0;
 
-  /* ─── Data ─── */
+  /* âââ Data âââ */
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [remixes, setRemixes] = useState<Remix[]>([]);
   const [loading, setLoading] = useState(true);
   const [likes, setLikes] = useState<Set<string>>(new Set());
 
-  /* ─── UI ─── */
+  /* âââ UI âââ */
   const [tab, setTab] = useState<CenterTab>('all');
   const [leftMode, setLeftMode] = useState<'analyze' | 'create'>('create');
   const [activeItem, setActiveItem] = useState<SongItem | null>(null);
@@ -802,7 +802,7 @@ export default function Workspace() {
   const [mobileView, setMobileView] = useState<'feed' | 'create' | 'detail'>('feed');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  /* ─── Analyze state ─── */
+  /* âââ Analyze state âââ */
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [lastScanS3Key, setLastScanS3Key] = useState<string | null>(null); // persists s3Key after scan
   const [songTitle, setSongTitle] = useState('');
@@ -814,7 +814,7 @@ export default function Workspace() {
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const analyzeTimerRef = useRef<ReturnType<typeof setInterval>>();
 
-  /* ─── Create state ─── */
+  /* âââ Create state âââ */
   const [createFile, setCreateFile] = useState<File | null>(null);
   const [createLyrics, setCreateLyrics] = useState('');
   const STYLE_KEY = user ? `hitcheck_style_${user.id}` : 'hitcheck_style';
@@ -838,7 +838,7 @@ export default function Workspace() {
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
   const [justGenerated, setJustGenerated] = useState(false);
 
-  /* ─── Load data ─── */
+  /* âââ Load data âââ */
   const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -893,7 +893,7 @@ export default function Workspace() {
         const tracks: any[] = [];
         if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: pending.version1Label });
         if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: pending.version2Label });
-        // Save to Supabase via edge function (service_role key — bypasses RLS)
+        // Save to Supabase via edge function (service_role key â bypasses RLS)
         const savedResumeUrls = new Set<string>();
         for (const t of tracks) {
           if (!t.audioUrl || savedResumeUrls.has(t.audioUrl)) continue;
@@ -920,7 +920,7 @@ export default function Workspace() {
         }
         clearPendingGeneration(user.id);
         await loadData(); setGenerating(false);
-        toast.success(`🎉 Your Algorithm Hits are ready! Check "My Hits" tab.`); setTab('created');
+        toast.success(`ð Your Algorithm Hits are ready! Check "My Hits" tab.`); setTab('created');
         setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
       } catch (e: any) {
         clearInterval(generateTimerRef.current);
@@ -932,7 +932,7 @@ export default function Workspace() {
     resumePoll();
   }, [user]); // run once on mount
 
-  /* ─── Auto-fill create from active analysis ─── */
+  /* âââ Auto-fill create from active analysis âââ */
   useEffect(() => {
     if (activeItem?.type === 'analysis') {
       const r = activeItem.data.full_result;
@@ -956,7 +956,7 @@ export default function Workspace() {
     }
   }, [createStyle]);
 
-  /* ─── Filtered center feed ─── */
+  /* âââ Filtered center feed âââ */
   const feedItems = useMemo((): SongItem[] => {
     // Deduplicate remixes by audio_url to prevent showing same song twice
     const seenUrls = new Set<string>();
@@ -991,16 +991,16 @@ export default function Workspace() {
     return filtered;
   }, [analyses, remixes, tab, likes, feedSearch]);
 
-  /* ─── Like handler ─── */
+  /* âââ Like handler âââ */
   const handleLike = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     const isNowLiked = toggleLike(user.id, id);
     setLikes(getLikes(user.id));
-    toast.success(isNowLiked ? '❤️ Added to Liked' : 'Removed from Liked', { duration: 1500 });
+    toast.success(isNowLiked ? 'â¤ï¸ Added to Liked' : 'Removed from Liked', { duration: 1500 });
   };
 
-  /* ─── Share ─── */
+  /* âââ Share âââ */
   const handleShare = (item: SongItem, e: React.MouseEvent) => {
     e.stopPropagation();
     const url = item.type === 'remix'
@@ -1012,7 +1012,7 @@ export default function Workspace() {
     toast.success('Link copied!', { duration: 1500 });
   };
 
-  /* ─── Accept file ─── */
+  /* âââ Accept file âââ */
   const acceptFile = (f: File, target: 'analyze' | 'create') => {
     if (!f.name.match(/\.(mp3|wav)$/i)) { toast.error('MP3 or WAV only'); return; }
     if (f.size > 100 * 1024 * 1024) { toast.error('Max 100MB'); return; }
@@ -1031,14 +1031,14 @@ export default function Workspace() {
     inp.click();
   };
 
-  /* ─── BUY CREDITS (modal) ─── */
+  /* âââ BUY CREDITS (modal) âââ */
   const handleBuyCreditsModal = async (packId: string, _unused: string) => {
     if (!user?.id) { toast.error('Sign in first'); return; }
     const priceId = packId === 'credits_100' ? PRICES.credits_100
       : packId === 'credits_300' ? PRICES.credits_300
       : PRICES.credits_700;
     setCreditsModalLoading(packId);
-    toast.loading('Redirecting to checkout…', { id: 'credits-checkout' });
+    toast.loading('Redirecting to checkoutâ¦', { id: 'credits-checkout' });
     const r = await createCheckoutSession(priceId, user.id, 'payment');
     toast.dismiss('credits-checkout');
     setCreditsModalLoading(null);
@@ -1049,7 +1049,7 @@ export default function Workspace() {
     }
   };
 
-  /* ─── ANALYZE ─── */
+  /* âââ ANALYZE âââ */
   const handleAnalyze = async () => {
     if (!uploadFile) return;
     // Credit check
@@ -1061,43 +1061,43 @@ export default function Workspace() {
     analyzeTimerRef.current = setInterval(() => setAnalyzeElapsed(e => e + 1), 1000);
     let insertedAnalysis: any = null;
     try {
-      setAnalyzeStep('Uploading your track…');
+      setAnalyzeStep('Uploading your trackâ¦');
       const urlRes = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get-upload-url', fileName: uploadFile.name, contentType: uploadFile.type || 'audio/mpeg' }) });
-      if (!urlRes.ok) throw new Error('Upload URL failed — please try again');
+      if (!urlRes.ok) throw new Error('Upload URL failed â please try again');
       const { uploadUrl, s3Key } = await urlRes.json();
-      if (!uploadUrl || !s3Key) throw new Error('Could not start upload — please try again');
+      if (!uploadUrl || !s3Key) throw new Error('Could not start upload â please try again');
       setLastScanS3Key(s3Key); // save for use in Algorithm Hit creation
 
-      setAnalyzeStep('Uploading to our servers…');
+      setAnalyzeStep('Uploading to our serversâ¦');
       const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         body: uploadFile,
         headers: { 'Content-Type': uploadFile.type || 'audio/mpeg' },
       });
-      if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status}) — try a different file`);
+      if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status}) â try a different file`);
 
-      setAnalyzeStep('Scanning chart DNA…');
+      setAnalyzeStep('Scanning chart DNAâ¦');
       const res = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'analyze', s3Key, title: songTitle || uploadFile.name, genre: songGenre }) });
-      if (!res.ok) throw new Error('Analysis server error — please try again');
+      if (!res.ok) throw new Error('Analysis server error â please try again');
       const { jobId, error: startError } = await res.json();
       if (startError) throw new Error(startError);
-      if (!jobId) throw new Error('Could not start analysis — please try again');
+      if (!jobId) throw new Error('Could not start analysis â please try again');
 
       let attempts = 0;
       const poll = async (): Promise<void> => {
-        if (attempts++ > 60) throw new Error('Analysis took too long — please try with a shorter file (under 5 min)');
-        setAnalyzeStep(`Analyzing with AI — scanning ${attempts * 3}s of chart data…`);
+        if (attempts++ > 60) throw new Error('Analysis took too long â please try with a shorter file (under 5 min)');
+        setAnalyzeStep(`Analyzing with AI â scanning ${attempts * 3}s of chart dataâ¦`);
         const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'poll', jobId }) });
         if (!pr.ok) { await new Promise(r => setTimeout(r, 3000)); return poll(); }
         const data = await pr.json();
         if (data.status === 'complete') {
-          if (!data.score) throw new Error('Analysis returned no results — please try again');
+          if (!data.score) throw new Error('Analysis returned no results â please try again');
 
-          // Step 1+2: Enrich with Claude AI + save to DB via edge function (uses service_role key — bypasses RLS)
-          setAnalyzeStep('Building hit intelligence with AI…');
+          // Step 1+2: Enrich with Claude AI + save to DB via edge function (uses service_role key â bypasses RLS)
+          setAnalyzeStep('Building hit intelligence with AIâ¦');
           let enrichedData = data;
           try {
             const enrichRes = await fetch(`${SUPABASE_URL}/functions/v1/analyze-song`, {
@@ -1150,9 +1150,9 @@ export default function Workspace() {
           clearInterval(analyzeTimerRef.current);
           setAnalyzing(false); setUploadFile(null); setSongTitle(''); setSongGenre('');
           setLastAnalysisResult({ ...enrichedData, dbRecord: insertedAnalysis });
-          toast.success(`🎯 Score: ${enrichedData.score}/100 — ${CREDIT_COSTS.analysis} credits used`);
+          toast.success(`ð¯ Score: ${enrichedData.score}/100 â ${CREDIT_COSTS.analysis} credits used`);
         } else if (data.status === 'error') {
-          throw new Error(data.error || 'Analysis failed — please try again');
+          throw new Error(data.error || 'Analysis failed â please try again');
         } else {
           await new Promise(r => setTimeout(r, 4000)); return poll();
         }
@@ -1160,23 +1160,23 @@ export default function Workspace() {
       await new Promise(r => setTimeout(r, 5000)); await poll();
     } catch (e: any) {
       clearInterval(analyzeTimerRef.current); setAnalyzing(false);
-      const msg = e.message || 'Scan failed — please try again';
+      const msg = e.message || 'Scan failed â please try again';
       toast.error(msg, { duration: 8000, description: 'If this keeps happening, try a shorter MP3 file.' });
     }
   };
 
-  /* ─── CREATE VIRAL ─── */
+  /* âââ CREATE VIRAL âââ */
   const handleCreate = async () => {
     if (!user) { toast.error('Sign in required'); return; }
 
-    // Determine s3Key — priority order:
+    // Determine s3Key â priority order:
     // 1. activeItem analysis/remix audio_url (selected from library)
-    // 2. lastScanS3Key (from the scan just completed — KEY FIX)
+    // 2. lastScanS3Key (from the scan just completed â KEY FIX)
     // 3. Manually uploaded createFile
     const anyAudioUrl =
       (activeItem?.type === 'analysis' ? activeItem.data.audio_url : null) ||
       (activeItem?.type === 'remix' ? activeItem.data.audio_url : null) || null;
-    // Also check full_result.s3Key — stored by analyze-song edge function for cross-session use
+    // Also check full_result.s3Key â stored by analyze-song edge function for cross-session use
     const s3KeyFromResult = activeItem?.type === 'analysis'
       ? (activeItem.data.full_result?.s3Key || null) : null;
     const existingS3Key = anyAudioUrl ? extractS3Key(anyAudioUrl) : (s3KeyFromResult || lastScanS3Key || null);
@@ -1205,21 +1205,44 @@ export default function Workspace() {
         await fetch(urlData.uploadUrl, { method: 'PUT', headers: { 'Content-Type': createFile.type || 'audio/mpeg' }, body: createFile });
       }
 
-      // Build slim Suno payload — only send specific fields, NOT the full analysis blob
-      // (sending the entire full_result causes Lambda payload/parse failures)
+      // Build enriched Suno payload â combine analysis data + genre DNA from admin panel
       const fr = activeItem?.type === 'analysis' ? activeItem.data.full_result || {} : {};
-      const songGenreForCover = activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop';
-      const songTitleForCover = activeItem?.type === 'analysis' ? activeItem.data.title : (createFile?.name || 'My Song');
+      const songGenreForCover = activeItem?.type === 'analysis' ? activeItem.data.genre : (createStyle?.split(',')[0]?.trim() || 'pop');
+      const songTitleForCover = activeItem?.type === 'analysis' ? activeItem.data.title : (createFile?.name?.replace(/\.[^.]+$/, '') || 'My Song');
 
-      // Build a rich prompt if user hasn't written custom lyrics
+      // Fetch genre DNA from suno_genre_dna table for rich production styles
+      let genreDna: any = null;
+      try {
+        const { data: dnaRows } = await supabase
+          .from('suno_genre_dna')
+          .select('suno_style_prefix, suno_style_suffix, viral_elements, bpm_range, typical_key, hook_timing, reference_artists, reference_tracks')
+          .ilike('genre', `%${songGenreForCover}%`)
+          .limit(1);
+        if (dnaRows && dnaRows.length > 0) genreDna = dnaRows[0];
+      } catch (e) { console.warn('[GenreDNA] fetch failed:', e); }
+
+      // Build a professional style string: user style + genre DNA prefix/suffix + viral elements
+      const styleComponents = [
+        createStyle && createStyle !== 'same' ? createStyle : '',
+        genreDna?.suno_style_prefix || '',
+        genreDna?.suno_style_suffix || '',
+        ...(genreDna?.viral_elements || []).slice(0, 4),
+        fr.emotionalCore ? fr.emotionalCore.slice(0, 40) : '',
+        'full song structure', 'professional mix', 'radio ready',
+      ].filter(Boolean);
+      // Deduplicate and join
+      const enrichedStyle = [...new Set(styleComponents.map(s => s.toLowerCase().trim()))].join(', ');
+
+      // Build auto-prompt only if user hasn't written custom lyrics
       const autoPrompt = [
         `${songGenreForCover} hit song`,
-        fr.bpmEstimate ? `${Math.round(fr.bpmEstimate)} BPM` : '',
+        fr.bpmEstimate ? `${Math.round(fr.bpmEstimate)} BPM` : (genreDna?.bpm_range ? `${genreDna.bpm_range} BPM` : ''),
         'high energy', 'strong hook in first 7 seconds',
         fr.emotionalCore ? fr.emotionalCore.slice(0, 60) : '',
         fr.improvements?.length ? `improved: ${fr.improvements.slice(0, 3).join(', ').slice(0, 100)}` : '',
         fr.oneChange ? fr.oneChange.slice(0, 80) : '',
-        'radio ready', 'viral potential',
+        genreDna?.reference_artists?.length ? `inspired by ${genreDna.reference_artists.slice(0, 2).join(' & ')}` : '',
+        'radio ready', 'viral potential', 'full length song',
       ].filter(Boolean).join(', ');
       const effectiveLyrics = createLyrics.trim() || autoPrompt;
 
@@ -1228,7 +1251,7 @@ export default function Workspace() {
           action: 'suno-cover', s3Key,
           title: songTitleForCover,
           genre: songGenreForCover,
-          style: createStyle || 'same',
+          style: enrichedStyle,
           customLyrics: effectiveLyrics,
           bpm: fr.bpmEstimate ? parseFloat(String(fr.bpmEstimate)) : (fr.bpm || fr.genreDna?.avgBpm || undefined),
           energy: fr.energyLevel != null ? (Number(fr.energyLevel) > 1 ? Number(fr.energyLevel) / 10 : Number(fr.energyLevel)) : undefined,
@@ -1237,6 +1260,18 @@ export default function Workspace() {
           oneChange: fr.oneChange,
           improvements: (fr.improvements || []).slice(0, 3),
           sunoVersion,
+          // Genre DNA for Lambda to build optimal Suno params
+          genreDna: genreDna ? {
+            stylePrefix: genreDna.suno_style_prefix,
+            styleSuffix: genreDna.suno_style_suffix,
+            viralElements: genreDna.viral_elements,
+            bpmRange: genreDna.bpm_range,
+            typicalKey: genreDna.typical_key,
+            hookTiming: genreDna.hook_timing,
+            referenceArtists: genreDna.reference_artists,
+          } : undefined,
+          make_instrumental: !createLyrics.trim(),
+          duration: 'full',
         }) });
       const coverData = await coverRes.json();
       console.log('[Suno] Lambda suno-cover response:', JSON.stringify(coverData).slice(0, 800));
@@ -1260,7 +1295,7 @@ export default function Workspace() {
       });
       let attempts = 0;
       const poll = async (): Promise<any> => {
-        if (attempts++ > 45) throw new Error('Timed out — try again');
+        if (attempts++ > 45) throw new Error('Timed out â try again');
         const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'suno-cover', taskIdV1, taskIdV2 }) });
         const d = await pr.json();
@@ -1273,7 +1308,7 @@ export default function Workspace() {
       const tracks: any[] = [];
       if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: version1?.label || 'Faithful Remix' });
       if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: version2?.label || 'Viral Edition' });
-      // Save to Supabase via edge function (service_role key — bypasses RLS)
+      // Save to Supabase via edge function (service_role key â bypasses RLS)
       const savedUrls = new Set<string>();
       for (const t of tracks) {
         if (!t.audioUrl || savedUrls.has(t.audioUrl)) continue;
@@ -1305,12 +1340,12 @@ export default function Workspace() {
         }
       }
       if (user) clearPendingGeneration(user.id);
-      // ✅ Save lyrics to localStorage for each generated track (persists across sessions)
+      // â Save lyrics to localStorage for each generated track (persists across sessions)
       if (createLyrics && taskIdV1) {
         saveLyricsForTrack(taskIdV1, createLyrics);
         if (taskIdV2) saveLyricsForTrack(taskIdV2, createLyrics);
       }
-      // ✅ Deduct credits AFTER successful generation
+      // â Deduct credits AFTER successful generation
       if (user && tracks.length > 0) {
         const deductResult = await deductCredits(user.id, CREDIT_COSTS.viral);
         if (deductResult.success) {
@@ -1320,7 +1355,7 @@ export default function Workspace() {
       await loadData(); setGenerating(false); setCreateFile(null);
       // Play first track
       if (tracks[0]?.audioUrl) playTrackWithTracking({ id: `remix_new_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
-      toast.success(`🎉 ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready! ${CREDIT_COSTS.viral} credits used`); setTab('created');
+      toast.success(`ð ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready! ${CREDIT_COSTS.viral} credits used`); setTab('created');
       setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
     } catch (e: any) {
       clearInterval(generateTimerRef.current); setGenerating(false);
@@ -1328,7 +1363,7 @@ export default function Workspace() {
     }
   };
 
-  /* ─── ENHANCE LYRICS ─── */
+  /* âââ ENHANCE LYRICS âââ */
   const handleEnhanceLyrics = async () => {
     if (!enhanceLyricsPrompt.trim()) return;
     setEnhancingLyrics(true);
@@ -1342,7 +1377,7 @@ export default function Workspace() {
       if (data.enhanced || data.lyrics) {
         setCreateLyrics(data.enhanced || data.lyrics);
         setEnhanceLyricsPrompt('');
-        toast.success('✨ Lyrics enhanced!');
+        toast.success('â¨ Lyrics enhanced!');
       } else {
         // Graceful client-side fallback: just append the instruction as a note
         setCreateLyrics(prev => prev + `\n\n[Style note: ${enhanceLyricsPrompt}]`);
@@ -1359,7 +1394,7 @@ export default function Workspace() {
     }
   };
 
-  /* ─── Play with tracking ─── */
+  /* âââ Play with tracking âââ */
   const playTrackWithTracking = (track: { id: string; title: string; audioUrl: string }) => {
     // Only increment play count when starting a NEW track (not resuming same track)
     const isNewTrack = !currentTrack || currentTrack.audioUrl !== track.audioUrl;
@@ -1370,7 +1405,7 @@ export default function Workspace() {
     playTrack(track);
   };
 
-  /* ─── REACTION handler ─── */
+  /* âââ REACTION handler âââ */
   const handleReaction = (itemId: string, emoji: string) => {
     setReactions(prev => {
       const item = prev[itemId] || {};
@@ -1378,19 +1413,19 @@ export default function Workspace() {
     });
   };
 
-  /* ─── PUBLISH handler ─── */
+  /* âââ PUBLISH handler âââ */
   const handlePublish = async (item: SongItem, e: React.MouseEvent) => {
     e.stopPropagation();
     if (item.type !== 'remix') return;
     try {
       await supabase.from('viralize_remixes').update({ status: 'public' }).eq('id', item.data.id);
-      toast.success('🌐 Song published!', { duration: 2000 });
+      toast.success('ð Song published!', { duration: 2000 });
     } catch {
       toast.error('Failed to publish');
     }
   };
 
-  /* ─── SCORE badge ─── */
+  /* âââ SCORE badge âââ */
   const scoreBadge = (score: number) => {
     if (score >= 80) return 'bg-primary/20 text-primary border-primary/30';
     if (score >= 65) return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
@@ -1398,16 +1433,16 @@ export default function Workspace() {
     return 'bg-destructive/20 text-destructive border-destructive/30';
   };
 
-  /* ─── Currently playing ─── */
+  /* âââ Currently playing âââ */
   const activeAudioUrl = activeItem?.type === 'remix' ? activeItem.data.audio_url
     : activeItem?.type === 'analysis' ? (activeItem.data.audio_url || '') : '';
   const isActiveItemPlaying = currentTrack && activeAudioUrl && currentTrack.audioUrl === activeAudioUrl && isPlaying;
 
   if (!user) return null;
 
-  /* ────────────────────────────────────────
+  /* ââââââââââââââââââââââââââââââââââââââââ
      RIGHT PANEL CONTENT
-  ──────────────────────────────────────── */
+  ââââââââââââââââââââââââââââââââââââââââ */
   const RightPanel = () => {
     if (!activeItem) return (
       <div className="flex flex-col items-center justify-center h-full text-center px-6 space-y-3 opacity-40">
@@ -1448,7 +1483,7 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* Add Viral Implement — auto-fills Create with optimal values */}
+          {/* Add Viral Implement â auto-fills Create with optimal values */}
           {activeItem.type === 'analysis' && (
             <motion.button
               whileHover={{ scale: 1.01 }}
@@ -1472,7 +1507,7 @@ export default function Workspace() {
                 else if (r.originalLyrics) setCreateLyrics(r.originalLyrics);
                 setLeftMode('create');
                 setCreateFile(null);
-                toast.success('✨ Viral parameters loaded — upload your audio to create!');
+                toast.success('â¨ Viral parameters loaded â upload your audio to create!');
               }}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-bold text-xs flex items-center justify-center gap-2 mt-2 shadow-sm"
             >
@@ -1495,7 +1530,7 @@ export default function Workspace() {
           {(playCounts[activeItem?.data.id || ''] || 0) > 0 && (
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
               <Play className="w-3 h-3" />
-              Played {playCounts[activeItem.data.id]}× by you
+              Played {playCounts[activeItem.data.id]}Ã by you
             </div>
           )}
         </div>
@@ -1527,7 +1562,7 @@ export default function Workspace() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] text-muted-foreground">Viral Score</p>
                   <p className="text-xs text-foreground/80 leading-snug mt-0.5 line-clamp-2">
-                    {r.verdict || activeItem.data.verdict || '—'}
+                    {r.verdict || activeItem.data.verdict || 'â'}
                   </p>
                 </div>
               </div>
@@ -1564,7 +1599,7 @@ export default function Workspace() {
                   setLeftMode('create');
                 }}
                 className="w-full py-2 rounded-xl border border-dashed border-primary/30 text-primary text-[11px] font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> ⚡ Create Algorithm Hit
+                <Sparkles className="w-3.5 h-3.5" /> â¡ Create Algorithm Hit
               </button>
             </div>
           )}
@@ -1573,7 +1608,7 @@ export default function Workspace() {
           <div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Reactions</p>
             <div className="flex flex-wrap gap-1.5">
-              {['🔥', '😍', '😱', '🙌', '👍', '👎', '😢'].map(emoji => {
+              {['ð¥', 'ð', 'ð±', 'ð', 'ð', 'ð', 'ð¢'].map(emoji => {
                 const count = reactions[activeItem.data.id]?.[emoji] || 0;
                 return (
                   <button key={emoji}
@@ -1591,7 +1626,7 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* "Algorithm Hit based on" — for remixes (like Suno's "Cover of") */}
+          {/* "Algorithm Hit based on" â for remixes (like Suno's "Cover of") */}
           {activeItem.type === 'remix' && activeItem.data.original_title && (
             <div className="rounded-xl border border-border/60 bg-muted/20 p-3 flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -1610,7 +1645,7 @@ export default function Workspace() {
                     <p className="text-[9px] text-muted-foreground">Score</p>
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] text-muted-foreground/50 line-through">{orig.score}</span>
-                      <span className="text-[10px] text-emerald-400 font-black">→ Hit ⚡</span>
+                      <span className="text-[10px] text-emerald-400 font-black">â Hit â¡</span>
                     </div>
                   </div>
                 );
@@ -1618,7 +1653,7 @@ export default function Workspace() {
             </div>
           )}
 
-          {/* Lyrics — analyses AND remixes */}
+          {/* Lyrics â analyses AND remixes */}
           {/* For remixes: show the lyrics that were used to generate */}
           {activeItem.type === 'remix' && activeItem.data.suno_task_id && (() => {
             // Load lyrics from localStorage (persists across sessions)
@@ -1658,7 +1693,7 @@ export default function Workspace() {
             );
           })()}
 
-          {/* Lyrics — with section markers */}
+          {/* Lyrics â with section markers */}
           {(r.originalLyrics || r.improvedLyrics) && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -1677,7 +1712,7 @@ export default function Workspace() {
                   {r.improvedLyrics && (
                     <button onClick={() => setCreateLyrics(r.improvedLyrics)}
                       className="text-[9px] px-1.5 py-0.5 rounded border border-primary/30 text-primary hover:bg-primary/10 flex items-center gap-0.5">
-                      <Sparkles className="w-2 h-2" /> AI ✓
+                      <Sparkles className="w-2 h-2" /> AI â
                     </button>
                   )}
                 </div>
@@ -1730,9 +1765,9 @@ export default function Workspace() {
     );
   };
 
-  /* ────────────────────────────────────────
+  /* ââââââââââââââââââââââââââââââââââââââââ
      RENDER
-  ──────────────────────────────────────── */
+  ââââââââââââââââââââââââââââââââââââââââ */
   return (
     <DashboardLayout noPlayerPadding>
       {/* Credits Modal */}
@@ -1744,19 +1779,19 @@ export default function Workspace() {
         />
       )}
       <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
-        {/* 3-column row — LEFT | CENTER | RIGHT */}
+        {/* 3-column row â LEFT | CENTER | RIGHT */}
         <div className="flex flex-1 overflow-hidden min-h-0">
 
-        {/* ═══════════════════════════════
-            LEFT — Audio + Create Panel
+        {/* âââââââââââââââââââââââââââââââ
+            LEFT â Audio + Create Panel
             Desktop: fixed 260px column
             Mobile: full-screen overlay when mobileView === 'create'
-        ═══════════════════════════════ */}
-        {/* Mobile backdrop — tap outside create panel to close */}
+        âââââââââââââââââââââââââââââââ */}
+        {/* Mobile backdrop â tap outside create panel to close */}
         {mobileView === 'create' && (
           <div className="fixed inset-0 z-10 bg-black/50 lg:hidden" onClick={() => setMobileView('feed')} />
         )}
-        {/* Mobile backdrop — tap outside detail panel to close */}
+        {/* Mobile backdrop â tap outside detail panel to close */}
         {mobileView === 'detail' && (
           <div className="fixed inset-0 z-10 bg-black/50 xl:hidden" onClick={() => setMobileView('feed')} />
         )}
@@ -1808,17 +1843,17 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* ── ANALYZE ── */}
+          {/* ââ ANALYZE ââ */}
           {leftMode === 'analyze' && (
             <div className="flex-1 overflow-y-auto px-3 pb-20 space-y-3">
               {analyzing ? (
                 <ScanLoadingPanel elapsed={analyzeElapsed} step={analyzeStep} />
               ) : lastAnalysisResult ? (
-                /* ── Analysis Results ── */
+                /* ââ Analysis Results ââ */
                 <div className="space-y-3">
                   {/* Song title at top */}
                   <p className="text-xs font-bold text-foreground truncate mb-3">
-                    📁 {lastAnalysisResult.dbRecord?.title || lastAnalysisResult.title || songTitle || 'Your Song'}
+                    ð {lastAnalysisResult.dbRecord?.title || lastAnalysisResult.title || songTitle || 'Your Song'}
                   </p>
                   {/* Score card */}
                   <div className={`rounded-2xl p-4 text-center border ${
@@ -1840,9 +1875,9 @@ export default function Workspace() {
                   {(lastAnalysisResult.bpmEstimate || lastAnalysisResult.musicalKey) && (
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { label: 'BPM', value: lastAnalysisResult.bpmEstimate || '—' },
-                        { label: 'Key', value: lastAnalysisResult.musicalKey || '—' },
-                        { label: 'Genre', value: lastAnalysisResult.genre || '—' },
+                        { label: 'BPM', value: lastAnalysisResult.bpmEstimate || 'â' },
+                        { label: 'Key', value: lastAnalysisResult.musicalKey || 'â' },
+                        { label: 'Genre', value: lastAnalysisResult.genre || 'â' },
                       ].map(m => (
                         <div key={m.label} className="rounded-xl bg-muted/40 border border-border/60 p-2 text-center">
                           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
@@ -1855,7 +1890,7 @@ export default function Workspace() {
                   {/* Hook timing */}
                   {lastAnalysisResult.hookTiming && lastAnalysisResult.hookTiming !== 'unknown' && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/30 border border-border/40">
-                      <span className="text-[10px] text-muted-foreground">🎣 Hook at</span>
+                      <span className="text-[10px] text-muted-foreground">ð£ Hook at</span>
                       <span className="text-xs font-bold text-foreground">{lastAnalysisResult.hookTiming}</span>
                       {lastAnalysisResult.viralLine && (
                         <span className="text-[10px] text-primary/70 truncate ml-auto">"{lastAnalysisResult.viralLine}"</span>
@@ -1866,7 +1901,7 @@ export default function Workspace() {
                   {/* Transcribed lyrics preview */}
                   {lastAnalysisResult.originalLyrics && (
                     <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">Transcribed Lyrics ✓</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">Transcribed Lyrics â</p>
                       <p className="text-[11px] text-foreground/70 font-mono leading-relaxed line-clamp-3">
                         {lastAnalysisResult.originalLyrics}
                       </p>
@@ -1880,7 +1915,7 @@ export default function Workspace() {
                       <ul className="space-y-1.5">
                         {lastAnalysisResult.improvements.slice(0, 3).map((imp: string, i: number) => (
                           <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-amber-400 mt-0.5 shrink-0">▸</span>
+                            <span className="text-amber-400 mt-0.5 shrink-0">â¸</span>
                             <span className="text-[11px] text-foreground/80 leading-snug">{imp}</span>
                           </li>
                         ))}
@@ -1895,7 +1930,7 @@ export default function Workspace() {
                       <ul className="space-y-1.5">
                         {lastAnalysisResult.strengths.slice(0, 2).map((s: string, i: number) => (
                           <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-emerald-400 mt-0.5 shrink-0">✓</span>
+                            <span className="text-emerald-400 mt-0.5 shrink-0">â</span>
                             <span className="text-[11px] text-foreground/80 leading-snug">{s}</span>
                           </li>
                         ))}
@@ -1906,7 +1941,7 @@ export default function Workspace() {
                   {/* DNA Breakdown */}
                   {lastAnalysisResult.dna?.length > 0 && (
                     <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">🧬 DNA Breakdown</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">ð§¬ DNA Breakdown</p>
                       <div className="space-y-1.5">
                         {lastAnalysisResult.dna.map((d: { label: string; value: number; max: number }) => (
                           <div key={d.label} className="flex items-center gap-2">
@@ -1924,7 +1959,7 @@ export default function Workspace() {
                   {/* Similar Hits */}
                   {lastAnalysisResult.similarHits?.length > 0 && (
                     <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">🎯 Similar Hits</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">ð¯ Similar Hits</p>
                       <div className="flex flex-wrap gap-1.5">
                         {lastAnalysisResult.similarHits.map((h: string, i: number) => (
                           <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">{h}</span>
@@ -1933,10 +1968,10 @@ export default function Workspace() {
                     </div>
                   )}
 
-                  {/* CTA — Create Algorithm Hit (transfers ALL data from scan) */}
+                  {/* CTA â Create Algorithm Hit (transfers ALL data from scan) */}
                   <motion.button
                     onClick={() => {
-                      // Transfer analysis data → Create panel
+                      // Transfer analysis data â Create panel
                       const r = lastAnalysisResult;
                       // Auto-fill lyrics from analysis
                       if (r.improvedLyrics) setCreateLyrics(r.improvedLyrics);
@@ -1949,7 +1984,7 @@ export default function Workspace() {
                         ...(r.tags || []),
                       ].filter(Boolean);
                       if (viralStyle.length) setCreateStyle(viralStyle.slice(0, 5).join(', '));
-                      // Keep s3Key from scan — so no re-upload needed
+                      // Keep s3Key from scan â so no re-upload needed
                       // (lastScanS3Key is already set, handleCreate uses it via activeItem or lastScanS3Key)
                       setLastAnalysisResult(null);
                       setLeftMode('create');
@@ -1959,24 +1994,26 @@ export default function Workspace() {
                     <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                       animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
                     <Sparkles className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">⚡ Create Algorithm Hit →</span>
+                    <span className="relative z-10">â¡ Create Algorithm Hit â</span>
                   </motion.button>
 
                   {/* Re-analyze / View full report */}
                   <div className="flex gap-2">
                     <button onClick={() => setLastAnalysisResult(null)}
                       className="flex-1 py-2 rounded-xl text-[11px] font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-primary/30 transition-all">
-                      ← Analyze another
+                      â Analyze another
                     </button>
                     {lastAnalysisResult.dbRecord?.id && (
                       <Link to={`/song/${lastAnalysisResult.dbRecord.id}`}
                         className="flex-1 py-2 rounded-xl text-[11px] font-semibold text-primary border border-primary/30 hover:bg-primary/5 transition-all text-center">
-                        Full report →
+                        Full report â
                       </Link>
                     )}
                   </div>
                 </div>
-              ) : (
+                )}
+                {/* Main create form — always shown when canCreate && !generating */}
+                {(activeItem || createFile || lastScanS3Key) && (
                 <>
                   {/* Drop zone */}
                   <div onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -2009,7 +2046,7 @@ export default function Workspace() {
                         <Upload className="w-7 h-7 text-muted-foreground/50 mx-auto" />
                         <div>
                           <p className="text-xs font-semibold text-foreground">Drop your track</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">MP3 or WAV · max 100MB</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">MP3 or WAV Â· max 100MB</p>
                         </div>
                       </div>
                     )}
@@ -2043,7 +2080,7 @@ export default function Workspace() {
             </div>
           )}
 
-          {/* ── CREATE ── */}
+          {/* ââ CREATE ââ */}
           {leftMode === 'create' && (
             <div className="flex-1 overflow-y-auto px-3 pb-20 space-y-2.5">
               {!canCreate ? (
@@ -2052,7 +2089,7 @@ export default function Workspace() {
                 <ViralCreatePanel elapsed={generateElapsed} genre={activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop'} />
               ) : (
                 <>
-                {/* Getting started guidance — shown when no audio source selected */}
+                {/* Getting started guidance â shown when no audio source selected */}
                 {!activeItem && !createFile && !lastScanS3Key && (
                 <div className="flex flex-col items-center px-4 text-center space-y-3 py-4">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
@@ -2078,7 +2115,7 @@ export default function Workspace() {
                   </div>
                 </div>
                 )}
-                {/* Main create form — always shown when canCreate && !generating */}
+                {/* Main create form â always shown when canCreate && !generating */}
                 {(activeItem || createFile || lastScanS3Key) && (
                 <>
                   {/* Quality selector */}
@@ -2135,11 +2172,11 @@ export default function Workspace() {
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-                      ← Select a song from the feed to remix it
+                      â Select a song from the feed to remix it
                     </div>
                   )}
 
-                  {/* Audio zone — smart status display */}
+                  {/* Audio zone â smart status display */}
                   {(() => {
                     // Check all possible audio sources (priority order)
                     const anyUrl =
@@ -2150,13 +2187,13 @@ export default function Workspace() {
                       ? (activeItem.type === 'analysis' ? activeItem.data.title : (activeItem.data.remix_title || activeItem.data.title))
                       : (lastScanS3Key ? 'Audio from your last scan' : '');
 
-                    // Has S3 key (from selected item OR from last scan) → ready
+                    // Has S3 key (from selected item OR from last scan) â ready
                     if (s3Key && !createFile) {
                       return (
                         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-semibold text-emerald-400">Audio ready ✓</p>
+                            <p className="text-[10px] font-semibold text-emerald-400">Audio ready â</p>
                             <p className="text-[9px] text-muted-foreground truncate">{audioLabel}</p>
                           </div>
                           <button onClick={() => { setLastScanS3Key(null); pickFile('create'); }} className="text-[9px] text-muted-foreground hover:text-foreground shrink-0">replace</button>
@@ -2164,7 +2201,7 @@ export default function Workspace() {
                       );
                     }
 
-                    // Has uploaded file → show it
+                    // Has uploaded file â show it
                     if (createFile) {
                       return (
                         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-accent/5 border border-accent/30">
@@ -2178,7 +2215,7 @@ export default function Workspace() {
                     }
 
                     // activeItem selected but no audio URL (most common case for older analyses)
-                    // Show upload prompt — informative but not blocking
+                    // Show upload prompt â informative but not blocking
                     return (
                       <div onClick={() => pickFile('create')}
                         className="cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors p-2.5">
@@ -2207,7 +2244,7 @@ export default function Workspace() {
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                         <Mic2 className="w-3 h-3" /> Lyrics
                         {createLyrics && lastScanS3Key && (
-                          <span className="text-[9px] text-emerald-400 font-bold">✓ imported from scan</span>
+                          <span className="text-[9px] text-emerald-400 font-bold">â imported from scan</span>
                         )}
                       </span>
                       <div className="flex items-center gap-1">
@@ -2220,7 +2257,7 @@ export default function Workspace() {
                     {lyricsExpanded && (
                       <div className="mt-1 space-y-1.5">
                         <textarea value={createLyrics} onChange={e => setCreateLyrics(e.target.value)}
-                          placeholder="Write some lyrics or a prompt — or leave blank for instrumental"
+                          placeholder="Write some lyrics or a prompt â or leave blank for instrumental"
                           className="w-full h-28 bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono leading-relaxed" />
                         {/* Enhance lyrics */}
                         <div className="flex gap-1">
@@ -2230,7 +2267,7 @@ export default function Workspace() {
                               value={enhanceLyricsPrompt}
                               onChange={e => setEnhanceLyricsPrompt(e.target.value)}
                               onKeyDown={e => { if (e.key === 'Enter') handleEnhanceLyrics(); }}
-                              placeholder="make it sound happier, more energetic…"
+                              placeholder="make it sound happier, more energeticâ¦"
                               className="w-full bg-muted/30 border border-border rounded-lg pl-6 pr-2 py-1.5 text-[10px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 transition-colors"
                             />
                           </div>
@@ -2265,10 +2302,10 @@ export default function Workspace() {
                     {stylesExpanded && (
                       <div className="mt-1 space-y-2">
                         <textarea value={createStyle} onChange={e => setCreateStyle(e.target.value)}
-                          placeholder="afro soul, chill, afrobeat, 120 BPM, minor key…"
+                          placeholder="afro soul, chill, afrobeat, 120 BPM, minor keyâ¦"
                           rows={2}
                           className="w-full bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono" />
-                        {/* Viral style chips — shuffleable */}
+                        {/* Viral style chips â shuffleable */}
                         <div className="flex flex-wrap gap-1.5">
                           {shownChips.map(chip => (
                             <button key={chip}
@@ -2281,7 +2318,7 @@ export default function Workspace() {
                             onClick={() => setShownChips(shuffleArray(VIRAL_STYLE_CHIPS).slice(0, 10))}
                             className="px-2 py-0.5 rounded-full text-[10px] bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground transition-all"
                             title="Shuffle suggestions">
-                            🔀
+                            ð
                           </button>
                         </div>
                       </div>
@@ -2290,7 +2327,7 @@ export default function Workspace() {
 
                 )}
 
-                  {/* CREATE button — always visible (disabled when no audio source) */}
+                  {/* CREATE button â always visible (disabled when no audio source) */}
                   {(() => {
                     const _canClick = !!activeItem || !!createFile || !!lastScanS3Key;
                     return (
@@ -2308,7 +2345,7 @@ export default function Workspace() {
                   );
                   })()}
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Uses {CREDIT_COSTS.viral} credits · {credits} remaining</span>
+                    <span>Uses {CREDIT_COSTS.viral} credits Â· {credits} remaining</span>
                     <button onClick={() => setShowCreditsModal(true)} className="text-primary hover:underline font-semibold">+ Buy credits</button>
                   </div>
                 </>
@@ -2317,16 +2354,16 @@ export default function Workspace() {
           )}
         </div>
 
-        {/* ═══════════════════════════════
-            CENTER — Song Feed
-        ═══════════════════════════════ */}
+        {/* âââââââââââââââââââââââââââââââ
+            CENTER â Song Feed
+        âââââââââââââââââââââââââââââââ */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0 border-r border-border/40">
 
           {/* Data credibility strip */}
           <div className="px-4 py-1.5 bg-primary/5 border-b border-primary/10 flex items-center gap-2 shrink-0">
             <Zap className="w-3 h-3 text-primary shrink-0" />
             <p className="text-[10px] text-primary/70 font-medium truncate">
-              Powered by <strong>500M+ songs</strong> — Spotify · Apple Music · Deezer · YouTube live data
+              Powered by <strong>500M+ songs</strong> â Spotify Â· Apple Music Â· Deezer Â· YouTube live data
             </p>
           </div>
 
@@ -2334,9 +2371,9 @@ export default function Workspace() {
           <div className="flex items-center gap-0.5 px-3 py-2 border-b border-border/40 shrink-0">
             {([
               { id: 'all', label: `All (${analyses.length + remixes.length})` },
-              { id: 'liked', label: '❤ Liked' },
-              { id: 'uploads', label: `🔍 Scanned (${analyses.length})` },
-              { id: 'created', label: `⚡ My Hits (${remixes.length})` },
+              { id: 'liked', label: 'â¤ Liked' },
+              { id: 'uploads', label: `ð Scanned (${analyses.length})` },
+              { id: 'created', label: `â¡ My Hits (${remixes.length})` },
             ] as const).map(t => (
               <button key={t.id} onClick={() => setTab(t.id as CenterTab)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === t.id ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
@@ -2361,7 +2398,7 @@ export default function Workspace() {
 
           {/* Feed */}
           <div className="flex-1 overflow-y-auto pb-20">
-            {/* Generating progress card — always at top when creating */}
+            {/* Generating progress card â always at top when creating */}
             {generating && (
               <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
                 className="mx-4 mt-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/25 flex items-center gap-3">
@@ -2374,8 +2411,8 @@ export default function Workspace() {
                   ))}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-orange-300">⚡ Building your Algorithm Hit… {generateElapsed}s</p>
-                  <p className="text-[10px] text-orange-300/60">Injecting chart DNA from Spotify · Apple · Deezer · YouTube</p>
+                  <p className="text-xs font-bold text-orange-300">â¡ Building your Algorithm Hitâ¦ {generateElapsed}s</p>
+                  <p className="text-[10px] text-orange-300/60">Injecting chart DNA from Spotify Â· Apple Â· Deezer Â· YouTube</p>
                 </div>
                 <div className="w-8 h-8 rounded-full border-2 border-orange-400/30 border-t-orange-400 animate-spin shrink-0" />
               </motion.div>
@@ -2386,8 +2423,8 @@ export default function Workspace() {
                 className="mx-4 mt-2 p-3 rounded-xl bg-gradient-to-r from-orange-500/15 to-amber-500/15 border border-orange-500/30 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-orange-400 shrink-0" />
                 <div>
-                  <p className="text-xs font-bold text-orange-300">Your Algorithm Hits are ready! 🎉</p>
-                  <p className="text-[10px] text-orange-300/70">2 versions generated — play them below</p>
+                  <p className="text-xs font-bold text-orange-300">Your Algorithm Hits are ready! ð</p>
+                  <p className="text-[10px] text-orange-300/70">2 versions generated â play them below</p>
                 </div>
               </motion.div>
             )}
@@ -2409,7 +2446,7 @@ export default function Workspace() {
                   </p>
                   <button onClick={() => setLeftMode('analyze')}
                     className="px-4 py-2 rounded-xl bg-primary/15 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
-                    🔍 Scan My First Song
+                    ð Scan My First Song
                   </button>
                 </div>
               ) : (
@@ -2460,14 +2497,14 @@ export default function Workspace() {
                             </div>
                         }
 
-                        {/* Score badge — bottom left */}
+                        {/* Score badge â bottom left */}
                         {item.type === 'analysis' && (
                           <div className="absolute bottom-0.5 left-0.5 px-1 py-0.5 rounded text-[8px] font-black text-white bg-black/70">
                             {item.data.score}
                           </div>
                         )}
 
-                        {/* Duration — bottom right */}
+                        {/* Duration â bottom right */}
                         <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 rounded text-[8px] text-white/70 bg-black/60 font-mono">
                           3:00
                         </div>
@@ -2515,7 +2552,7 @@ export default function Workspace() {
                           {item.type === 'remix' && (
                             <>
                               <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 uppercase tracking-wider shrink-0">
-                                Hit ⚡
+                                Hit â¡
                               </span>
                               {/* Model label: Faithful=S4 (standard), Viral=S5 (ultra) */}
                               <span className={`text-[7px] font-black px-1 py-0.5 rounded border shrink-0 ${
@@ -2527,7 +2564,7 @@ export default function Workspace() {
                               </span>
                             </>
                           )}
-                          {/* NEW badge — shown if play count is 0 */}
+                          {/* NEW badge â shown if play count is 0 */}
                           {(playCounts[item.data.id] || 0) === 0 && (
                             <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 uppercase tracking-wider shrink-0 animate-pulse">
                               NEW
@@ -2542,7 +2579,7 @@ export default function Workspace() {
                           {(playCounts[item.data.id] || 0) > 0 && (
                             <span className="text-[9px] text-muted-foreground/50 flex items-center gap-0.5 shrink-0">
                               <Play className="w-2.5 h-2.5" />
-                              {playCounts[item.data.id]}× played
+                              {playCounts[item.data.id]}Ã played
                             </span>
                           )}
                         </div>
@@ -2554,16 +2591,16 @@ export default function Workspace() {
                             return (
                               <div className="flex items-center gap-1 mt-0.5">
                                 <span className="text-[9px] text-muted-foreground/50 line-through">{origAnalysis.score}</span>
-                                <span className="text-[9px] text-emerald-400 font-bold">→ Hit ⚡</span>
+                                <span className="text-[9px] text-emerald-400 font-bold">â Hit â¡</span>
                               </div>
                             );
                           })()
                         )}
                       </div>
 
-                      {/* Action menu — appears on hover */}
+                      {/* Action menu â appears on hover */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        {/* Top row: like / share / download — visible on hover (desktop) or always (mobile) */}
+                        {/* Top row: like / share / download â visible on hover (desktop) or always (mobile) */}
                         <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button onClick={e => handleLike(item.data.id, e)}
                             className={`p-1.5 rounded-full transition-all hover:bg-white/10 ${isLiked ? 'text-red-400' : 'text-white/50 hover:text-white'}`}>
@@ -2587,9 +2624,9 @@ export default function Workspace() {
                           )}
                         </div>
 
-                        {/* Bottom row: primary action buttons — visible on hover (desktop) or always (mobile) */}
+                        {/* Bottom row: primary action buttons â visible on hover (desktop) or always (mobile) */}
                         <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                          {/* Analyze — only for analyses or if we want to re-scan */}
+                          {/* Analyze â only for analyses or if we want to re-scan */}
                           {item.type === 'analysis' && (
                             <button
                               onClick={e => { e.stopPropagation(); setActiveItem(item); setLeftMode('analyze'); if (!rightOpen) setRightOpen(true); }}
@@ -2606,7 +2643,7 @@ export default function Workspace() {
                               setActiveItem(item);
                               setLeftMode('create');
                               if (!rightOpen) setRightOpen(true);
-                              // If has S3 audio → start create immediately
+                              // If has S3 audio â start create immediately
                               const _url = item.type === 'analysis' ? item.data.audio_url : item.data.audio_url;
                               const _key = _url ? extractS3Key(_url) : null;
                               if (_key) {
@@ -2618,7 +2655,7 @@ export default function Workspace() {
                             Viral
                           </button>
 
-                          {/* Cover — create new version from this song */}
+                          {/* Cover â create new version from this song */}
                           <button
                             onClick={e => {
                               e.stopPropagation();
@@ -2633,7 +2670,7 @@ export default function Workspace() {
                             Cover
                           </button>
 
-                          {/* Remix 🎸 */}
+                          {/* Remix ð¸ */}
                           <button
                             onClick={e => {
                               e.stopPropagation();
@@ -2641,14 +2678,14 @@ export default function Workspace() {
                               setLeftMode('create');
                               setCreateStyle('same');
                               if (!rightOpen) setRightOpen(true);
-                              toast.success(`🎸 "${title}" loaded for remix`);
+                              toast.success(`ð¸ "${title}" loaded for remix`);
                             }}
                             className="flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/15 hover:bg-purple-500/30 text-purple-400 text-[9px] font-bold transition-all">
                             <GitBranch className="w-3 h-3" />
                             Remix
                           </button>
 
-                          {/* Publish 🌐 */}
+                          {/* Publish ð */}
                           {item.type === 'remix' && (
                             <button
                               onClick={e => handlePublish(item, e)}
@@ -2658,7 +2695,7 @@ export default function Workspace() {
                             </button>
                           )}
 
-                          {/* Re-scan — for generated tracks */}
+                          {/* Re-scan â for generated tracks */}
                           {item.type === 'remix' && item.data.audio_url && (
                             <button
                               onClick={e => {
@@ -2677,7 +2714,7 @@ export default function Workspace() {
                             </button>
                           )}
 
-                          {/* More ··· */}
+                          {/* More Â·Â·Â· */}
                           <div className="relative">
                             <button
                               onClick={e => { e.stopPropagation(); setSongMoreMenuId(prev => prev === item.data.id ? null : item.data.id); }}
@@ -2721,9 +2758,9 @@ export default function Workspace() {
           </div>
         </div>
 
-        {/* ═══════════════════════════════
-            RIGHT — Song Detail
-        ═══════════════════════════════ */}
+        {/* âââââââââââââââââââââââââââââââ
+            RIGHT â Song Detail
+        âââââââââââââââââââââââââââââââ */}
         {rightOpen && (
           <div className={`shrink-0 bg-background flex flex-col overflow-hidden border-l border-border/40
             xl:w-[300px]
@@ -2757,8 +2794,8 @@ export default function Workspace() {
         )}
         </div>{/* end 3-col row */}
 
-        {/* BOTTOM PLAYER — always last, never overlaps panels */}
-        {/* Mobile bottom action bar — replaces the left/right panels on small screens */}
+        {/* BOTTOM PLAYER â always last, never overlaps panels */}
+        {/* Mobile bottom action bar â replaces the left/right panels on small screens */}
         <div className="lg:hidden flex items-center border-t border-border/40 bg-card/80 shrink-0">
           {/* Tab switcher for feed */}
           <div className="flex items-center gap-0.5 px-2 py-1.5 flex-1 overflow-x-auto no-scrollbar">
@@ -2767,7 +2804,7 @@ export default function Workspace() {
                 className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                   tab === t && mobileView === 'feed' ? 'bg-muted text-foreground' : 'text-muted-foreground'
                 }`}>
-                {t === 'all' ? 'All' : t === 'liked' ? '♥ Liked' : t === 'uploads' ? 'Uploads' : 'Created'}
+                {t === 'all' ? 'All' : t === 'liked' ? 'â¥ Liked' : t === 'uploads' ? 'Uploads' : 'Created'}
               </button>
             ))}
           </div>
@@ -2797,13 +2834,13 @@ export default function Workspace() {
   );
 }
 /**
- * HitCheck — Main Workspace
+ * HitCheck â Main Workspace
  *
  * 3-panel workspace layout:
- *   LEFT  (280px) — Audio upload · Lyrics editor · Style tags · Create button
- *   CENTER (flex) — Song feed with Liked/All/Uploads tabs + inline actions
- *   RIGHT  (300px) — Active song detail: lyrics · style · waveform · actions
- *   BOTTOM — Full sticky player: progress · like · download · share
+ *   LEFT  (280px) â Audio upload Â· Lyrics editor Â· Style tags Â· Create button
+ *   CENTER (flex) â Song feed with Liked/All/Uploads tabs + inline actions
+ *   RIGHT  (300px) â Active song detail: lyrics Â· style Â· waveform Â· actions
+ *   BOTTOM â Full sticky player: progress Â· like Â· download Â· share
  *
  * No full-page navigation for tab switches.
  * Likes stored in localStorage (instant, no schema migration).
@@ -2879,7 +2916,7 @@ const extractS3Key = (url: string): string | null => {
   } catch { return null; }
 };
 
-/* ─── Types ─── */
+/* âââ Types âââ */
 interface Analysis {
   id: string; title: string; genre: string; score: number;
   created_at: string; audio_url?: string; thumbnail_url?: string;
@@ -2893,7 +2930,7 @@ interface Remix {
 type SongItem = { type: 'analysis'; data: Analysis } | { type: 'remix'; data: Remix };
 type CenterTab = 'all' | 'liked' | 'uploads' | 'created';
 
-/* ─── LocalStorage play counts ─── */
+/* âââ LocalStorage play counts âââ */
 const getPlayCounts = (uid: string): Record<string, number> => {
   try { return JSON.parse(localStorage.getItem(`hitcheck_plays_${uid}`) || '{}'); } catch { return {}; }
 };
@@ -2905,7 +2942,7 @@ const incrementPlayCount = (uid: string, id: string) => {
   } catch {}
 };
 
-/* ─── LocalStorage likes ─── */
+/* âââ LocalStorage likes âââ */
 const getLikes = (userId: string): Set<string> => {
   try { return new Set(JSON.parse(localStorage.getItem(`likes_${userId}`) || '[]')); }
   catch { return new Set(); }
@@ -2917,11 +2954,11 @@ const toggleLike = (userId: string, id: string): boolean => {
   return likes.has(id);
 };
 
-/* ─── Helpers ─── */
+/* âââ Helpers âââ */
 const getTitle = (item: SongItem): string =>
   item.type === 'analysis'
-    ? (item.data.title || '🎵 Scanned Track')
-    : (item.data.remix_title || (item.data as any).original_title || '⚡ Algorithm Hit');
+    ? (item.data.title || 'ðµ Scanned Track')
+    : (item.data.remix_title || (item.data as any).original_title || 'â¡ Algorithm Hit');
 
 const getStyleTags = (item: SongItem): string => {
   if (item.type === 'remix') return item.data.genre || '';
@@ -2981,41 +3018,41 @@ const shuffleArray = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-/* ─── Waveform ─── */
-/* ─── Built-in Workspace Player (no overlap ever) ─── */
-/* ─── Scan steps with platform data ─── */
+/* âââ Waveform âââ */
+/* âââ Built-in Workspace Player (no overlap ever) âââ */
+/* âââ Scan steps with platform data âââ */
 const SCAN_STEPS = [
-  { at: 0,  icon: '🎵', platform: null,       label: 'Uploading & reading audio file',              color: 'text-muted-foreground' },
-  { at: 6,  icon: '🟢', platform: 'Spotify',  label: 'Scanning Spotify hit patterns & playlist data', color: 'text-emerald-400' },
-  { at: 16, icon: '🍎', platform: 'Apple',    label: 'Analyzing Apple Music chart performance',       color: 'text-pink-400' },
-  { at: 26, icon: '📱', platform: 'TikTok',   label: 'Cross-referencing TikTok viral sound trends',   color: 'text-white' },
-  { at: 36, icon: '▶️', platform: 'YouTube',  label: 'Mapping YouTube Music recommendation signals',  color: 'text-red-400' },
-  { at: 48, icon: '🎙️', platform: null,       label: 'Extracting BPM, key & hook timing',            color: 'text-primary' },
-  { at: 58, icon: '🧬', platform: null,       label: 'Benchmarking against 500K+ global hits',        color: 'text-accent' },
-  { at: 70, icon: '📊', platform: null,       label: 'Scoring viral coefficient & save-rate',          color: 'text-foreground' },
-  { at: 82, icon: '✍️', platform: null,       label: 'Generating your personalized hit report',        color: 'text-primary' },
+  { at: 0,  icon: 'ðµ', platform: null,       label: 'Uploading & reading audio file',              color: 'text-muted-foreground' },
+  { at: 6,  icon: 'ð¢', platform: 'Spotify',  label: 'Scanning Spotify hit patterns & playlist data', color: 'text-emerald-400' },
+  { at: 16, icon: 'ð', platform: 'Apple',    label: 'Analyzing Apple Music chart performance',       color: 'text-pink-400' },
+  { at: 26, icon: 'ð±', platform: 'TikTok',   label: 'Cross-referencing TikTok viral sound trends',   color: 'text-white' },
+  { at: 36, icon: 'â¶ï¸', platform: 'YouTube',  label: 'Mapping YouTube Music recommendation signals',  color: 'text-red-400' },
+  { at: 48, icon: 'ðï¸', platform: null,       label: 'Extracting BPM, key & hook timing',            color: 'text-primary' },
+  { at: 58, icon: 'ð§¬', platform: null,       label: 'Benchmarking against 500K+ global hits',        color: 'text-accent' },
+  { at: 70, icon: 'ð', platform: null,       label: 'Scoring viral coefficient & save-rate',          color: 'text-foreground' },
+  { at: 82, icon: 'âï¸', platform: null,       label: 'Generating your personalized hit report',        color: 'text-primary' },
 ];
 
 const LIVE_FEED = [
-  'Connecting to Spotify catalog API…',
-  'Pulling global playlist chart data…',
-  'Extracting BPM & tempo signature…',
-  'Scanning Apple Music editorial trends…',
-  'Loading TikTok viral sound fingerprints…',
-  'Comparing hook timing across 847 hits…',
-  'Measuring danceability & energy index…',
-  'Checking algorithmic playlist fit score…',
-  'Analyzing save-rate prediction model…',
-  'Cross-referencing YouTube trending data…',
-  'Mapping frequency spectrum to hit profiles…',
-  'Evaluating skip risk at 0:03, 0:15, 0:30…',
-  'Computing replay potential score…',
-  'Matching against editorial playlist DNA…',
-  'Scoring viral coefficient across platforms…',
-  'Building your personalized hit blueprint…',
+  'Connecting to Spotify catalog APIâ¦',
+  'Pulling global playlist chart dataâ¦',
+  'Extracting BPM & tempo signatureâ¦',
+  'Scanning Apple Music editorial trendsâ¦',
+  'Loading TikTok viral sound fingerprintsâ¦',
+  'Comparing hook timing across 847 hitsâ¦',
+  'Measuring danceability & energy indexâ¦',
+  'Checking algorithmic playlist fit scoreâ¦',
+  'Analyzing save-rate prediction modelâ¦',
+  'Cross-referencing YouTube trending dataâ¦',
+  'Mapping frequency spectrum to hit profilesâ¦',
+  'Evaluating skip risk at 0:03, 0:15, 0:30â¦',
+  'Computing replay potential scoreâ¦',
+  'Matching against editorial playlist DNAâ¦',
+  'Scoring viral coefficient across platformsâ¦',
+  'Building your personalized hit blueprintâ¦',
 ];
 
-/* ─── Viral Creation — cinematic injection pipeline ─── */
+/* âââ Viral Creation â cinematic injection pipeline âââ */
 const VIRAL_STAGES = [
   {
     at: 0, platform: 'Spotify', color: '#1DB954',
@@ -3082,22 +3119,22 @@ const VIRAL_STAGES = [
 ];
 
 const INJECT_FEED = [
-  '▸ Spotify API → loading chart DNA for genre…',
-  '▸ Hook position: benchmarked against 500K+ viral tracks',
-  '▸ Apple Music → editorial playlist criteria matched',
-  '▸ BPM calibrated: genre sweet spot detected',
-  '▸ Deezer chart → live viral DNA extracted',
-  '▸ Skip risk at 0:03 and 0:15 — patched with hook elements',
-  '▸ YouTube Music → retention signals mapped',
-  '▸ Reference artist patterns loaded into production engine',
-  '▸ Lyric structure: verse/pre-chorus/chorus optimized',
-  '▸ AI V5 style string assembled with viral parameters',
-  '▸ Vocal texture: matched to genre top performers',
-  '▸ Energy curve: calibrated for max save-rate',
-  '▸ Production elements injected: drums, bass, melody',
-  '▸ Hook at 0:20 confirmed — TikTok snip zone secured',
-  '▸ AI engine render queue: 2 versions queued',
-  '▸ Professional mix & master pipeline active',
+  'â¸ Spotify API â loading chart DNA for genreâ¦',
+  'â¸ Hook position: benchmarked against 500K+ viral tracks',
+  'â¸ Apple Music â editorial playlist criteria matched',
+  'â¸ BPM calibrated: genre sweet spot detected',
+  'â¸ Deezer chart â live viral DNA extracted',
+  'â¸ Skip risk at 0:03 and 0:15 â patched with hook elements',
+  'â¸ YouTube Music â retention signals mapped',
+  'â¸ Reference artist patterns loaded into production engine',
+  'â¸ Lyric structure: verse/pre-chorus/chorus optimized',
+  'â¸ AI V5 style string assembled with viral parameters',
+  'â¸ Vocal texture: matched to genre top performers',
+  'â¸ Energy curve: calibrated for max save-rate',
+  'â¸ Production elements injected: drums, bass, melody',
+  'â¸ Hook at 0:20 confirmed â TikTok snip zone secured',
+  'â¸ AI engine render queue: 2 versions queued',
+  'â¸ Professional mix & master pipeline active',
 ];
 
 const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string }) => {
@@ -3112,7 +3149,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
   return (
     <div className="flex flex-col h-full overflow-y-auto px-3 py-3 space-y-3">
 
-      {/* Waveform — orange/amber for creation */}
+      {/* Waveform â orange/amber for creation */}
       <div className="flex items-end justify-center gap-[1.5px] h-12">
         {Array.from({ length: isMobile ? 16 : 24 }).map((_, i) => (
           <motion.div key={i}
@@ -3138,7 +3175,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
       {/* Progress */}
       <div className="space-y-1">
         <div className="flex justify-between text-[9px] text-muted-foreground tabular-nums">
-          <span>Building your viral hit…</span><span>{progress}%</span>
+          <span>Building your viral hitâ¦</span><span>{progress}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
           <motion.div
@@ -3219,7 +3256,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
                 </div>
                 {(done || active) && (
                   <p className={`text-[9px] mt-0.5 ${done ? 'text-emerald-400/60' : 'text-orange-300/70'}`}>
-                    ✓ {s.inject}
+                    â {s.inject}
                   </p>
                 )}
               </div>
@@ -3246,7 +3283,7 @@ const ViralCreatePanel = ({ elapsed, genre }: { elapsed: number; genre?: string 
 
       {elapsed > 60 && (
         <p className="text-[10px] text-center text-amber-400/70 animate-pulse">
-          Still rendering… AI engine takes 60–120s. Your song won't be lost even if you navigate away.
+          Still renderingâ¦ AI engine takes 60â120s. Your song won't be lost even if you navigate away.
         </p>
       )}
     </div>
@@ -3286,7 +3323,7 @@ const ScanLoadingPanel = ({ elapsed, step }: { elapsed: number; step: string }) 
       {/* Progress bar */}
       <div className="space-y-1">
         <div className="flex justify-between text-[9px] text-muted-foreground tabular-nums">
-          <span>Analyzing…</span>
+          <span>Analyzingâ¦</span>
           <span>{progress}%</span>
         </div>
         <div className="h-1.5 rounded-full bg-muted overflow-hidden relative">
@@ -3370,7 +3407,7 @@ const ScanLoadingPanel = ({ elapsed, step }: { elapsed: number; step: string }) 
           <motion.p key={feedLine}
             initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
             className="text-[9px] font-mono text-muted-foreground leading-snug">
-            <span className="text-emerald-400">▸</span> {feedLine}
+            <span className="text-emerald-400">â¸</span> {feedLine}
           </motion.p>
         </AnimatePresence>
       </div>
@@ -3397,7 +3434,7 @@ const WorkspacePlayer = () => {
         <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
           <Music2 className="w-3.5 h-3.5 text-muted-foreground/30" />
         </div>
-        <p className="text-xs text-muted-foreground/40">No track playing — select a song above</p>
+        <p className="text-xs text-muted-foreground/40">No track playing â select a song above</p>
       </div>
     );
   }
@@ -3505,7 +3542,7 @@ const Waveform = ({ active = false, small = false }: { active?: boolean; small?:
   </div>
 );
 
-/* ─── Credits Buy Modal ─── */
+/* âââ Credits Buy Modal âââ */
 interface CreditsModalProps { onClose: () => void; onBuy: (priceId: string, packId: string) => void; loading: string | null; }
 const CreditsModal = ({ onClose, onBuy, loading }: CreditsModalProps) => {
   const packs = [
@@ -3548,13 +3585,13 @@ const CreditsModal = ({ onClose, onBuy, loading }: CreditsModalProps) => {
             </button>
           ))}
         </div>
-        <p className="text-[10px] text-center text-muted-foreground mt-4">Credits never expire · One-time purchase</p>
+        <p className="text-[10px] text-center text-muted-foreground mt-4">Credits never expire Â· One-time purchase</p>
       </div>
     </div>
   );
 };
 
-/* ─── Upgrade gate ─── */
+/* âââ Upgrade gate âââ */
 const UpgradeGate = () => (
   <div className="flex flex-col items-center justify-center text-center h-full px-4 py-8 space-y-4">
     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent/20 to-primary/20 border border-accent/30 flex items-center justify-center">
@@ -3567,14 +3604,14 @@ const UpgradeGate = () => (
       </p>
     </div>
     <Button asChild size="sm" className="bg-gradient-to-r from-accent to-yellow-500 text-black font-bold border-0 rounded-xl gap-1.5 text-xs">
-      <Link to="/dashboard/billing"><Crown className="w-3.5 h-3.5" /> Upgrade — $29/mo</Link>
+      <Link to="/dashboard/billing"><Crown className="w-3.5 h-3.5" /> Upgrade â $29/mo</Link>
     </Button>
   </div>
 );
 
-/* ═══════════════════════════════════════════════════
+/* âââââââââââââââââââââââââââââââââââââââââââââââââââ
    WORKSPACE
-════════════════════════════════════════════════════ */
+ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
 export default function Workspace() {
   const { user, session, profile, refreshProfile } = useAuth();
   const { playTrack, currentTrack, isPlaying, progress, currentTime, duration, togglePlay, seek, volume, setVolume } = useAudioPlayer();
@@ -3584,13 +3621,13 @@ export default function Workspace() {
   const canCreate = plan !== 'free' || profile?.is_admin === true;
   const credits = profile?.credits ?? 0;
 
-  /* ─── Data ─── */
+  /* âââ Data âââ */
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [remixes, setRemixes] = useState<Remix[]>([]);
   const [loading, setLoading] = useState(true);
   const [likes, setLikes] = useState<Set<string>>(new Set());
 
-  /* ─── UI ─── */
+  /* âââ UI âââ */
   const [tab, setTab] = useState<CenterTab>('all');
   const [leftMode, setLeftMode] = useState<'analyze' | 'create'>('create');
   const [activeItem, setActiveItem] = useState<SongItem | null>(null);
@@ -3600,7 +3637,7 @@ export default function Workspace() {
   const [mobileView, setMobileView] = useState<'feed' | 'create' | 'detail'>('feed');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  /* ─── Analyze state ─── */
+  /* âââ Analyze state âââ */
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [lastScanS3Key, setLastScanS3Key] = useState<string | null>(null); // persists s3Key after scan
   const [songTitle, setSongTitle] = useState('');
@@ -3612,7 +3649,7 @@ export default function Workspace() {
   const [lastAnalysisResult, setLastAnalysisResult] = useState<any>(null);
   const analyzeTimerRef = useRef<ReturnType<typeof setInterval>>();
 
-  /* ─── Create state ─── */
+  /* âââ Create state âââ */
   const [createFile, setCreateFile] = useState<File | null>(null);
   const [createLyrics, setCreateLyrics] = useState('');
   const STYLE_KEY = user ? `hitcheck_style_${user.id}` : 'hitcheck_style';
@@ -3636,7 +3673,7 @@ export default function Workspace() {
   const [playCounts, setPlayCounts] = useState<Record<string, number>>({});
   const [justGenerated, setJustGenerated] = useState(false);
 
-  /* ─── Load data ─── */
+  /* âââ Load data âââ */
   const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -3691,7 +3728,7 @@ export default function Workspace() {
         const tracks: any[] = [];
         if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: pending.version1Label });
         if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: pending.version2Label });
-        // Save to Supabase via edge function (service_role key — bypasses RLS)
+        // Save to Supabase via edge function (service_role key â bypasses RLS)
         const savedResumeUrls = new Set<string>();
         for (const t of tracks) {
           if (!t.audioUrl || savedResumeUrls.has(t.audioUrl)) continue;
@@ -3718,7 +3755,7 @@ export default function Workspace() {
         }
         clearPendingGeneration(user.id);
         await loadData(); setGenerating(false);
-        toast.success(`🎉 Your Algorithm Hits are ready! Check "My Hits" tab.`); setTab('created');
+        toast.success(`ð Your Algorithm Hits are ready! Check "My Hits" tab.`); setTab('created');
         setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
       } catch (e: any) {
         clearInterval(generateTimerRef.current);
@@ -3730,7 +3767,7 @@ export default function Workspace() {
     resumePoll();
   }, [user]); // run once on mount
 
-  /* ─── Auto-fill create from active analysis ─── */
+  /* âââ Auto-fill create from active analysis âââ */
   useEffect(() => {
     if (activeItem?.type === 'analysis') {
       const r = activeItem.data.full_result;
@@ -3754,7 +3791,7 @@ export default function Workspace() {
     }
   }, [createStyle]);
 
-  /* ─── Filtered center feed ─── */
+  /* âââ Filtered center feed âââ */
   const feedItems = useMemo((): SongItem[] => {
     // Deduplicate remixes by audio_url to prevent showing same song twice
     const seenUrls = new Set<string>();
@@ -3789,16 +3826,16 @@ export default function Workspace() {
     return filtered;
   }, [analyses, remixes, tab, likes, feedSearch]);
 
-  /* ─── Like handler ─── */
+  /* âââ Like handler âââ */
   const handleLike = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
     const isNowLiked = toggleLike(user.id, id);
     setLikes(getLikes(user.id));
-    toast.success(isNowLiked ? '❤️ Added to Liked' : 'Removed from Liked', { duration: 1500 });
+    toast.success(isNowLiked ? 'â¤ï¸ Added to Liked' : 'Removed from Liked', { duration: 1500 });
   };
 
-  /* ─── Share ─── */
+  /* âââ Share âââ */
   const handleShare = (item: SongItem, e: React.MouseEvent) => {
     e.stopPropagation();
     const url = item.type === 'remix'
@@ -3810,7 +3847,7 @@ export default function Workspace() {
     toast.success('Link copied!', { duration: 1500 });
   };
 
-  /* ─── Accept file ─── */
+  /* âââ Accept file âââ */
   const acceptFile = (f: File, target: 'analyze' | 'create') => {
     if (!f.name.match(/\.(mp3|wav)$/i)) { toast.error('MP3 or WAV only'); return; }
     if (f.size > 100 * 1024 * 1024) { toast.error('Max 100MB'); return; }
@@ -3829,14 +3866,14 @@ export default function Workspace() {
     inp.click();
   };
 
-  /* ─── BUY CREDITS (modal) ─── */
+  /* âââ BUY CREDITS (modal) âââ */
   const handleBuyCreditsModal = async (packId: string, _unused: string) => {
     if (!user?.id) { toast.error('Sign in first'); return; }
     const priceId = packId === 'credits_100' ? PRICES.credits_100
       : packId === 'credits_300' ? PRICES.credits_300
       : PRICES.credits_700;
     setCreditsModalLoading(packId);
-    toast.loading('Redirecting to checkout…', { id: 'credits-checkout' });
+    toast.loading('Redirecting to checkoutâ¦', { id: 'credits-checkout' });
     const r = await createCheckoutSession(priceId, user.id, 'payment');
     toast.dismiss('credits-checkout');
     setCreditsModalLoading(null);
@@ -3847,7 +3884,7 @@ export default function Workspace() {
     }
   };
 
-  /* ─── ANALYZE ─── */
+  /* âââ ANALYZE âââ */
   const handleAnalyze = async () => {
     if (!uploadFile) return;
     // Credit check
@@ -3859,43 +3896,43 @@ export default function Workspace() {
     analyzeTimerRef.current = setInterval(() => setAnalyzeElapsed(e => e + 1), 1000);
     let insertedAnalysis: any = null;
     try {
-      setAnalyzeStep('Uploading your track…');
+      setAnalyzeStep('Uploading your trackâ¦');
       const urlRes = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get-upload-url', fileName: uploadFile.name, contentType: uploadFile.type || 'audio/mpeg' }) });
-      if (!urlRes.ok) throw new Error('Upload URL failed — please try again');
+      if (!urlRes.ok) throw new Error('Upload URL failed â please try again');
       const { uploadUrl, s3Key } = await urlRes.json();
-      if (!uploadUrl || !s3Key) throw new Error('Could not start upload — please try again');
+      if (!uploadUrl || !s3Key) throw new Error('Could not start upload â please try again');
       setLastScanS3Key(s3Key); // save for use in Algorithm Hit creation
 
-      setAnalyzeStep('Uploading to our servers…');
+      setAnalyzeStep('Uploading to our serversâ¦');
       const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         body: uploadFile,
         headers: { 'Content-Type': uploadFile.type || 'audio/mpeg' },
       });
-      if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status}) — try a different file`);
+      if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status}) â try a different file`);
 
-      setAnalyzeStep('Scanning chart DNA…');
+      setAnalyzeStep('Scanning chart DNAâ¦');
       const res = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'analyze', s3Key, title: songTitle || uploadFile.name, genre: songGenre }) });
-      if (!res.ok) throw new Error('Analysis server error — please try again');
+      if (!res.ok) throw new Error('Analysis server error â please try again');
       const { jobId, error: startError } = await res.json();
       if (startError) throw new Error(startError);
-      if (!jobId) throw new Error('Could not start analysis — please try again');
+      if (!jobId) throw new Error('Could not start analysis â please try again');
 
       let attempts = 0;
       const poll = async (): Promise<void> => {
-        if (attempts++ > 60) throw new Error('Analysis took too long — please try with a shorter file (under 5 min)');
-        setAnalyzeStep(`Analyzing with AI — scanning ${attempts * 3}s of chart data…`);
+        if (attempts++ > 60) throw new Error('Analysis took too long â please try with a shorter file (under 5 min)');
+        setAnalyzeStep(`Analyzing with AI â scanning ${attempts * 3}s of chart dataâ¦`);
         const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'poll', jobId }) });
         if (!pr.ok) { await new Promise(r => setTimeout(r, 3000)); return poll(); }
         const data = await pr.json();
         if (data.status === 'complete') {
-          if (!data.score) throw new Error('Analysis returned no results — please try again');
+          if (!data.score) throw new Error('Analysis returned no results â please try again');
 
-          // Step 1+2: Enrich with Claude AI + save to DB via edge function (uses service_role key — bypasses RLS)
-          setAnalyzeStep('Building hit intelligence with AI…');
+          // Step 1+2: Enrich with Claude AI + save to DB via edge function (uses service_role key â bypasses RLS)
+          setAnalyzeStep('Building hit intelligence with AIâ¦');
           let enrichedData = data;
           try {
             const enrichRes = await fetch(`${SUPABASE_URL}/functions/v1/analyze-song`, {
@@ -3948,9 +3985,9 @@ export default function Workspace() {
           clearInterval(analyzeTimerRef.current);
           setAnalyzing(false); setUploadFile(null); setSongTitle(''); setSongGenre('');
           setLastAnalysisResult({ ...enrichedData, dbRecord: insertedAnalysis });
-          toast.success(`🎯 Score: ${enrichedData.score}/100 — ${CREDIT_COSTS.analysis} credits used`);
+          toast.success(`ð¯ Score: ${enrichedData.score}/100 â ${CREDIT_COSTS.analysis} credits used`);
         } else if (data.status === 'error') {
-          throw new Error(data.error || 'Analysis failed — please try again');
+          throw new Error(data.error || 'Analysis failed â please try again');
         } else {
           await new Promise(r => setTimeout(r, 4000)); return poll();
         }
@@ -3958,23 +3995,23 @@ export default function Workspace() {
       await new Promise(r => setTimeout(r, 5000)); await poll();
     } catch (e: any) {
       clearInterval(analyzeTimerRef.current); setAnalyzing(false);
-      const msg = e.message || 'Scan failed — please try again';
+      const msg = e.message || 'Scan failed â please try again';
       toast.error(msg, { duration: 8000, description: 'If this keeps happening, try a shorter MP3 file.' });
     }
   };
 
-  /* ─── CREATE VIRAL ─── */
+  /* âââ CREATE VIRAL âââ */
   const handleCreate = async () => {
     if (!user) { toast.error('Sign in required'); return; }
 
-    // Determine s3Key — priority order:
+    // Determine s3Key â priority order:
     // 1. activeItem analysis/remix audio_url (selected from library)
-    // 2. lastScanS3Key (from the scan just completed — KEY FIX)
+    // 2. lastScanS3Key (from the scan just completed â KEY FIX)
     // 3. Manually uploaded createFile
     const anyAudioUrl =
       (activeItem?.type === 'analysis' ? activeItem.data.audio_url : null) ||
       (activeItem?.type === 'remix' ? activeItem.data.audio_url : null) || null;
-    // Also check full_result.s3Key — stored by analyze-song edge function for cross-session use
+    // Also check full_result.s3Key â stored by analyze-song edge function for cross-session use
     const s3KeyFromResult = activeItem?.type === 'analysis'
       ? (activeItem.data.full_result?.s3Key || null) : null;
     const existingS3Key = anyAudioUrl ? extractS3Key(anyAudioUrl) : (s3KeyFromResult || lastScanS3Key || null);
@@ -4003,7 +4040,7 @@ export default function Workspace() {
         await fetch(urlData.uploadUrl, { method: 'PUT', headers: { 'Content-Type': createFile.type || 'audio/mpeg' }, body: createFile });
       }
 
-      // Build slim Suno payload — only send specific fields, NOT the full analysis blob
+      // Build slim Suno payload â only send specific fields, NOT the full analysis blob
       // (sending the entire full_result causes Lambda payload/parse failures)
       const fr = activeItem?.type === 'analysis' ? activeItem.data.full_result || {} : {};
       const songGenreForCover = activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop';
@@ -4058,7 +4095,7 @@ export default function Workspace() {
       });
       let attempts = 0;
       const poll = async (): Promise<any> => {
-        if (attempts++ > 45) throw new Error('Timed out — try again');
+        if (attempts++ > 45) throw new Error('Timed out â try again');
         const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'suno-cover', taskIdV1, taskIdV2 }) });
         const d = await pr.json();
@@ -4071,7 +4108,7 @@ export default function Workspace() {
       const tracks: any[] = [];
       if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: version1?.label || 'Faithful Remix' });
       if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: version2?.label || 'Viral Edition' });
-      // Save to Supabase via edge function (service_role key — bypasses RLS)
+      // Save to Supabase via edge function (service_role key â bypasses RLS)
       const savedUrls = new Set<string>();
       for (const t of tracks) {
         if (!t.audioUrl || savedUrls.has(t.audioUrl)) continue;
@@ -4103,12 +4140,12 @@ export default function Workspace() {
         }
       }
       if (user) clearPendingGeneration(user.id);
-      // ✅ Save lyrics to localStorage for each generated track (persists across sessions)
+      // â Save lyrics to localStorage for each generated track (persists across sessions)
       if (createLyrics && taskIdV1) {
         saveLyricsForTrack(taskIdV1, createLyrics);
         if (taskIdV2) saveLyricsForTrack(taskIdV2, createLyrics);
       }
-      // ✅ Deduct credits AFTER successful generation
+      // â Deduct credits AFTER successful generation
       if (user && tracks.length > 0) {
         const deductResult = await deductCredits(user.id, CREDIT_COSTS.viral);
         if (deductResult.success) {
@@ -4118,7 +4155,7 @@ export default function Workspace() {
       await loadData(); setGenerating(false); setCreateFile(null);
       // Play first track
       if (tracks[0]?.audioUrl) playTrackWithTracking({ id: `remix_new_${Date.now()}`, title: tracks[0].label, audioUrl: tracks[0].audioUrl });
-      toast.success(`🎉 ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready! ${CREDIT_COSTS.viral} credits used`); setTab('created');
+      toast.success(`ð ${tracks.length} Algorithm Hit${tracks.length > 1 ? 's' : ''} ready! ${CREDIT_COSTS.viral} credits used`); setTab('created');
       setJustGenerated(true); setTimeout(() => setJustGenerated(false), 15000);
     } catch (e: any) {
       clearInterval(generateTimerRef.current); setGenerating(false);
@@ -4126,7 +4163,7 @@ export default function Workspace() {
     }
   };
 
-  /* ─── ENHANCE LYRICS ─── */
+  /* âââ ENHANCE LYRICS âââ */
   const handleEnhanceLyrics = async () => {
     if (!enhanceLyricsPrompt.trim()) return;
     setEnhancingLyrics(true);
@@ -4140,7 +4177,7 @@ export default function Workspace() {
       if (data.enhanced || data.lyrics) {
         setCreateLyrics(data.enhanced || data.lyrics);
         setEnhanceLyricsPrompt('');
-        toast.success('✨ Lyrics enhanced!');
+        toast.success('â¨ Lyrics enhanced!');
       } else {
         // Graceful client-side fallback: just append the instruction as a note
         setCreateLyrics(prev => prev + `\n\n[Style note: ${enhanceLyricsPrompt}]`);
@@ -4157,7 +4194,7 @@ export default function Workspace() {
     }
   };
 
-  /* ─── Play with tracking ─── */
+  /* âââ Play with tracking âââ */
   const playTrackWithTracking = (track: { id: string; title: string; audioUrl: string }) => {
     // Only increment play count when starting a NEW track (not resuming same track)
     const isNewTrack = !currentTrack || currentTrack.audioUrl !== track.audioUrl;
@@ -4168,7 +4205,7 @@ export default function Workspace() {
     playTrack(track);
   };
 
-  /* ─── REACTION handler ─── */
+  /* âââ REACTION handler âââ */
   const handleReaction = (itemId: string, emoji: string) => {
     setReactions(prev => {
       const item = prev[itemId] || {};
@@ -4176,19 +4213,19 @@ export default function Workspace() {
     });
   };
 
-  /* ─── PUBLISH handler ─── */
+  /* âââ PUBLISH handler âââ */
   const handlePublish = async (item: SongItem, e: React.MouseEvent) => {
     e.stopPropagation();
     if (item.type !== 'remix') return;
     try {
       await supabase.from('viralize_remixes').update({ status: 'public' }).eq('id', item.data.id);
-      toast.success('🌐 Song published!', { duration: 2000 });
+      toast.success('ð Song published!', { duration: 2000 });
     } catch {
       toast.error('Failed to publish');
     }
   };
 
-  /* ─── SCORE badge ─── */
+  /* âââ SCORE badge âââ */
   const scoreBadge = (score: number) => {
     if (score >= 80) return 'bg-primary/20 text-primary border-primary/30';
     if (score >= 65) return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
@@ -4196,16 +4233,16 @@ export default function Workspace() {
     return 'bg-destructive/20 text-destructive border-destructive/30';
   };
 
-  /* ─── Currently playing ─── */
+  /* âââ Currently playing âââ */
   const activeAudioUrl = activeItem?.type === 'remix' ? activeItem.data.audio_url
     : activeItem?.type === 'analysis' ? (activeItem.data.audio_url || '') : '';
   const isActiveItemPlaying = currentTrack && activeAudioUrl && currentTrack.audioUrl === activeAudioUrl && isPlaying;
 
   if (!user) return null;
 
-  /* ────────────────────────────────────────
+  /* ââââââââââââââââââââââââââââââââââââââââ
      RIGHT PANEL CONTENT
-  ──────────────────────────────────────── */
+  ââââââââââââââââââââââââââââââââââââââââ */
   const RightPanel = () => {
     if (!activeItem) return (
       <div className="flex flex-col items-center justify-center h-full text-center px-6 space-y-3 opacity-40">
@@ -4246,7 +4283,7 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* Add Viral Implement — auto-fills Create with optimal values */}
+          {/* Add Viral Implement â auto-fills Create with optimal values */}
           {activeItem.type === 'analysis' && (
             <motion.button
               whileHover={{ scale: 1.01 }}
@@ -4270,7 +4307,7 @@ export default function Workspace() {
                 else if (r.originalLyrics) setCreateLyrics(r.originalLyrics);
                 setLeftMode('create');
                 setCreateFile(null);
-                toast.success('✨ Viral parameters loaded — upload your audio to create!');
+                toast.success('â¨ Viral parameters loaded â upload your audio to create!');
               }}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 text-black font-bold text-xs flex items-center justify-center gap-2 mt-2 shadow-sm"
             >
@@ -4293,7 +4330,7 @@ export default function Workspace() {
           {(playCounts[activeItem?.data.id || ''] || 0) > 0 && (
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
               <Play className="w-3 h-3" />
-              Played {playCounts[activeItem.data.id]}× by you
+              Played {playCounts[activeItem.data.id]}Ã by you
             </div>
           )}
         </div>
@@ -4325,7 +4362,7 @@ export default function Workspace() {
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] text-muted-foreground">Viral Score</p>
                   <p className="text-xs text-foreground/80 leading-snug mt-0.5 line-clamp-2">
-                    {r.verdict || activeItem.data.verdict || '—'}
+                    {r.verdict || activeItem.data.verdict || 'â'}
                   </p>
                 </div>
               </div>
@@ -4362,7 +4399,7 @@ export default function Workspace() {
                   setLeftMode('create');
                 }}
                 className="w-full py-2 rounded-xl border border-dashed border-primary/30 text-primary text-[11px] font-bold hover:bg-primary/5 transition-all flex items-center justify-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> ⚡ Create Algorithm Hit
+                <Sparkles className="w-3.5 h-3.5" /> â¡ Create Algorithm Hit
               </button>
             </div>
           )}
@@ -4371,7 +4408,7 @@ export default function Workspace() {
           <div>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Reactions</p>
             <div className="flex flex-wrap gap-1.5">
-              {['🔥', '😍', '😱', '🙌', '👍', '👎', '😢'].map(emoji => {
+              {['ð¥', 'ð', 'ð±', 'ð', 'ð', 'ð', 'ð¢'].map(emoji => {
                 const count = reactions[activeItem.data.id]?.[emoji] || 0;
                 return (
                   <button key={emoji}
@@ -4389,7 +4426,7 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* "Algorithm Hit based on" — for remixes (like Suno's "Cover of") */}
+          {/* "Algorithm Hit based on" â for remixes (like Suno's "Cover of") */}
           {activeItem.type === 'remix' && activeItem.data.original_title && (
             <div className="rounded-xl border border-border/60 bg-muted/20 p-3 flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -4408,7 +4445,7 @@ export default function Workspace() {
                     <p className="text-[9px] text-muted-foreground">Score</p>
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] text-muted-foreground/50 line-through">{orig.score}</span>
-                      <span className="text-[10px] text-emerald-400 font-black">→ Hit ⚡</span>
+                      <span className="text-[10px] text-emerald-400 font-black">â Hit â¡</span>
                     </div>
                   </div>
                 );
@@ -4416,7 +4453,7 @@ export default function Workspace() {
             </div>
           )}
 
-          {/* Lyrics — analyses AND remixes */}
+          {/* Lyrics â analyses AND remixes */}
           {/* For remixes: show the lyrics that were used to generate */}
           {activeItem.type === 'remix' && activeItem.data.suno_task_id && (() => {
             // Load lyrics from localStorage (persists across sessions)
@@ -4456,7 +4493,7 @@ export default function Workspace() {
             );
           })()}
 
-          {/* Lyrics — with section markers */}
+          {/* Lyrics â with section markers */}
           {(r.originalLyrics || r.improvedLyrics) && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -4475,7 +4512,7 @@ export default function Workspace() {
                   {r.improvedLyrics && (
                     <button onClick={() => setCreateLyrics(r.improvedLyrics)}
                       className="text-[9px] px-1.5 py-0.5 rounded border border-primary/30 text-primary hover:bg-primary/10 flex items-center gap-0.5">
-                      <Sparkles className="w-2 h-2" /> AI ✓
+                      <Sparkles className="w-2 h-2" /> AI â
                     </button>
                   )}
                 </div>
@@ -4528,9 +4565,9 @@ export default function Workspace() {
     );
   };
 
-  /* ────────────────────────────────────────
+  /* ââââââââââââââââââââââââââââââââââââââââ
      RENDER
-  ──────────────────────────────────────── */
+  ââââââââââââââââââââââââââââââââââââââââ */
   return (
     <DashboardLayout noPlayerPadding>
       {/* Credits Modal */}
@@ -4542,19 +4579,19 @@ export default function Workspace() {
         />
       )}
       <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
-        {/* 3-column row — LEFT | CENTER | RIGHT */}
+        {/* 3-column row â LEFT | CENTER | RIGHT */}
         <div className="flex flex-1 overflow-hidden min-h-0">
 
-        {/* ═══════════════════════════════
-            LEFT — Audio + Create Panel
+        {/* âââââââââââââââââââââââââââââââ
+            LEFT â Audio + Create Panel
             Desktop: fixed 260px column
             Mobile: full-screen overlay when mobileView === 'create'
-        ═══════════════════════════════ */}
-        {/* Mobile backdrop — tap outside create panel to close */}
+        âââââââââââââââââââââââââââââââ */}
+        {/* Mobile backdrop â tap outside create panel to close */}
         {mobileView === 'create' && (
           <div className="fixed inset-0 z-10 bg-black/50 lg:hidden" onClick={() => setMobileView('feed')} />
         )}
-        {/* Mobile backdrop — tap outside detail panel to close */}
+        {/* Mobile backdrop â tap outside detail panel to close */}
         {mobileView === 'detail' && (
           <div className="fixed inset-0 z-10 bg-black/50 xl:hidden" onClick={() => setMobileView('feed')} />
         )}
@@ -4606,17 +4643,17 @@ export default function Workspace() {
             </div>
           </div>
 
-          {/* ── ANALYZE ── */}
+          {/* ââ ANALYZE ââ */}
           {leftMode === 'analyze' && (
             <div className="flex-1 overflow-y-auto px-3 pb-20 space-y-3">
               {analyzing ? (
                 <ScanLoadingPanel elapsed={analyzeElapsed} step={analyzeStep} />
               ) : lastAnalysisResult ? (
-                /* ── Analysis Results ── */
+                /* ââ Analysis Results ââ */
                 <div className="space-y-3">
                   {/* Song title at top */}
                   <p className="text-xs font-bold text-foreground truncate mb-3">
-                    📁 {lastAnalysisResult.dbRecord?.title || lastAnalysisResult.title || songTitle || 'Your Song'}
+                    ð {lastAnalysisResult.dbRecord?.title || lastAnalysisResult.title || songTitle || 'Your Song'}
                   </p>
                   {/* Score card */}
                   <div className={`rounded-2xl p-4 text-center border ${
@@ -4638,9 +4675,9 @@ export default function Workspace() {
                   {(lastAnalysisResult.bpmEstimate || lastAnalysisResult.musicalKey) && (
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { label: 'BPM', value: lastAnalysisResult.bpmEstimate || '—' },
-                        { label: 'Key', value: lastAnalysisResult.musicalKey || '—' },
-                        { label: 'Genre', value: lastAnalysisResult.genre || '—' },
+                        { label: 'BPM', value: lastAnalysisResult.bpmEstimate || 'â' },
+                        { label: 'Key', value: lastAnalysisResult.musicalKey || 'â' },
+                        { label: 'Genre', value: lastAnalysisResult.genre || 'â' },
                       ].map(m => (
                         <div key={m.label} className="rounded-xl bg-muted/40 border border-border/60 p-2 text-center">
                           <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
@@ -4653,7 +4690,7 @@ export default function Workspace() {
                   {/* Hook timing */}
                   {lastAnalysisResult.hookTiming && lastAnalysisResult.hookTiming !== 'unknown' && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/30 border border-border/40">
-                      <span className="text-[10px] text-muted-foreground">🎣 Hook at</span>
+                      <span className="text-[10px] text-muted-foreground">ð£ Hook at</span>
                       <span className="text-xs font-bold text-foreground">{lastAnalysisResult.hookTiming}</span>
                       {lastAnalysisResult.viralLine && (
                         <span className="text-[10px] text-primary/70 truncate ml-auto">"{lastAnalysisResult.viralLine}"</span>
@@ -4664,7 +4701,7 @@ export default function Workspace() {
                   {/* Transcribed lyrics preview */}
                   {lastAnalysisResult.originalLyrics && (
                     <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">Transcribed Lyrics ✓</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-1.5">Transcribed Lyrics â</p>
                       <p className="text-[11px] text-foreground/70 font-mono leading-relaxed line-clamp-3">
                         {lastAnalysisResult.originalLyrics}
                       </p>
@@ -4678,7 +4715,7 @@ export default function Workspace() {
                       <ul className="space-y-1.5">
                         {lastAnalysisResult.improvements.slice(0, 3).map((imp: string, i: number) => (
                           <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-amber-400 mt-0.5 shrink-0">▸</span>
+                            <span className="text-amber-400 mt-0.5 shrink-0">â¸</span>
                             <span className="text-[11px] text-foreground/80 leading-snug">{imp}</span>
                           </li>
                         ))}
@@ -4693,7 +4730,7 @@ export default function Workspace() {
                       <ul className="space-y-1.5">
                         {lastAnalysisResult.strengths.slice(0, 2).map((s: string, i: number) => (
                           <li key={i} className="flex items-start gap-1.5">
-                            <span className="text-emerald-400 mt-0.5 shrink-0">✓</span>
+                            <span className="text-emerald-400 mt-0.5 shrink-0">â</span>
                             <span className="text-[11px] text-foreground/80 leading-snug">{s}</span>
                           </li>
                         ))}
@@ -4704,7 +4741,7 @@ export default function Workspace() {
                   {/* DNA Breakdown */}
                   {lastAnalysisResult.dna?.length > 0 && (
                     <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">🧬 DNA Breakdown</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">ð§¬ DNA Breakdown</p>
                       <div className="space-y-1.5">
                         {lastAnalysisResult.dna.map((d: { label: string; value: number; max: number }) => (
                           <div key={d.label} className="flex items-center gap-2">
@@ -4722,7 +4759,7 @@ export default function Workspace() {
                   {/* Similar Hits */}
                   {lastAnalysisResult.similarHits?.length > 0 && (
                     <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">🎯 Similar Hits</p>
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider mb-2">ð¯ Similar Hits</p>
                       <div className="flex flex-wrap gap-1.5">
                         {lastAnalysisResult.similarHits.map((h: string, i: number) => (
                           <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">{h}</span>
@@ -4731,10 +4768,10 @@ export default function Workspace() {
                     </div>
                   )}
 
-                  {/* CTA — Create Algorithm Hit (transfers ALL data from scan) */}
+                  {/* CTA â Create Algorithm Hit (transfers ALL data from scan) */}
                   <motion.button
                     onClick={() => {
-                      // Transfer analysis data → Create panel
+                      // Transfer analysis data â Create panel
                       const r = lastAnalysisResult;
                       // Auto-fill lyrics from analysis
                       if (r.improvedLyrics) setCreateLyrics(r.improvedLyrics);
@@ -4747,7 +4784,7 @@ export default function Workspace() {
                         ...(r.tags || []),
                       ].filter(Boolean);
                       if (viralStyle.length) setCreateStyle(viralStyle.slice(0, 5).join(', '));
-                      // Keep s3Key from scan — so no re-upload needed
+                      // Keep s3Key from scan â so no re-upload needed
                       // (lastScanS3Key is already set, handleCreate uses it via activeItem or lastScanS3Key)
                       setLastAnalysisResult(null);
                       setLeftMode('create');
@@ -4757,19 +4794,19 @@ export default function Workspace() {
                     <motion.div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
                       animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
                     <Sparkles className="w-4 h-4 relative z-10" />
-                    <span className="relative z-10">⚡ Create Algorithm Hit →</span>
+                    <span className="relative z-10">â¡ Create Algorithm Hit â</span>
                   </motion.button>
 
                   {/* Re-analyze / View full report */}
                   <div className="flex gap-2">
                     <button onClick={() => setLastAnalysisResult(null)}
                       className="flex-1 py-2 rounded-xl text-[11px] font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-primary/30 transition-all">
-                      ← Analyze another
+                      â Analyze another
                     </button>
                     {lastAnalysisResult.dbRecord?.id && (
                       <Link to={`/song/${lastAnalysisResult.dbRecord.id}`}
                         className="flex-1 py-2 rounded-xl text-[11px] font-semibold text-primary border border-primary/30 hover:bg-primary/5 transition-all text-center">
-                        Full report →
+                        Full report â
                       </Link>
                     )}
                   </div>
@@ -4807,7 +4844,7 @@ export default function Workspace() {
                         <Upload className="w-7 h-7 text-muted-foreground/50 mx-auto" />
                         <div>
                           <p className="text-xs font-semibold text-foreground">Drop your track</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">MP3 or WAV · max 100MB</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">MP3 or WAV Â· max 100MB</p>
                         </div>
                       </div>
                     )}
@@ -4841,33 +4878,35 @@ export default function Workspace() {
             </div>
           )}
 
-          {/* ── CREATE ── */}
+          {/* ââ CREATE ââ */}
           {leftMode === 'create' && (
             <div className="flex-1 overflow-y-auto px-3 pb-20 space-y-2.5">
               {!canCreate ? (
                 <UpgradeGate />
               ) : generating ? (
                 <ViralCreatePanel elapsed={generateElapsed} genre={activeItem?.type === 'analysis' ? activeItem.data.genre : 'pop'} />
-              ) : !activeItem && !createFile && !lastScanS3Key ? (
-                <div className="flex-1 flex flex-col items-center justify-center px-4 text-center space-y-4 py-8">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                    <Sparkles className="w-8 h-8 text-black" />
+              ) : (
+                <>
+                {/* Getting started guidance — shown when no audio source selected */}
+                {!activeItem && !createFile && !lastScanS3Key && (
+                <div className="flex flex-col items-center px-4 text-center space-y-3 py-4">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                    <Sparkles className="w-6 h-6 text-black" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-foreground">Create Your Algorithm Hit</h3>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                      Select a song from your library or scan a new one.<br/>
-                      Our AI injects real chart DNA to guarantee more streams.
+                    <h3 className="text-sm font-black text-foreground">Create Your Algorithm Hit</h3>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                      Select a song from your library, scan a new one, or upload audio.
                     </p>
                   </div>
                   <div className="space-y-2 w-full">
                     <button onClick={() => setLeftMode('analyze')}
-                      className="w-full py-2.5 rounded-xl bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/15 transition-all flex items-center justify-center gap-2">
+                      className="w-full py-2 rounded-xl bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/15 transition-all flex items-center justify-center gap-2">
                       <Search className="w-3.5 h-3.5" />
                       Scan a new song first
                     </button>
                     <button onClick={() => pickFile('create')}
-                      className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-muted-foreground text-xs hover:text-foreground hover:border-white/20 transition-all flex items-center justify-center gap-2">
+                      className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-muted-foreground text-xs hover:text-foreground hover:border-white/20 transition-all flex items-center justify-center gap-2">
                       <Upload className="w-3.5 h-3.5" />
                       Upload audio directly
                     </button>
@@ -4929,11 +4968,11 @@ export default function Workspace() {
                     </div>
                   ) : (
                     <div className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
-                      ← Select a song from the feed to remix it
+                      â Select a song from the feed to remix it
                     </div>
                   )}
 
-                  {/* Audio zone — smart status display */}
+                  {/* Audio zone â smart status display */}
                   {(() => {
                     // Check all possible audio sources (priority order)
                     const anyUrl =
@@ -4944,13 +4983,13 @@ export default function Workspace() {
                       ? (activeItem.type === 'analysis' ? activeItem.data.title : (activeItem.data.remix_title || activeItem.data.title))
                       : (lastScanS3Key ? 'Audio from your last scan' : '');
 
-                    // Has S3 key (from selected item OR from last scan) → ready
+                    // Has S3 key (from selected item OR from last scan) â ready
                     if (s3Key && !createFile) {
                       return (
                         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
                           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-[10px] font-semibold text-emerald-400">Audio ready ✓</p>
+                            <p className="text-[10px] font-semibold text-emerald-400">Audio ready â</p>
                             <p className="text-[9px] text-muted-foreground truncate">{audioLabel}</p>
                           </div>
                           <button onClick={() => { setLastScanS3Key(null); pickFile('create'); }} className="text-[9px] text-muted-foreground hover:text-foreground shrink-0">replace</button>
@@ -4958,7 +4997,7 @@ export default function Workspace() {
                       );
                     }
 
-                    // Has uploaded file → show it
+                    // Has uploaded file â show it
                     if (createFile) {
                       return (
                         <div className="flex items-center gap-2 p-2.5 rounded-xl bg-accent/5 border border-accent/30">
@@ -4972,7 +5011,7 @@ export default function Workspace() {
                     }
 
                     // activeItem selected but no audio URL (most common case for older analyses)
-                    // Show upload prompt — informative but not blocking
+                    // Show upload prompt â informative but not blocking
                     return (
                       <div onClick={() => pickFile('create')}
                         className="cursor-pointer rounded-xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors p-2.5">
@@ -5001,7 +5040,7 @@ export default function Workspace() {
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                         <Mic2 className="w-3 h-3" /> Lyrics
                         {createLyrics && lastScanS3Key && (
-                          <span className="text-[9px] text-emerald-400 font-bold">✓ imported from scan</span>
+                          <span className="text-[9px] text-emerald-400 font-bold">â imported from scan</span>
                         )}
                       </span>
                       <div className="flex items-center gap-1">
@@ -5014,7 +5053,7 @@ export default function Workspace() {
                     {lyricsExpanded && (
                       <div className="mt-1 space-y-1.5">
                         <textarea value={createLyrics} onChange={e => setCreateLyrics(e.target.value)}
-                          placeholder="Write some lyrics or a prompt — or leave blank for instrumental"
+                          placeholder="Write some lyrics or a prompt â or leave blank for instrumental"
                           className="w-full h-28 bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono leading-relaxed" />
                         {/* Enhance lyrics */}
                         <div className="flex gap-1">
@@ -5024,7 +5063,7 @@ export default function Workspace() {
                               value={enhanceLyricsPrompt}
                               onChange={e => setEnhanceLyricsPrompt(e.target.value)}
                               onKeyDown={e => { if (e.key === 'Enter') handleEnhanceLyrics(); }}
-                              placeholder="make it sound happier, more energetic…"
+                              placeholder="make it sound happier, more energeticâ¦"
                               className="w-full bg-muted/30 border border-border rounded-lg pl-6 pr-2 py-1.5 text-[10px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/40 transition-colors"
                             />
                           </div>
@@ -5059,10 +5098,10 @@ export default function Workspace() {
                     {stylesExpanded && (
                       <div className="mt-1 space-y-2">
                         <textarea value={createStyle} onChange={e => setCreateStyle(e.target.value)}
-                          placeholder="afro soul, chill, afrobeat, 120 BPM, minor key…"
+                          placeholder="afro soul, chill, afrobeat, 120 BPM, minor keyâ¦"
                           rows={2}
                           className="w-full bg-muted/40 border border-border rounded-xl p-2.5 text-xs text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-primary/50 transition-colors font-mono" />
-                        {/* Viral style chips — shuffleable */}
+                        {/* Viral style chips â shuffleable */}
                         <div className="flex flex-wrap gap-1.5">
                           {shownChips.map(chip => (
                             <button key={chip}
@@ -5075,16 +5114,17 @@ export default function Workspace() {
                             onClick={() => setShownChips(shuffleArray(VIRAL_STYLE_CHIPS).slice(0, 10))}
                             className="px-2 py-0.5 rounded-full text-[10px] bg-white/5 border border-white/10 text-muted-foreground hover:text-foreground transition-all"
                             title="Shuffle suggestions">
-                            🔀
+                            ð
                           </button>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* CREATE button */}
+                )}
+
+                  {/* CREATE button — always visible (disabled when no audio source) */}
                   {(() => {
-                    // Button is enabled if: any activeItem selected OR file uploaded
                     const _canClick = !!activeItem || !!createFile || !!lastScanS3Key;
                     return (
                   <motion.button onClick={handleCreate} disabled={!_canClick}
@@ -5095,13 +5135,13 @@ export default function Workspace() {
                       animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 2, ease: 'linear' }} />
                     <Sparkles className="w-4 h-4 relative z-10" />
                     <span className="relative z-10">
-                      {_canClick ? 'Create Algorithm Hit' : 'Select a track first'}
+                      {_canClick ? 'Create Algorithm Hit' : 'Select a track or upload audio'}
                     </span>
                   </motion.button>
                   );
                   })()}
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                    <span>Uses {CREDIT_COSTS.viral} credits · {credits} remaining</span>
+                    <span>Uses {CREDIT_COSTS.viral} credits Â· {credits} remaining</span>
                     <button onClick={() => setShowCreditsModal(true)} className="text-primary hover:underline font-semibold">+ Buy credits</button>
                   </div>
                 </>
@@ -5110,16 +5150,16 @@ export default function Workspace() {
           )}
         </div>
 
-        {/* ═══════════════════════════════
-            CENTER — Song Feed
-        ═══════════════════════════════ */}
+        {/* âââââââââââââââââââââââââââââââ
+            CENTER â Song Feed
+        âââââââââââââââââââââââââââââââ */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0 border-r border-border/40">
 
           {/* Data credibility strip */}
           <div className="px-4 py-1.5 bg-primary/5 border-b border-primary/10 flex items-center gap-2 shrink-0">
             <Zap className="w-3 h-3 text-primary shrink-0" />
             <p className="text-[10px] text-primary/70 font-medium truncate">
-              Powered by <strong>500M+ songs</strong> — Spotify · Apple Music · Deezer · YouTube live data
+              Powered by <strong>500M+ songs</strong> â Spotify Â· Apple Music Â· Deezer Â· YouTube live data
             </p>
           </div>
 
@@ -5127,9 +5167,9 @@ export default function Workspace() {
           <div className="flex items-center gap-0.5 px-3 py-2 border-b border-border/40 shrink-0">
             {([
               { id: 'all', label: `All (${analyses.length + remixes.length})` },
-              { id: 'liked', label: '❤ Liked' },
-              { id: 'uploads', label: `🔍 Scanned (${analyses.length})` },
-              { id: 'created', label: `⚡ My Hits (${remixes.length})` },
+              { id: 'liked', label: 'â¤ Liked' },
+              { id: 'uploads', label: `ð Scanned (${analyses.length})` },
+              { id: 'created', label: `â¡ My Hits (${remixes.length})` },
             ] as const).map(t => (
               <button key={t.id} onClick={() => setTab(t.id as CenterTab)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${tab === t.id ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
@@ -5154,7 +5194,7 @@ export default function Workspace() {
 
           {/* Feed */}
           <div className="flex-1 overflow-y-auto pb-20">
-            {/* Generating progress card — always at top when creating */}
+            {/* Generating progress card â always at top when creating */}
             {generating && (
               <motion.div initial={{opacity:0,y:-8}} animate={{opacity:1,y:0}}
                 className="mx-4 mt-2 p-3 rounded-xl bg-orange-500/10 border border-orange-500/25 flex items-center gap-3">
@@ -5167,8 +5207,8 @@ export default function Workspace() {
                   ))}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-orange-300">⚡ Building your Algorithm Hit… {generateElapsed}s</p>
-                  <p className="text-[10px] text-orange-300/60">Injecting chart DNA from Spotify · Apple · Deezer · YouTube</p>
+                  <p className="text-xs font-bold text-orange-300">â¡ Building your Algorithm Hitâ¦ {generateElapsed}s</p>
+                  <p className="text-[10px] text-orange-300/60">Injecting chart DNA from Spotify Â· Apple Â· Deezer Â· YouTube</p>
                 </div>
                 <div className="w-8 h-8 rounded-full border-2 border-orange-400/30 border-t-orange-400 animate-spin shrink-0" />
               </motion.div>
@@ -5179,8 +5219,8 @@ export default function Workspace() {
                 className="mx-4 mt-2 p-3 rounded-xl bg-gradient-to-r from-orange-500/15 to-amber-500/15 border border-orange-500/30 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-orange-400 shrink-0" />
                 <div>
-                  <p className="text-xs font-bold text-orange-300">Your Algorithm Hits are ready! 🎉</p>
-                  <p className="text-[10px] text-orange-300/70">2 versions generated — play them below</p>
+                  <p className="text-xs font-bold text-orange-300">Your Algorithm Hits are ready! ð</p>
+                  <p className="text-[10px] text-orange-300/70">2 versions generated â play them below</p>
                 </div>
               </motion.div>
             )}
@@ -5202,7 +5242,7 @@ export default function Workspace() {
                   </p>
                   <button onClick={() => setLeftMode('analyze')}
                     className="px-4 py-2 rounded-xl bg-primary/15 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all">
-                    🔍 Scan My First Song
+                    ð Scan My First Song
                   </button>
                 </div>
               ) : (
@@ -5253,14 +5293,14 @@ export default function Workspace() {
                             </div>
                         }
 
-                        {/* Score badge — bottom left */}
+                        {/* Score badge â bottom left */}
                         {item.type === 'analysis' && (
                           <div className="absolute bottom-0.5 left-0.5 px-1 py-0.5 rounded text-[8px] font-black text-white bg-black/70">
                             {item.data.score}
                           </div>
                         )}
 
-                        {/* Duration — bottom right */}
+                        {/* Duration â bottom right */}
                         <div className="absolute bottom-0.5 right-0.5 px-1 py-0.5 rounded text-[8px] text-white/70 bg-black/60 font-mono">
                           3:00
                         </div>
@@ -5308,7 +5348,7 @@ export default function Workspace() {
                           {item.type === 'remix' && (
                             <>
                               <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-orange-500/20 text-orange-400 uppercase tracking-wider shrink-0">
-                                Hit ⚡
+                                Hit â¡
                               </span>
                               {/* Model label: Faithful=S4 (standard), Viral=S5 (ultra) */}
                               <span className={`text-[7px] font-black px-1 py-0.5 rounded border shrink-0 ${
@@ -5320,7 +5360,7 @@ export default function Workspace() {
                               </span>
                             </>
                           )}
-                          {/* NEW badge — shown if play count is 0 */}
+                          {/* NEW badge â shown if play count is 0 */}
                           {(playCounts[item.data.id] || 0) === 0 && (
                             <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 uppercase tracking-wider shrink-0 animate-pulse">
                               NEW
@@ -5335,7 +5375,7 @@ export default function Workspace() {
                           {(playCounts[item.data.id] || 0) > 0 && (
                             <span className="text-[9px] text-muted-foreground/50 flex items-center gap-0.5 shrink-0">
                               <Play className="w-2.5 h-2.5" />
-                              {playCounts[item.data.id]}× played
+                              {playCounts[item.data.id]}Ã played
                             </span>
                           )}
                         </div>
@@ -5347,16 +5387,16 @@ export default function Workspace() {
                             return (
                               <div className="flex items-center gap-1 mt-0.5">
                                 <span className="text-[9px] text-muted-foreground/50 line-through">{origAnalysis.score}</span>
-                                <span className="text-[9px] text-emerald-400 font-bold">→ Hit ⚡</span>
+                                <span className="text-[9px] text-emerald-400 font-bold">â Hit â¡</span>
                               </div>
                             );
                           })()
                         )}
                       </div>
 
-                      {/* Action menu — appears on hover */}
+                      {/* Action menu â appears on hover */}
                       <div className="flex flex-col items-end gap-1 shrink-0">
-                        {/* Top row: like / share / download — visible on hover (desktop) or always (mobile) */}
+                        {/* Top row: like / share / download â visible on hover (desktop) or always (mobile) */}
                         <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                           <button onClick={e => handleLike(item.data.id, e)}
                             className={`p-1.5 rounded-full transition-all hover:bg-white/10 ${isLiked ? 'text-red-400' : 'text-white/50 hover:text-white'}`}>
@@ -5380,9 +5420,9 @@ export default function Workspace() {
                           )}
                         </div>
 
-                        {/* Bottom row: primary action buttons — visible on hover (desktop) or always (mobile) */}
+                        {/* Bottom row: primary action buttons â visible on hover (desktop) or always (mobile) */}
                         <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                          {/* Analyze — only for analyses or if we want to re-scan */}
+                          {/* Analyze â only for analyses or if we want to re-scan */}
                           {item.type === 'analysis' && (
                             <button
                               onClick={e => { e.stopPropagation(); setActiveItem(item); setLeftMode('analyze'); if (!rightOpen) setRightOpen(true); }}
@@ -5399,7 +5439,7 @@ export default function Workspace() {
                               setActiveItem(item);
                               setLeftMode('create');
                               if (!rightOpen) setRightOpen(true);
-                              // If has S3 audio → start create immediately
+                              // If has S3 audio â start create immediately
                               const _url = item.type === 'analysis' ? item.data.audio_url : item.data.audio_url;
                               const _key = _url ? extractS3Key(_url) : null;
                               if (_key) {
@@ -5411,7 +5451,7 @@ export default function Workspace() {
                             Viral
                           </button>
 
-                          {/* Cover — create new version from this song */}
+                          {/* Cover â create new version from this song */}
                           <button
                             onClick={e => {
                               e.stopPropagation();
@@ -5426,7 +5466,7 @@ export default function Workspace() {
                             Cover
                           </button>
 
-                          {/* Remix 🎸 */}
+                          {/* Remix ð¸ */}
                           <button
                             onClick={e => {
                               e.stopPropagation();
@@ -5434,14 +5474,14 @@ export default function Workspace() {
                               setLeftMode('create');
                               setCreateStyle('same');
                               if (!rightOpen) setRightOpen(true);
-                              toast.success(`🎸 "${title}" loaded for remix`);
+                              toast.success(`ð¸ "${title}" loaded for remix`);
                             }}
                             className="flex items-center gap-1 px-2 py-1 rounded-full bg-purple-500/15 hover:bg-purple-500/30 text-purple-400 text-[9px] font-bold transition-all">
                             <GitBranch className="w-3 h-3" />
                             Remix
                           </button>
 
-                          {/* Publish 🌐 */}
+                          {/* Publish ð */}
                           {item.type === 'remix' && (
                             <button
                               onClick={e => handlePublish(item, e)}
@@ -5451,7 +5491,7 @@ export default function Workspace() {
                             </button>
                           )}
 
-                          {/* Re-scan — for generated tracks */}
+                          {/* Re-scan â for generated tracks */}
                           {item.type === 'remix' && item.data.audio_url && (
                             <button
                               onClick={e => {
@@ -5470,7 +5510,7 @@ export default function Workspace() {
                             </button>
                           )}
 
-                          {/* More ··· */}
+                          {/* More Â·Â·Â· */}
                           <div className="relative">
                             <button
                               onClick={e => { e.stopPropagation(); setSongMoreMenuId(prev => prev === item.data.id ? null : item.data.id); }}
@@ -5514,9 +5554,9 @@ export default function Workspace() {
           </div>
         </div>
 
-        {/* ═══════════════════════════════
-            RIGHT — Song Detail
-        ═══════════════════════════════ */}
+        {/* âââââââââââââââââââââââââââââââ
+            RIGHT â Song Detail
+        âââââââââââââââââââââââââââââââ */}
         {rightOpen && (
           <div className={`shrink-0 bg-background flex flex-col overflow-hidden border-l border-border/40
             xl:w-[300px]
@@ -5550,8 +5590,8 @@ export default function Workspace() {
         )}
         </div>{/* end 3-col row */}
 
-        {/* BOTTOM PLAYER — always last, never overlaps panels */}
-        {/* Mobile bottom action bar — replaces the left/right panels on small screens */}
+        {/* BOTTOM PLAYER â always last, never overlaps panels */}
+        {/* Mobile bottom action bar â replaces the left/right panels on small screens */}
         <div className="lg:hidden flex items-center border-t border-border/40 bg-card/80 shrink-0">
           {/* Tab switcher for feed */}
           <div className="flex items-center gap-0.5 px-2 py-1.5 flex-1 overflow-x-auto no-scrollbar">
@@ -5560,7 +5600,7 @@ export default function Workspace() {
                 className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                   tab === t && mobileView === 'feed' ? 'bg-muted text-foreground' : 'text-muted-foreground'
                 }`}>
-                {t === 'all' ? 'All' : t === 'liked' ? '♥ Liked' : t === 'uploads' ? 'Uploads' : 'Created'}
+                {t === 'all' ? 'All' : t === 'liked' ? 'â¥ Liked' : t === 'uploads' ? 'Uploads' : 'Created'}
               </button>
             ))}
           </div>
