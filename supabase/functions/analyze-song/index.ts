@@ -261,7 +261,12 @@ serve(async (req) => {
     }
 
     const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY not set");
+    if (!anthropicKey) {
+      console.error("ANTHROPIC_API_KEY not set — returning raw Lambda result");
+      return new Response(JSON.stringify({ ...lambdaResult, s3Key: s3Key || null, dataSource: "lambda_only_no_api_key" }), {
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -459,6 +464,7 @@ Return ONLY this JSON (no markdown, no extra text):
         topHits: (topHits || []).map(h => h.title + " – " + h.artist),
       },
       dataSource: "real_chart_comparison",
+      s3Key: s3Key || lambdaResult.s3Key || null,
     };
 
     // 7. Generate AI lyrics (verse + chorus + bridge) based on the full musical analysis
@@ -503,6 +509,19 @@ Return ONLY this JSON:
     enrichedResult.originalLyrics = realTranscript || lyricsResult.originalLyrics;
     enrichedResult.improvedLyrics = lyricsResult.improvedLyrics;
     enrichedResult.lyricsSource = realTranscript ? "transcribed" : "ai_generated";
+
+    // Build a ready-to-use Suno prompt from analysis data
+    enrichedResult.sunoPrompt = [
+      `${effectiveGenre} hit song`,
+      songBpm ? `${Math.round(songBpm)} BPM` : null,
+      lambdaResult.musicalKey ? `key of ${lambdaResult.musicalKey}` : null,
+      analysis.emotionalCore ? analysis.emotionalCore.slice(0, 60) : null,
+      "strong hook in first 7 seconds",
+      analysis.oneChange ? `optimized: ${analysis.oneChange.slice(0, 80)}` : null,
+      "radio ready", "viral potential",
+    ].filter(Boolean).join(", ");
+
+    console.log(`analyze-song OK: score=${finalScore}, lyrics=${enrichedResult.lyricsSource}, s3Key=${!!enrichedResult.s3Key}, dna=${dnaScores.length}`);
 
     // 8. Save/update Supabase analysis record (using service_role key — bypasses RLS)
     let effectiveAnalysisId = analysisId || null;
