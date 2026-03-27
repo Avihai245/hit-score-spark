@@ -1295,9 +1295,11 @@ export default function Workspace() {
           action: 'suno-cover', s3Key,
           title: songTitleForCover,
           genre: songGenreForCover,
-          style: enrichedStyle,
-          customLyrics: effectiveLyrics,
-          sunoPrompt: effectiveSunoPrompt, // FIX: production guidance sent as dedicated field
+          style: enrichedStyle,   // kept for backward compat
+          styles: enrichedStyle,  // FIX: Lambda expects 'styles' (plural)
+          lyrics: effectiveLyrics, // FIX: Lambda expects 'lyrics' not 'customLyrics'
+          customLyrics: effectiveLyrics, // kept for backward compat
+          sunoPrompt: effectiveSunoPrompt,
           bpm: fr.bpmEstimate ? parseFloat(String(fr.bpmEstimate)) : (fr.bpm || fr.genreDna?.avgBpm || undefined),
           energy: fr.energyLevel != null ? (Number(fr.energyLevel) > 1 ? Number(fr.energyLevel) / 10 : Number(fr.energyLevel)) : undefined,
           emotionalCore: fr.emotionalCore,
