@@ -878,23 +878,28 @@ export default function Workspace() {
     generateTimerRef.current = setInterval(() => setGenerateElapsed(e => e + 1), 1000);
 
     const resumePoll = async () => {
-      let attempts = 0;
-      const poll = async (): Promise<any> => {
-        if (attempts++ > 45) throw new Error('Timed out');
-        const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'suno-cover', taskIdV1: pending.taskIdV1, taskIdV2: pending.taskIdV2 }) });
-        const d = await pr.json();
-        if (d.status === 'complete') return d;
-        if (d.status === 'failed' || d.error) throw new Error(d.error || 'Generation failed');
-        await new Promise(r => setTimeout(r, 8000)); return poll();
+      // FIX: Lambda poll-suno requires individual taskId (singular)
+      const pollSingleTaskResume = async (taskId: string, label: string): Promise<{audioUrl:string,imageUrl?:string,label:string}> => {
+        for (let i = 0; i < 45; i++) {
+          await new Promise(r => setTimeout(r, 8000));
+          const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'poll-suno', taskId }) });
+          const d = await pr.json();
+          if (d.status === 'complete' && d.audioUrl) return { audioUrl: d.audioUrl, imageUrl: d.imageUrl, label };
+          if (d.status === 'failed' || d.error) throw new Error(d.error || `Generation failed for ${label}`);
+        }
+        throw new Error('Timed out');
       };
 
       try {
-        const final = await poll();
+        const [rr1, rr2] = await Promise.allSettled([
+          pollSingleTaskResume(pending.taskIdV1, pending.version1Label),
+          pending.taskIdV2 && pending.taskIdV2 !== pending.taskIdV1 ? pollSingleTaskResume(pending.taskIdV2, pending.version2Label) : Promise.reject(new Error('no v2')),
+        ]);
         clearInterval(generateTimerRef.current);
         const tracks: any[] = [];
-        if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: pending.version1Label });
-        if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: pending.version2Label });
+        if (rr1.status === 'fulfilled') tracks.push(rr1.value);
+        if (rr2.status === 'fulfilled') tracks.push(rr2.value);
         // Save to Supabase via edge function (service_role key â bypasses RLS)
         const savedResumeUrls = new Set<string>();
         for (const t of tracks) {
@@ -1333,21 +1338,27 @@ export default function Workspace() {
         analysisId: activeItem?.type === 'analysis' ? activeItem.data.id : null,
         startedAt: Date.now(),
       });
-      let attempts = 0;
-      const poll = async (): Promise<any> => {
-        if (attempts++ > 45) throw new Error('Timed out â try again');
-        const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'suno-cover', taskIdV1, taskIdV2 }) });
-        const d = await pr.json();
-        if (d.status === 'complete') return d;
-        if (d.status === 'failed' || d.error) throw new Error(d.error || 'Generation failed');
-        await new Promise(r => setTimeout(r, 8000)); return poll();
+      // FIX: Lambda poll-suno requires individual taskId (singular), not taskIdV1/V2 combined
+      const pollSingleTask = async (taskId: string, label: string): Promise<{audioUrl:string,imageUrl?:string,label:string}> => {
+        for (let i = 0; i < 45; i++) {
+          await new Promise(r => setTimeout(r, 8000));
+          const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'poll-suno', taskId }) });
+          const d = await pr.json();
+          if (d.status === 'complete' && d.audioUrl) return { audioUrl: d.audioUrl, imageUrl: d.imageUrl, label };
+          if (d.status === 'failed' || d.error) throw new Error(d.error || `Generation failed for ${label}`);
+        }
+        throw new Error('Timed out — try again');
       };
-      const final = await poll();
+      const [res1, res2] = await Promise.allSettled([
+        taskIdV1 ? pollSingleTask(taskIdV1, version1?.label || 'Faithful Remix') : Promise.reject(new Error('no taskIdV1')),
+        taskIdV2 && taskIdV2 !== taskIdV1 ? pollSingleTask(taskIdV2, version2?.label || 'Viral Edition') : Promise.reject(new Error('no taskIdV2')),
+      ]);
       clearInterval(generateTimerRef.current);
       const tracks: any[] = [];
-      if (final.v1?.audioUrl) tracks.push({ audioUrl: final.v1.audioUrl, imageUrl: final.v1.imageUrl, label: version1?.label || 'Faithful Remix' });
-      if (final.v2?.audioUrl) tracks.push({ audioUrl: final.v2.audioUrl, imageUrl: final.v2.imageUrl, label: version2?.label || 'Viral Edition' });
+      if (res1.status === 'fulfilled') tracks.push(res1.value);
+      if (res2.status === 'fulfilled') tracks.push(res2.value);
+      if (tracks.length === 0) throw new Error((res1 as any).reason?.message || 'Generation failed');
       // Save to Supabase via edge function (service_role key â bypasses RLS)
       const savedUrls = new Set<string>();
       for (const t of tracks) {
