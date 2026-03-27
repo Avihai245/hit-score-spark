@@ -1103,7 +1103,14 @@ export default function Workspace() {
         body: JSON.stringify({ action: 'analyze', s3Key, title: songTitle || uploadFile.name, genre: songGenre }) });
       if (!analyzeRes.ok) throw new Error('Analysis server error — please try again');
       const analyzeRaw = await analyzeRes.json();
-      if (analyzeRaw.error && !analyzeRaw.score) throw new Error(analyzeRaw.error);
+      if (analyzeRaw.error && !analyzeRaw.score) {
+        // Clear stale s3Key if file expired
+        if (analyzeRaw.error.includes('not found') || analyzeRaw.error.includes('upload again')) {
+          setLastScanS3Key(null);
+          try { localStorage.removeItem('hitcheck_lastS3Key'); } catch {}
+        }
+        throw new Error(analyzeRaw.error);
+      }
       // Normalize score field
       let lambdaData: any = { ...analyzeRaw };
       lambdaData.score = lambdaData.score || lambdaData.viralScore || 0;
