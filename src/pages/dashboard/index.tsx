@@ -941,7 +941,10 @@ export default function Workspace() {
       const r = activeItem.data.full_result;
       if (!r) return;
       // Always update lyrics from fresh analysis
-      if (r.improvedLyrics || r.originalLyrics) {
+      // FIX: prefer real transcript (lyricsSource==='transcribed') over AI-generated lyrics
+      if (r.lyricsSource === 'transcribed' && r.originalLyrics) {
+        setCreateLyrics(r.originalLyrics); // Real AssemblyAI transcript takes priority
+      } else if (r.improvedLyrics || r.originalLyrics) {
         setCreateLyrics(r.improvedLyrics || r.originalLyrics);
       }
       // Always build style from analysis data
@@ -1162,6 +1165,13 @@ export default function Workspace() {
             }});
             setTab('uploads');
           }
+          // FIX: auto-fill lyrics editor with real transcript if available, else AI lyrics
+          if (!createLyrics) {
+            const transcript = enrichedData.lyricsSource === 'transcribed'
+              ? enrichedData.originalLyrics
+              : (enrichedData.improvedLyrics || enrichedData.originalLyrics);
+            if (transcript) setCreateLyrics(transcript);
+          }
 
           // Step 5: Deduct credits AFTER successful analysis
           if (user) {
@@ -1268,7 +1278,12 @@ export default function Workspace() {
         genreDna?.reference_artists?.length ? `inspired by ${genreDna.reference_artists.slice(0, 2).join(' & ')}` : '',
         'radio ready', 'viral potential', 'full length song',
       ].filter(Boolean).join(', ');
-      const effectiveLyrics = createLyrics.trim() || fr.sunoPrompt || autoPrompt;
+      // FIX: customLyrics = actual song lyrics (user edited or transcript).
+      // sunoPrompt = style/production guidance for Suno (sent as separate field).
+      // Never send fr.sunoPrompt as customLyrics — it's a style directive, not song text.
+      const effectiveLyrics = createLyrics.trim() || fr.originalLyrics || '';
+      // sunoPrompt: Claude-generated production guidance (separate from lyrics)
+      const effectiveSunoPrompt = fr.sunoPrompt || fr.sunoPromptFaithful || autoPrompt;
 
       const coverRes = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1277,6 +1292,7 @@ export default function Workspace() {
           genre: songGenreForCover,
           style: enrichedStyle,
           customLyrics: effectiveLyrics,
+          sunoPrompt: effectiveSunoPrompt, // FIX: production guidance sent as dedicated field
           bpm: fr.bpmEstimate ? parseFloat(String(fr.bpmEstimate)) : (fr.bpm || fr.genreDna?.avgBpm || undefined),
           energy: fr.energyLevel != null ? (Number(fr.energyLevel) > 1 ? Number(fr.energyLevel) / 10 : Number(fr.energyLevel)) : undefined,
           emotionalCore: fr.emotionalCore,
