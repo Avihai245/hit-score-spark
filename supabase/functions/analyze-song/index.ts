@@ -353,6 +353,14 @@ SONG:
 - Lambda verdict: ${lambdaResult.verdict || "N/A"}
 - Lambda strengths: ${JSON.stringify(lambdaResult.strengths || [])}
 - Lambda improvements: ${JSON.stringify(lambdaResult.improvements || [])}
+- Hook timing detected: ${lambdaResult.hookTiming || "unknown"}
+- TikTok moment: ${lambdaResult.tiktokMoment || "not identified"}
+- Similar viral tracks (real-time): ${JSON.stringify(lambdaResult.similarViralTracks || [])}
+- Why it could go viral: ${lambdaResult.whyItGoesViral || "not analyzed"}
+- Danceability: ${lambdaResult.danceability ?? "?"}
+- Valence: ${lambdaResult.valence ?? "?"}
+- Dynamic range: ${lambdaResult.dynamicRange || "unknown"}
+- Full transcript: ${lambdaResult.transcript ? lambdaResult.transcript.slice(0, 1000) : "not available"}
 
 NUMERICAL DELTAS VS GENRE AVERAGE (you MUST reference these in your analysis):
 - BPM: ${songBpm ?? "?"} vs genre avg ${dna?.avg_bpm?.toFixed(1) ?? "?"} → ${bpmDelta != null ? `${Number(bpmDelta) > 0 ? "+" : ""}${bpmDelta} BPM` : "N/A"}
