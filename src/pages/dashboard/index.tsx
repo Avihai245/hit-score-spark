@@ -1095,26 +1095,35 @@ export default function Workspace() {
       });
       if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status}) â try a different file`);
 
-      setAnalyzeStep('Scanning chart DNAâ¦');
-      const res = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      setAnalyzeStep('Scanning your track with AI (30–90 seconds)…');
+      // FIX: Lambda runs Whisper+GPT synchronously in the analyze action.
+      // It returns full results immediately — no need for poll loop.
+      // The old poll-based flow returned empty data on cold start (cache miss).
+      const analyzeRes = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'analyze', s3Key, title: songTitle || uploadFile.name, genre: songGenre }) });
-      if (!res.ok) throw new Error('Analysis server error â please try again');
-      const { jobId, error: startError } = await res.json();
-      if (startError) throw new Error(startError);
-      if (!jobId) throw new Error('Could not start analysis â please try again');
-
-      let attempts = 0;
-      const poll = async (): Promise<void> => {
-        if (attempts++ > 60) throw new Error('Analysis took too long â please try with a shorter file (under 5 min)');
-        setAnalyzeStep(`Analyzing with AI â scanning ${attempts * 3}s of chart dataâ¦`);
-        const pr = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'poll', jobId }) });
-        if (!pr.ok) { await new Promise(r => setTimeout(r, 3000)); return poll(); }
-        const data = await pr.json();
-        if (data.status === 'complete') {
-          if (!data.score) throw new Error('Analysis returned no results â please try again');
-
-          // Step 1+2: Enrich with Claude AI + save to DB via edge function (uses service_role key â bypasses RLS)
+      if (!analyzeRes.ok) throw new Error('Analysis server error — please try again');
+      const analyzeRaw = await analyzeRes.json();
+      if (analyzeRaw.error && !analyzeRaw.score) throw new Error(analyzeRaw.error);
+      // Normalize score field
+      let lambdaData: any = { ...analyzeRaw };
+      lambdaData.score = lambdaData.score || lambdaData.viralScore || 0;
+      // Fallback: if no score yet, try one poll (handles rare async Lambda behavior)
+      if (!lambdaData.score && lambdaData.jobId) {
+        setAnalyzeStep('Finalizing analysis…');
+        await new Promise(r => setTimeout(r, 5000));
+        try {
+          const prFb = await fetch(LAMBDA_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'poll', jobId: lambdaData.jobId }) });
+          if (prFb.ok) {
+            const pdFb = await prFb.json();
+            if (pdFb.score || pdFb.viralScore) lambdaData = { ...lambdaData, ...pdFb, score: pdFb.score || pdFb.viralScore };
+          }
+        } catch {}
+      }
+      // Proceed with lambdaData as the analysis result
+      await (async (data: any) => {
+        if (true) {
+          if (!data.score) throw new Error('Analysis returned no results — please try again');nrich with Claude AI + save to DB via edge function (uses service_role key â bypasses RLS)
           setAnalyzeStep('Building hit intelligence with AIâ¦');
           let enrichedData = data;
           try {
@@ -1212,12 +1221,10 @@ export default function Workspace() {
           setLastAnalysisResult({ ...enrichedData, dbRecord: insertedAnalysis });
           toast.success(`ð¯ Score: ${enrichedData.score}/100 â ${CREDIT_COSTS.analysis} credits used`);
         } else if (data.status === 'error') {
-          throw new Error(data.error || 'Analysis failed â please try again');
-        } else {
-          await new Promise(r => setTimeout(r, 4000)); return poll();
+          throw new Error(data.error || 'Analysis failed — please try again');
         }
-      };
-      await new Promise(r => setTimeout(r, 5000)); await poll();
+        // FIX: poll loop removed — Lambda returns full analysis synchronously
+      })(lambdaData);
     } catch (e: any) {
       clearInterval(analyzeTimerRef.current); setAnalyzing(false);
       const msg = e.message || 'Scan failed â please try again';
