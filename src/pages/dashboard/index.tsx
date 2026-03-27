@@ -1130,7 +1130,8 @@ export default function Workspace() {
       // Proceed with lambdaData as the analysis result
       await (async (data: any) => {
         if (true) {
-          if (!data.score) throw new Error('Analysis returned no results — please try again');nrich with Claude AI + save to DB via edge function (uses service_role key â bypasses RLS)
+          if (!data.score) throw new Error('Analysis returned no results — please try again');
+          // Step 1+2: Enrich with Claude AI + save to DB
           setAnalyzeStep('Building hit intelligence with AIâ¦');
           let enrichedData = data;
           try {
