@@ -945,10 +945,13 @@ export default function Workspace() {
     if (activeItem?.type === 'analysis') {
       const r = activeItem.data.full_result;
       if (!r) return;
-      // Always update lyrics from fresh analysis
-      // FIX: prefer real transcript (lyricsSource==='transcribed') over AI-generated lyrics
-      if (r.lyricsSource === 'transcribed' && r.originalLyrics) {
-        setCreateLyrics(r.originalLyrics); // Real AssemblyAI transcript takes priority
+      // FIX: check ai_transcript column first (Whisper transcript saved by Lambda directly)
+      // then fall back to full_result lyrics
+      const aiTranscript = (activeItem.data as any).ai_transcript;
+      if (aiTranscript) {
+        setCreateLyrics(aiTranscript); // Real Whisper transcript — best quality
+      } else if (r.lyricsSource === 'transcribed' && r.originalLyrics) {
+        setCreateLyrics(r.originalLyrics);
       } else if (r.improvedLyrics || r.originalLyrics) {
         setCreateLyrics(r.improvedLyrics || r.originalLyrics);
       }
@@ -1170,12 +1173,31 @@ export default function Workspace() {
             }});
             setTab('uploads');
           }
-          // FIX: auto-fill lyrics editor with real transcript if available, else AI lyrics
-          if (!createLyrics) {
-            const transcript = enrichedData.lyricsSource === 'transcribed'
+          // FIX: Read ai_transcript from DB (Lambda saves it there directly, doesn't return in response)
+          // Then fill editor: real transcript > AI lyrics
+          let finalLyrics = '';
+          if (insertedAnalysis?.id) {
+            try {
+              const { data: dbRow } = await supabase
+                .from('viralize_analyses')
+                .select('ai_transcript')
+                .eq('id', insertedAnalysis.id)
+                .single();
+              if (dbRow?.ai_transcript) {
+                finalLyrics = dbRow.ai_transcript; // Real Whisper transcript from Lambda
+                console.log('[Lyrics] Using Whisper transcript from DB:', finalLyrics.slice(0, 60));
+              }
+            } catch (e) { console.warn('[Lyrics] DB transcript read failed:', e); }
+          }
+          // Fallback to enriched data lyrics if no DB transcript
+          if (!finalLyrics) {
+            finalLyrics = enrichedData.lyricsSource === 'transcribed'
               ? enrichedData.originalLyrics
-              : (enrichedData.improvedLyrics || enrichedData.originalLyrics);
-            if (transcript) setCreateLyrics(transcript);
+              : (enrichedData.improvedLyrics || enrichedData.originalLyrics || '');
+          }
+          if (finalLyrics && !createLyrics) {
+            setCreateLyrics(finalLyrics);
+            console.log('[Lyrics] Editor auto-filled after scan');
           }
 
           // Step 5: Deduct credits AFTER successful analysis
@@ -1206,6 +1228,7 @@ export default function Workspace() {
   /* âââ CREATE VIRAL âââ */
   const handleCreate = async () => {
     if (!user) { toast.error('Sign in required'); return; }
+    if (generating) { toast.error('Already generating — please wait'); return; } // FIX: prevent double-calls
 
     // Determine s3Key â priority order:
     // 1. activeItem analysis/remix audio_url (selected from library)
@@ -2699,9 +2722,8 @@ export default function Workspace() {
                               // If has S3 audio â start create immediately
                               const _url = item.type === 'analysis' ? item.data.audio_url : item.data.audio_url;
                               const _key = _url ? extractS3Key(_url) : null;
-                              if (_key) {
-                                setTimeout(() => handleCreate(), 50);
-                              }
+                              // FIX: removed auto-trigger — user must click Create button manually
+                              // to avoid wasting Suno credits on accidental clicks
                             }}
                             className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/15 hover:bg-orange-500/30 text-orange-400 text-[9px] font-bold transition-all">
                             <Sparkles className="w-3 h-3" />
