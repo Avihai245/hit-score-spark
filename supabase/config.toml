@@ -1,5 +1,17 @@
 project_id = "euszgnaahwmdbfdewaky"
 
+[functions.analyze-song]
+verify_jwt = false
+
+[functions.save-remix]
+verify_jwt = false
+
+[functions.suno-proxy]
+verify_jwt = false
+
+[functions.transcribe-audio]
+verify_jwt = false
+
 [functions.stripe-checkout]
 verify_jwt = false
 
