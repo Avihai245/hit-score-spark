@@ -535,6 +535,9 @@ Return ONLY this JSON:
           score: finalScore,
           verdict: analysis.verdict || lambdaResult.verdict || "",
           full_result: enrichedResult,
+          // FIX: persist dedicated columns so dashboard can read them directly
+          suno_prompt: enrichedResult.sunoPrompt || null,
+          ai_transcript: enrichedResult.lyricsSource === "transcribed" ? enrichedResult.originalLyrics || null : null,
         })
         .select("id")
         .single();
@@ -553,6 +556,9 @@ Return ONLY this JSON:
           verdict: analysis.verdict,
           full_result: enrichedResult,
           genre: effectiveGenre,
+          // FIX: persist dedicated columns so dashboard can read them directly
+          suno_prompt: enrichedResult.sunoPrompt || null,
+          ai_transcript: enrichedResult.lyricsSource === "transcribed" ? enrichedResult.originalLyrics || null : null,
         })
         .eq("id", effectiveAnalysisId);
       if (updateErr) {
