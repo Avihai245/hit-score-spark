@@ -1325,11 +1325,13 @@ export default function Workspace() {
           action: 'suno-cover', s3Key,
           title: songTitleForCover,
           genre: songGenreForCover,
-          style: enrichedStyle,   // kept for backward compat
-          styles: enrichedStyle,  // FIX: Lambda expects 'styles' (plural)
-          lyrics: effectiveLyrics, // FIX: Lambda expects 'lyrics' not 'customLyrics'
-          customLyrics: effectiveLyrics, // kept for backward compat
+          style: enrichedStyle,
+          styles: enrichedStyle,
+          lyrics: effectiveLyrics,
+          customLyrics: effectiveLyrics,
           sunoPrompt: effectiveSunoPrompt,
+          // FIX: preserve original vocal gender — male/female detected from audio
+          vocalGender: fr.vocalGender || (activeItem?.data as any)?.vocalGender || undefined,
           bpm: fr.bpmEstimate ? parseFloat(String(fr.bpmEstimate)) : (fr.bpm || fr.genreDna?.avgBpm || undefined),
           energy: fr.energyLevel != null ? (Number(fr.energyLevel) > 1 ? Number(fr.energyLevel) / 10 : Number(fr.energyLevel)) : undefined,
           emotionalCore: fr.emotionalCore,
